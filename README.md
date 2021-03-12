@@ -39,6 +39,19 @@ Output Voltage 1.0 - 3.0 V (depende de temperatura)
 Se debe conectar ADC a la salida  
 280 a 390nm  
 
+### Sonido
+Hat con micrófono  
+https://medium.com/homeday/building-a-noise-level-dashboard-for-your-office-with-a-raspberry-pi-71360ee1ff46  
+https://thepihut.com/products/respeaker-4-mic-array-for-raspberry-pi  
+
+¿Usar la entrada de micrófono o un micrófono USB?  
+https://www.raspberrypi.org/forums/viewtopic.php?t=258965  
+
+Módulo micrófono DfRobot 0034  
+http://www.scielo.org.co/pdf/pml/v12n1/1909-0455-pml-12-01-00081.pdf  
+
+Probaremos con el módulo KY-037  
+
 ### ADC
 Opciones de Convertidores Analógico a Digital  
 
