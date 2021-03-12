@@ -62,6 +62,11 @@ PCF8591 - 4 canales ADC, 1 canal DAC, resolución 8 bits, interfaz I2C
 https://learn.adafruit.com/raspberry-pi-analog-to-digital-converters  
 https://articulo.mercadolibre.com.mx/MLM-544163593-modulo-analogico-digital-3-adc-1-dac-pcf8591-arduino-pic-dsp-_JM  
 
+### Luz (emitancia luminosa)  
+Se mide en lux  
+https://es.wikipedia.org/wiki/Emitancia_luminosa  
+
+
 ----
 
 Modelos 3D descargados
