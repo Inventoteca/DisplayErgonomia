@@ -37,6 +37,7 @@ Analog voltage output
 Operating Voltage 3.3 V  
 Output Voltage 1.0 - 3.0 V (depende de temperatura)  
 Se debe conectar ADC a la salida  
+280 a 390nm  
 
 ### ADC
 Opciones de Convertidores Analógico a Digital  
