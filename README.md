@@ -2,7 +2,7 @@
 Display que muestra diferentes valores del entorno. Usa NeoDígitos y varios sensores.
 
 ## Dígitos
-Ocupa 17 NeoDígitos medianos con 2 Neopixels 5050 por segmento y 2 Neopixels separados.  
+Ocupa 17 NeoDígitos medianos que tienen 2 Neopixels 5050 por segmento más 2 Neopixels separados.  
 Son 16 Neopixels por dígito. En total son 272 Neopixels en el display.  
 
 Cada Neopixel consume alrededor de 60 mA con brillo al máximo. 60 mA * 272 = 16.32 A  
@@ -27,7 +27,7 @@ Works over I2C so just about any microcontroller can use it.
 Has individual visible and IR sensing elements, but the library doesn't calculate the exact values of IR and Visible light.
 If you need precision Lux measurement check out the TSL2561.
 
-ML8511
+ML8511  
 https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/ML8511_3-8-13.pdf  
 The ML8511 is a UV sensor, which is suitable for acquiring UV intensity indoors or outdoors. The ML8511 is
 equipped with an internal amplifier, which converts photo-current to voltage depending on the UV intensity.
@@ -36,9 +36,17 @@ Photodiode sensitive to UV-A and UV-B
 Analog voltage output  
 Operating Voltage 3.3 V  
 Output Voltage 1.0 - 3.0 V (depende de temperatura)  
+Se debe conectar ADC a la salida  
 
 ### ADC
+Opciones de Convertidores Analógico a Digital  
 
+MCP3008 - 8 channels of analog input with 10-bit precision  
+ADS1x15 series - 4 channels with 12 to 16-bit precision and a programmable gain stage  
+PCF8591 - 4 canales ADC, 1 canal DAC, resolución 8 bits, interfaz I2C  
+
+https://learn.adafruit.com/raspberry-pi-analog-to-digital-converters  
+https://articulo.mercadolibre.com.mx/MLM-544163593-modulo-analogico-digital-3-adc-1-dac-pcf8591-arduino-pic-dsp-_JM  
 
 ----
 
