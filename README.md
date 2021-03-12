@@ -69,13 +69,19 @@ https://es.wikipedia.org/wiki/Emitancia_luminosa
 
 ----
 
-Modelos 3D descargados
+Modelos 3D descargados  
 
-Caja 25 x 15 x 10 cm
-https://grabcad.com/library/lemotech-ip67-junction-box-250-mm-x-150-mm-x-100-mm-1
+Caja 25 x 15 x 10 cm  
+https://grabcad.com/library/lemotech-ip67-junction-box-250-mm-x-150-mm-x-100-mm-1  
 
-Otras cajas (no descargadas)
-https://grabcad.com/library/ip65-ip67-electrical-enclosures-2/details?folder_id=4320709
+Otras cajas (no descargadas)  
+https://grabcad.com/library/ip65-ip67-electrical-enclosures-2/details?folder_id=4320709  
+
+Power supply 12V 20A by T-Maker  
+https://grabcad.com/library/power-supply-12v-20a-by-t-maker-1/details?folder_id=9293058  
+Editada para acercarse a las medidas de la fuente comprada  
+
+
 
 Cuenta temporal de GrabCAD  
 gibap25040@grokleft.com  
