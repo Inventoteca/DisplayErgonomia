@@ -1,6 +1,18 @@
 # DisplayErgonomia
 Display que muestra diferentes valores del entorno. Usa NeoDígitos y varios sensores.
 
+## Dígitos
+Ocupa 17 NeoDígitos medianos con 2 Neopixels 5050 por segmento y 2 Neopixels separados.  
+Son 16 Neopixels por dígito. En total son 272 Neopixels en el display.  
+
+Cada Neopixel consume alrededor de 60 mA con brillo al máximo. 60 mA * 272 = 16.32 A  
+Es muy raro que se lleguen a prender con el brillo máximo  
+La Raspberry Zero W consume 2.5 A  
+Una fuente de 20 A puede alimentar todo sin problemas.  
+Una fuente de 10 A no debe usarse con todos los pixels en brillo máximo. Esta es la fuente elegida.  
+https://learn.adafruit.com/adafruit-neopixel-uberguide/powering-neopixels  
+https://learn.adafruit.com/adafruit-neopixel-uberguide/individual-neopixels  
+
 ## Sensores
 
 ### Índice UV
@@ -15,6 +27,17 @@ Works over I2C so just about any microcontroller can use it.
 Has individual visible and IR sensing elements, but the library doesn't calculate the exact values of IR and Visible light.
 If you need precision Lux measurement check out the TSL2561.
 
+ML8511
+https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/ML8511_3-8-13.pdf  
+The ML8511 is a UV sensor, which is suitable for acquiring UV intensity indoors or outdoors. The ML8511 is
+equipped with an internal amplifier, which converts photo-current to voltage depending on the UV intensity.
+This unique feature offers an easy interface to external circuits such as ADC.  
+Photodiode sensitive to UV-A and UV-B  
+Analog voltage output  
+Operating Voltage 3.3 V  
+Output Voltage 1.0 - 3.0 V (depende de temperatura)  
+
+### ADC
 
 
 ----
@@ -27,8 +50,8 @@ https://grabcad.com/library/lemotech-ip67-junction-box-250-mm-x-150-mm-x-100-mm-
 Otras cajas (no descargadas)
 https://grabcad.com/library/ip65-ip67-electrical-enclosures-2/details?folder_id=4320709
 
-Cuenta temporal de GrabCAD
-gibap25040@grokleft.com
-asterisco
+Cuenta temporal de GrabCAD  
+gibap25040@grokleft.com  
+asterisco  
 
 ----
