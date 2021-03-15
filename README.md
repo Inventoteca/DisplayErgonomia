@@ -1,16 +1,26 @@
 # DisplayErgonomia
 Display que muestra diferentes valores del entorno. Usa NeoDígitos y varios sensores.
 
++ Una Raspberry Pi Zero W controla los Neodígitos y recibe información de los sensores.  
++ Almacena los valores para mostrar en forma de gráficas.  
++ Los sensores de luz se instalan en la parte de arriba, cubiertos con una ventana de acrílico.  
++ Caja impermeable para proteger raspberry y conexiones
++ "espiroqueta" para agrupar los cables
++ Clema molex en el primer NeoDígito para facilitar la conexión  
++ NeoDígitos atornillados a dos capas de MDF
++ Raspberry con shield
+
 ## Dígitos
-Ocupa 17 NeoDígitos medianos que tienen 2 Neopixels 5050 por segmento más 2 Neopixels separados.  
+Ocupa 17 NeoDígitos medianos que tienen 2 Neopixels por segmento más 2 Neopixels separados.  
 Son 16 Neopixels por dígito. En total son 272 Neopixels en el display.  
 
+La guía de Adafruit recomienda considerar que cada Neopixel consume 20 mA.
+20 mA * 272 = 5.44 A
+La Raspberry Zero W puede consumir 2 A  
+Una fuente de 10 A es la elegida.  
+
 Cada Neopixel consume alrededor de 60 mA con brillo al máximo. 60 mA * 272 = 16.32 A  
-Es muy raro que se lleguen a prender con el brillo máximo  
-La Raspberry Zero W consume 2.5 A  
-Una fuente de 20 A puede alimentar todo sin problemas.  
-Una fuente de 10 A no debe usarse con todos los pixels en brillo máximo. Esta es la fuente elegida.  
-https://learn.adafruit.com/adafruit-neopixel-uberguide/powering-neopixels  
+Es muy raro que se lleguen a prender con el brillo máximo    
 https://learn.adafruit.com/adafruit-neopixel-uberguide/individual-neopixels  
 
 ## Sensores
