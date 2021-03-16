@@ -98,3 +98,19 @@ gibap25040@grokleft.com
 asterisco  
 
 ----
+
+
+
+
+
+### Raspberry
+Los sensores serán leidos por la Raspberry y sus valores serán mostrados por los NeoDígitos, el programa funciona con Node-RED, con los módulos necesarios y librerias contenidas en una imagen de Docker. El control de los Dígitos está realizado por un nodo desarrollado por nosotros. Otro contenedor de Docker administrará el WiFi, para ser el medio de configuración del panel, através de un Dashboard.
+
+Wifi
+Es necesario configurar la Raspberry como AP + Client al mismo tiempo, se realizó con las instrucciones siguientes, basadas en este tutorial.
+https://pifi.imti.co/
+
+- Con la Raspberry corriendo ya algún S.O. y conectada a Internet por cable, con SSH activado, se procede a desconecatar el wifi del sistema y se le pasa el control a un contenedor de Docker.
+- Se ha probado con RPi Zero W, RPi 3. Se debe terminar la configuración de país del wifi antes de proceder a quitarlo del sistema.
+- 
+----
