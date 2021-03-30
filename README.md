@@ -92,7 +92,7 @@ https://thepihut.com/products/respeaker-4-mic-array-for-raspberry-pi
 ¿Usar la entrada de micrófono o un micrófono USB?  
 https://www.raspberrypi.org/forums/viewtopic.php?t=258965  
 
-Módulo micrófono DfRobot 0034  
+Diseño de una herramienta de medición de ruidos (con módulo micrófono DfRobot 0034)  
 http://www.scielo.org.co/pdf/pml/v12n1/1909-0455-pml-12-01-00081.pdf  
 
 ### Luz (emitancia luminosa)  
@@ -102,6 +102,13 @@ https://es.wikipedia.org/wiki/Emitancia_luminosa
 El sensor elegido es el **TSL2561**. Es fácil de usar con las librerías.  
 El valor en el display se podría mostrar en kilolux, de ese modo se puede mostrar todo el rango
 de medición del sensor 0.001 hasta 40.00 kilolux.  
+
+Tutoriales (Arduino)  
+https://learn.adafruit.com/tsl2561/overview  
+https://hetpro-store.com/TUTORIALES/sensor-de-luz-tsl2560/  
+
+Datasheet  
+https://ams.com/TSL2561#tab/documents  
 
 ### Calidad del aire
 El sensor MQ-135 se utiliza en equipos de control de calidad del aire para edificios y oficinas,
@@ -120,56 +127,16 @@ Librería para sensores MQ
 Podemos basarnos en las funciones de regresión  
 https://github.com/miguel5612/MQSensorsLib  
 
-----
-
-Modelos 3D descargados  
-
-Caja 25 x 15 x 10 cm  
-https://grabcad.com/library/lemotech-ip67-junction-box-250-mm-x-150-mm-x-100-mm-1  
-
-Otras cajas (no descargadas)  
-https://grabcad.com/library/ip65-ip67-electrical-enclosures-2/details?folder_id=4320709  
-
-Power supply 12V 20A by T-Maker  
-https://grabcad.com/library/power-supply-12v-20a-by-t-maker-1/details?folder_id=9293058  
-Editada para acercarse a las medidas de la fuente comprada  
-
-ADS1115  
-https://grabcad.com/library/16bit-i2c-adc-pga-ads1115-1  
-
-TSL2561  
-https://grabcad.com/library/tsl2561-breakout-board-1  
-
-Sensores MQ  
-https://grabcad.com/library/mq-2-gas-sensor-1  
-https://grabcad.com/library/mq3-sensor-1  
-https://grabcad.com/library/mq135-air-sensor-1  
-https://grabcad.com/library/mq2-gas-sensor-1  
-
-DHT22  
-https://grabcad.com/library/dht22-am2302-1  
-
-Sensor de sonido (micrófono)  
-https://grabcad.com/library/microphone-sound-detection-sensor-module-1  
-
-Colección de conectores JST y headers Dupont  
-https://grabcad.com/library/jst-eh-2-5mm-connector-pack-1  
-https://grabcad.com/library/female-header-pitch-2-54mm-straight-single-row-2-to-40-1  
-
-Cuenta temporal de GrabCAD  
-gibap25040@grokleft.com  
-asterisco  
-
-----
 
 ## Raspberry
-Los sensores serán leidos por la Raspberry y sus valores serán mostrados por los NeoDígitos, el programa funciona con Node-RED, con los módulos necesarios y librerias contenidas en una imagen de Docker. El control de los Dígitos está realizado por un nodo desarrollado por nosotros. Otro contenedor de Docker administrará el WiFi, para ser el medio de configuración del panel, através de un Dashboard.
+Los sensores serán leidos por la Raspberry y sus valores serán mostrados por los NeoDígitos, el programa funciona con Node-RED, con 
+los módulos necesarios y librerias contenidas en una imagen de Docker. El control de los Dígitos está realizado por un nodo desarrollado 
+por nosotros. Otro contenedor de Docker administrará el WiFi, para ser el medio de configuración del panel, através de un Dashboard.
 
 Wifi  
-Es necesario configurar la Raspberry como AP + Client al mismo tiempo, se realizó con las instrucciones siguientes, basadas en este tutorial.
-https://pifi.imti.co/
+Es necesario configurar la Raspberry como AP + Client al mismo tiempo, se realizó con las instrucciones siguientes, basadas en este tutorial.  
+https://pifi.imti.co/  
 
-- Con la Raspberry corriendo ya algún S.O. y conectada a Internet por cable, con SSH activado, se procede a desconecatar el wifi del sistema y se le pasa el control a un contenedor de Docker.
+- Con la Raspberry corriendo ya algún S.O. y conectada a Internet por cable, con SSH activado, 
+se procede a desconecatar el wifi del sistema y se le pasa el control a un contenedor de Docker.
 - Se ha probado con RPi Zero W, RPi 3. Se debe terminar la configuración de país del wifi antes de proceder a quitarlo del sistema.
-- 
-----
