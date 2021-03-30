@@ -140,3 +140,22 @@ https://pifi.imti.co/
 - Con la Raspberry corriendo ya algún S.O. y conectada a Internet por cable, con SSH activado, 
 se procede a desconecatar el wifi del sistema y se le pasa el control a un contenedor de Docker.
 - Se ha probado con RPi Zero W, RPi 3. Se debe terminar la configuración de país del wifi antes de proceder a quitarlo del sistema.
+
+## Diseños
+La carpeta `Diseños` contiene 
+
++ El modelo 3D del display
++ Piezas en STL para imprimir
++ Los dibujos para cortar las piezas de MDF
+
+## Programa
+La carpeta `Programa` contiene 
+
++ El flujo de Node-RED con el que se leen los sensores
++ Programas en python que son ejecutados desde Node-RED
++ Descripciones de las librerías
++ Comandos utilizados para instalar las librerías
++ Capturas de pantalla tomadas al probar los sensores
+
+Se ha creado un repositorio independiente para sincronizar los programas desde Node-RED.  
+`link al repo`
