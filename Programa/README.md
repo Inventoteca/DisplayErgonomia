@@ -52,12 +52,17 @@ https://discourse.nodered.org/t/issue-exec-node/1833
 
 También se puede instalar el nodo daemon para que el programa de python se 
 ejecute  automaticamente al iniciar node-red y se reinicie si ocurre un error.
-(marcar las opciones auto-start y relaunch) 
+(marcar las opciones auto-start y relaunch)  
 https://flows.nodered.org/node/node-red-node-daemon  
 
 El programa de python puede tomar varias lecturas rápidas del sensor de sonido 
 y solo una lectura del sensor de luz UV y del sensor de partículas en el aire cada cierto tiempo.
 Con las muestras del sensor de sonido se pueden hacer operaciones para calcular los dB.  
+
+Se necesita especificar la ruta del archivo py. Si la ruta cambia se debe actualizar el nodo.
+Una forma de hacerlo dinámicamente es con la siguiente librería, pero por el momento no parece necesario.  
+https://flows.nodered.org/node/node-red-contrib-projectdir  
+https://discourse.nodered.org/t/project-directory-path/14424/8  
 
 ### TSL2561
 La librería "brads-i2c-nodes" tiene un nodo para el TSL2561 y funciona muy bien.  
@@ -72,6 +77,8 @@ La librería "contrib-dht-sensor" no funcionó.
 https://flows.nodered.org/node/node-red-contrib-dht-sensor  
 La instalación es un poco complicada porque depende de otras librerías  
 http://www.airspayce.com/mikem/bcm2835/  
+Al ejecutar el nodo, Node-RED se reinició.  
+Abajo se muestran los comandos utilizados  
 ```
 curl http://www.airspayce.com/mikem/bcm2835/bcm2835-1.68.tar.gz --output bcm2835-1.68.tar.gz
 tar zxvf bcm2835-1.*.tar.gz
@@ -80,8 +87,7 @@ cd bcm2835-1.*
 make
 sudo make check
 sudo make install
-```
-Al ejecutar el nodo, Node-RED se reinició.  
+```  
 
 En este tema mencionan que algunos sensores no funcionan correctamente con la librería  
 https://discourse.nodered.org/t/dht22-am2302-sensor-doesnt-work-in-nodered/27513  
@@ -89,8 +95,16 @@ https://discourse.nodered.org/t/dht22-am2302-sensor-doesnt-work-in-nodered/27513
 Es más fácil usar el sensor con python.  
 Este tutorial funcionó  
 https://pimylifeup.com/raspberry-pi-humidity-sensor-dht22/  
+Instalar librería  
+```
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install python3-dev python3-pip
+sudo python3 -m pip install --upgrade pip setuptools wheel
+sudo pip3 install Adafruit_DHT
+```
 
-Otros tutoriales con python (no se han leído)  
+Otros tutoriales con python (son menos recientes)  
 http://carlini.es/sensores-de-humedad-y-temperatura-dht11-y-dth22-en-la-raspberry-pi/  
 https://www.instructables.com/Raspberry-Pi-Tutorial-How-to-Use-the-DHT-22/  
 https://learn.adafruit.com/dht-humidity-sensing-on-raspberry-pi-with-gdocs-logging/python-setup  
