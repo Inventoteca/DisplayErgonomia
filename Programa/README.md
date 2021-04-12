@@ -18,8 +18,7 @@ La librería de meeki007 funcionó, si embargo, no se pueden hacer muchas lectur
 Cuando se hacen más de 2 lecturas por segundo Node-RED se reinicia.  
 https://flows.nodered.org/node/node-red-contrib-anolog-to-digital-converter-raspberry-pi  
 
-Se podría usar un programa escrito en pyhon y la librería de Adafruit.
-Tal vez así se pueden obtener más lecturas por segundo.  
+Se podría usar un programa escrito en pyhon y la librería de Adafruit. Así obtener más lecturas por segundo.  
 
 La de NCD no funcionó. Se debe seleccionar un valor de una lista desplegable, pero la lista está vacía. ¿Qué falta?  
 https://flows.nodered.org/node/ncd-red-ads1115  
@@ -36,7 +35,25 @@ Los sensores utilizados para medir calidad del aire, ruido y luz UV se conectan 
 Se deben calibrar para mostrar las lecturas en las unidades correspondientes.
 Funcionan bien con baja velicidad de muestreo, excepto el sensor de sonido.
 Es mejor si se toman muchas muestras por segundo para no dejar escapar picos en la señal.
-¿Cómo solucionar este problema?  
+
+¿Cómo solucionar el problema de baja velocidad de muestreo?  
+Se probará la idea escrita anteriormente: usar un programa escrito en pyhon con un ciclo infinito.  
+Se usará el nodo exec en spawn mode con un comando como este  
+`python -u adc.py`  
+El programa imprimirá líneas con lecturas de diferentes canales del módulo ADC.  
+
+El parámetro `-u` evita que la salida de python se almacene en un buffer 
+y de esa forma pueda llegar a la salida del nodo exec.  
+https://discourse.nodered.org/t/issue-exec-node/1833  
+
+También se puede instalar el nodo daemon para que el programa de python se 
+ejecute  automaticamente al iniciar node-red y se reinicie si ocurre un error.
+(marcar las opciones auto-start y relaunch) 
+https://flows.nodered.org/node/node-red-node-daemon  
+
+El programa de python puede tomar varias lecturas rápidas del sensor de sonido 
+y solo una lectura del sensor de luz UV y del sensor de partículas en el aire cada cierto tiempo.
+Con las muestras del sensor de sonido se pueden hacer operaciones para calcular los dB.  
 
 ### TSL2561
 La librería "brads-i2c-nodes" tiene un nodo para el TSL2561 y funciona muy bien.  
