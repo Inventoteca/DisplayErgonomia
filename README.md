@@ -151,11 +151,10 @@ La carpeta `Diseños` contiene
 ## Programa
 La carpeta `Programa` contiene 
 
-+ El flujo de Node-RED con el que se leen los sensores
-+ Programas en python que son ejecutados desde Node-RED
 + Descripciones de las librerías
 + Comandos utilizados para instalar las librerías
-+ Capturas de pantalla tomadas al probar los sensores
++ Capturas de pantalla
 
-Se ha creado un repositorio independiente para sincronizar los programas desde Node-RED.  
-`link al repo`
+Se ha creado un repositorio independiente para sincronizar los programas desde Node-RED.
+Contiene los flujos de Node-RED y programas escritos en python.  
+https://github.com/Inventoteca/DisplayErgonomiaFlows  
