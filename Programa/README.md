@@ -1,5 +1,9 @@
-Esta carpeta contiene el flujo de Node-RED para leer los sensores y 
-programas de python que se ejecutan desde Node-RED.  
+Esta carpeta contiene descripciones de las librerías, 
+comandos utilizados para instalarlas y capturas de pantalla.  
+
+Se ha creado un repositorio independiente para sincronizar los programas desde Node-RED.
+Contiene los flujos de Node-RED y programas escritos en python.  
+https://github.com/Inventoteca/DisplayErgonomiaFlows  
 
 ## Instalación de herramientas
 
