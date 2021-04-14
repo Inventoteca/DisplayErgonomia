@@ -64,6 +64,38 @@ Una forma de hacerlo dinámicamente es con la siguiente librería, pero por el m
 https://flows.nodered.org/node/node-red-contrib-projectdir  
 https://discourse.nodered.org/t/project-directory-path/14424/8  
 
+Para controlar usando python se siguieron estas instrucciones  
+https://learn.adafruit.com/adafruit-4-channel-adc-breakouts/python-circuitpython  
+
+También se debe instalar Adafruit-Blinka  
+```
+pip3 install Adafruit-Blinka
+sudo pip3 install adafruit-circuitpython-ads1x15
+```
+La librería puede funcionar en single mode o en continuous mode.  
+La documentación no tiene mucha información extra  
+https://circuitpython.readthedocs.io/projects/ads1x15/en/latest/  
+
+Observación importante  
+Se conectaron los dispositivos I2C del display,
+el de luz visible y el ADC alimentado, ambos alimentados con 5V.
+En esa forma el ADC no se detecta. Solo se detecta si el otro
+módulo está desconectado.
+El sensor de luz visible tiene un regulador a 3.3 V integrado en la placa.
+El otro sensor no tiene un regulador y funciona desde 2 hasta 5 V.
+
+Los 2 módulos funcionan de esta forma
+ADS115 alimentado con 3.3 V (usando salida de las rasp)
+TSL alimentado con 5 V (tiene regulador de 3.3 V integrado)
+
+El voltaje aplicado en cualquier canal ADC no debe ser mayor al voltaje
+de alimentación.
+Esto trae un problema. Los sensores de sonido y de calidad del aire
+pueden dar voltajes de hasta 4 V. El de calidad de aire solo da ese 
+valor si los niveles de contaminación son peligrosos, es poco probable
+que suceda.  
+El de sonido solo da picos en ese nivel, pero podría dañar el módulo.
+
 ### TSL2561
 La librería "brads-i2c-nodes" tiene un nodo para el TSL2561 y funciona muy bien.  
 https://flows.nodered.org/node/node-red-contrib-brads-i2c-nodes  
@@ -108,3 +140,15 @@ Otros tutoriales con python (son menos recientes)
 http://carlini.es/sensores-de-humedad-y-temperatura-dht11-y-dth22-en-la-raspberry-pi/  
 https://www.instructables.com/Raspberry-Pi-Tutorial-How-to-Use-the-DHT-22/  
 https://learn.adafruit.com/dht-humidity-sensing-on-raspberry-pi-with-gdocs-logging/python-setup  
+
+### Neopixel
+Se instala la librería de Node-RED  
+https://flows.nodered.org/node/node-red-node-pi-neopixel  
+
+Primer paso instalar pre-requisitos  
+```curl -sS get.pimoroni.com/unicornhat | bash```  
+
+Instalar la librería desde "manage pallete" o con este comando  
+```npm install node-red-node-pi-neopixel```
+
+Nota: solo usar un nodo para neopixel o pasan cosas raras.  
