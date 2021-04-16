@@ -152,3 +152,62 @@ Instalar la librería desde "manage pallete" o con este comando
 ```npm install node-red-node-pi-neopixel```
 
 Nota: solo usar un nodo para neopixel o pasan cosas raras.  
+
+## Calibración de sensores
+
+### Luz UV
+En la oscuridad da un voltaje de 0.99 V (se midió con multímetro y ADC)  
+El espectro más dañino para los humanos es de 295 a 325 nm
+Máxima sensibilidad a radiación de 365 nm, pero tiene buena sensibilidad al rango más dañino.  
+Se puede calcular la intensidad en mW/cm<sup>2</sup>  
+Si baja la temperatura el voltaje de salida es un poco mayor. El cambio se puede despreciar.  
+El datasheet indica salida de 2.2V cuando recibe luz UV con intensidad de 10 mW/cm<sup>2</sup>  
+https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/ML8511_3-8-13.pdf  
+
+Aquí se menciona que es proporcional a la intensidad  
+https://en.wikipedia.org/wiki/Ultraviolet_index  
+
+Guí para el ML8511. Se explica como calcular la intensidad  
+https://learn.sparkfun.com/tutorials/ml8511-uv-sensor-hookup-guide/all  
+Primero obtener voltaje, luego mapear al rango de intensidad que aparece en el datasheet.  
+
+Se obtuvo una lectura máxima de 5.5 mW/cm<sup>2</sup> con el sol en punto más alto (sombras casi verticales).
+Estas páginas mostraban que el índica máximo en el día sería 13  
+https://www.tutiempo.net/puebla-pue.html?datos=detallados  
+https://www.accuweather.com/es/mx/puebla/245020/hourly-weather-forecast/245020  
+https://www.weatheronline.mx/Mexico/Puebla/IndiceUV.htm  
+En ese momento había nubes pequeñas, en algunos momentos tapaban el sol.  
+
+Según la definición de Wikipedia el índice UV de 10 corresponde a 250 mW/m<sup>2</sup> = 0.025 mW/cm<sup>2</sup>.
+Pero no se acerca al valor leído con el sensor.  
+Si la intensidad era de 5.5 y el índice era cercano a 13, una forma 
+rápida de calcular es multiplicar por 2 y redondear al entero más cercano.  
+
+Este documento explica cómo aproximar el índice comparando con lecturas 
+de un dispositivo profesional. Se puede usar la misma fórmula  
+https://cdn.sparkfun.com/assets/learn_tutorials/2/0/6/ML8511_UV.pdf  
+
+Otro medidor ¿cómo hace los cálculos?  
+https://www.instructables.com/UltraV-a-Portable-UV-index-Meter/  
+
+### Ventana transparente
+Los sensores de luz UV y luz visibles están protegidos con una caja y una ventana transparente que deje pasar
+mucha luz. Se probaron varios materiales para la ventana
+
++ Acrílico de 3 mm - Absorbe mucha radiación, la lectura de luxes se reducía 100 unidades.
++ Vidirio - Efecto similar al acrílico
++ FEP de la impresora Anycubic Photon - Casi no atenúa la lectura, pero es muy flexible
++ PLA blanco delgado - Atenúa mucho
++ Caja de plastico transparente (¿qué material es?) - Casi no atenúa, efecto similar al FEP
+
+Parece que la atenuación es poca si el material es delgado. Se podría usar 
+acetato o mica de las papelerías, pegado a un marco hecho con impresión 3D.  
+
+## Notas
+Medir tiempo transcurrido en Python  
+https://stackoverflow.com/questions/7370801/how-to-measure-elapsed-time-in-python  
+
+El programa `ads.py` muestra varias propiedades que se pueden configurar en la librería.  
+
+Escribir superindices en markdown  
+https://stackoverflow.com/questions/15155778/superscript-in-markdown-github-flavored  
