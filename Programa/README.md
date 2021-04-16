@@ -225,9 +225,8 @@ https://naylampmechatronics.com/blog/42_tutorial-sensores-de-gas-mq2-mq3-mq7-y-m
 La forma más fácil de representar nivel de sonido es con una gráfica de barras.
 En este circuito se encienden LEDs en realación lineal al offset de voltaje  
 https://www.epa.gov/sites/production/files/documents/uviguide.pdf  
-
-Ajustar el pot hasta que se apague el LED (umbral de silencia).
-Al girar el pot cambia el voltaje de salida cuando hay silencio.  
+Pasos mostrados: Ajustar el pot hasta que se apague el LED (umbral de silencio).
+Al girar el pot cambia el voltaje de silencio.  
 
 Si se alimenta con 5 V, el LED se apaga cuando la salida es de 2.4 V aprox.
 El voltaje de salida puede ir de 0.6 a 4.7 V. El voltaje alto puede dañar el ADC.  
@@ -241,8 +240,15 @@ Para evitar un voltaje alto hay varias opciones:
 + Colocar un diodo rectificador que de una caída de 0.7 V
 + Colocar un diodo zener
 + Usar un divisor de voltaje
++ Poner un opamp en configuración seguidor, alimentado con 3.3 V
 
 ¿Cuál es más eficiente?
+
+Este documento muestra un código para calcular decibeles, pero está mal  
+http://www.scielo.org.co/pdf/pml/v12n1/1909-0455-pml-12-01-00081.pdf  
+`float DB = (20 * log(10)) * (5 / voltageSensor);`  
+
+
 
 ## Notas
 Medir tiempo transcurrido en Python  
