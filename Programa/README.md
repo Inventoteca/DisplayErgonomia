@@ -190,6 +190,10 @@ https://cdn.sparkfun.com/assets/learn_tutorials/2/0/6/ML8511_UV.pdf
 Otro medidor ¿cómo hace los cálculos?  
 https://www.instructables.com/UltraV-a-Portable-UV-index-Meter/  
 
+Forma compleja de calcular el índice (EPA)  
+https://www.epa.gov/sunsafety/calculating-uv-index-0  
+https://www.epa.gov/sites/production/files/documents/uviguide.pdf  
+
 ### Ventana transparente
 Los sensores de luz UV y luz visibles están protegidos con una caja y una ventana transparente que deje pasar
 mucha luz. Se probaron varios materiales para la ventana
@@ -203,11 +207,55 @@ mucha luz. Se probaron varios materiales para la ventana
 Parece que la atenuación es poca si el material es delgado. Se podría usar 
 acetato o mica de las papelerías, pegado a un marco hecho con impresión 3D.  
 
+### Partículas en el aire
+El sensor funciona mejor alimentado con 5 V. Con menos voltaje no se calienta a la temperatura adecuada
+y se reduce la sensibilidad.
+
+Lecturas obtenidas:  
+Aire limpio 0.3 V  
+Saturado con gas de encendedor 4.0 V (alimentado con 3.3 V solo alcanzó 0.6 V)  
+Es poco probable que se alcance ese voltaje en funcionamiento normal.
+El aire estaría contaminado a niveles muy peligrosos.  
+
+Tutoriales para calibrar sensor  
+https://www.youtube.com/watch?v=qcNfXSe9CTI  
+https://naylampmechatronics.com/blog/42_tutorial-sensores-de-gas-mq2-mq3-mq7-y-mq135.html  
+
+### Sonido
+La forma más fácil de representar nivel de sonido es con una gráfica de barras.
+En este circuito se encienden LEDs en realación lineal al offset de voltaje  
+https://www.epa.gov/sites/production/files/documents/uviguide.pdf  
+
+Ajustar el pot hasta que se apague el LED (umbral de silencia).
+Al girar el pot cambia el voltaje de salida cuando hay silencio.  
+
+Si se alimenta con 5 V, el LED se apaga cuando la salida es de 2.4 V aprox.
+El voltaje de salida puede ir de 0.6 a 4.7 V. El voltaje alto puede dañar el ADC.  
+
+Si se alimenta con 3.3 V, el LED se apaga cuando la salida es 1.6 V aprox.
+El voltaje de salida puede ir de 0.6 a 3.3 V.
+
+Para evitar un voltaje alto hay varias opciones:
+
++ Alimentar con 3.3 V (desde la rasp o usar un regulador independiente)
++ Colocar un diodo rectificador que de una caída de 0.7 V
++ Colocar un diodo zener
++ Usar un divisor de voltaje
+
+¿Cuál es más eficiente?
+
 ## Notas
 Medir tiempo transcurrido en Python  
 https://stackoverflow.com/questions/7370801/how-to-measure-elapsed-time-in-python  
 
 El programa `ads.py` muestra varias propiedades que se pueden configurar en la librería.  
+La config por defecto es 128 SPS (samples per second), ganancia 1, modo 256 (¿qué 
+significa?) y muestras de 16 bits.  
+Cada lectura tarda de 13 a 16 ms, no cambia al cambiar el valor de SPS, pero no 
+se probó con valor menor a 128.
 
 Escribir superindices en markdown  
 https://stackoverflow.com/questions/15155778/superscript-in-markdown-github-flavored  
+
+Formas de ejecutar tareas periodicas en Python  
+https://medium.com/greedygame-engineering/an-elegant-way-to-run-periodic-tasks-in-python-61b7c477b679  
