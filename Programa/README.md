@@ -268,3 +268,13 @@ https://stackoverflow.com/questions/15155778/superscript-in-markdown-github-flav
 
 Formas de ejecutar tareas periodicas en Python  
 https://medium.com/greedygame-engineering/an-elegant-way-to-run-periodic-tasks-in-python-61b7c477b679  
+
+Serializar JSON  
+Pasar diccionario a formato JSON  
+https://realpython.com/lessons/serializing-json-data/  
+https://www.w3schools.com/python/python_dictionaries.asp  
+```python
+import json #importar librería
+data = { ... } #crear diccionario
+ print(json.dumps(data)) #exportar datos
+```
