@@ -97,9 +97,12 @@ que suceda.
 El de sonido solo da picos en ese nivel, pero podría dañar el módulo.
 
 ### TSL2561
-La librería "brads-i2c-nodes" tiene un nodo para el TSL2561 y funciona muy bien.  
+La librería "brads-i2c-nodes" funcionó en las primeras pruebas, pero dejó de funcionar al actualizar node-red.  
 https://flows.nodered.org/node/node-red-contrib-brads-i2c-nodes  
 https://github.com/pedalPusher68/node-red-contrib-brads-i2c-nodes  
+
+Se dejó de leer con node-red y todos los sensores pasaron a ser leídos con scripts de python.  
+https://learn.adafruit.com/tsl2561/python-circuitpython  
 
 La librería de sonnens lanza un error al instalarse  
 https://flows.nodered.org/node/node-red-contrib-tsl2561  
