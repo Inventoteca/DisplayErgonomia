@@ -1,5 +1,23 @@
-El archivo `Panel ergonomia corte.dwg` es el primer diseño que enviaron para cortar el panel frontal.
-Se redibujó y se agregaron los puntos de los dígitos y perforaciones para las pijas.  
+En esta carpeta se encuentran los diseños las piezas para armar el
+Display Ergonomía.
+
+En primer lugar está el ensamblaje completo en formato step.
+
+En la carpeta `corte_laser` se tienen los dibujos para cortar mdf de 3 mm y 6 mm. 
+El archivo `Panel ergonomia corte.dwg` es el primer diseño que enviaron para 
+cortar el panel frontal. Se redibujó y se agregaron los puntos decimales de 
+los dígitos y perforaciones para las pijas.  
+
+En la carpeta `eagle` se tienen estos diseños
+- Tres tamaños de NeoDigitos
+- Shield para Raspberry Pi Zero
+- Placas para los sensores
+- Placas para las borneras
+
+En el display se utilizan los NeoDigitos medianos V2 y el shield para Rasp.
+
+La carpeta `stl` contiene modelos para fabricar con impresión 3D. Son cajas
+para los sensores y separadores para las placas de las borneras.
 
 ----
 
