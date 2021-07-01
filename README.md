@@ -141,12 +141,22 @@ https://pifi.imti.co/
 se procede a desconecatar el wifi del sistema y se le pasa el control a un contenedor de Docker.
 - Se ha probado con RPi Zero W, RPi 3. Se debe terminar la configuración de país del wifi antes de proceder a quitarlo del sistema.
 
+## Diagramas
+Dibujos de conexiones se encuentran en la carpeta `Diagramas`.
+
 ## Diseños
 La carpeta `Diseños` contiene 
 
 + El modelo 3D del display
 + Piezas en STL para imprimir
 + Los dibujos para cortar las piezas de MDF
++ PCBs en formato Eagle
+
+## Documentos
+En la carpeta `Documentos` está la hoja de cotización y otra información privada.
+
+## Fotos
+En la carpeta `Fotos` hay imágenes del proceso de ensamblaje.
 
 ## Programa
 La carpeta `Programa` contiene 

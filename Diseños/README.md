@@ -54,7 +54,3 @@ https://grabcad.com/library/microphone-sound-detection-sensor-module-1
 Colección de conectores JST y headers Dupont  
 https://grabcad.com/library/jst-eh-2-5mm-connector-pack-1  
 https://grabcad.com/library/female-header-pitch-2-54mm-straight-single-row-2-to-40-1  
-
-Cuenta temporal de GrabCAD  
-gibap25040@grokleft.com  
-asterisco  
