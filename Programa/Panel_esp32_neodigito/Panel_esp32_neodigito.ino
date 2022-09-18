@@ -9,10 +9,24 @@
   This example code is in the public domain.
   Remember that you must have installed Adafruit_NeoPixel library.
 */
-
+#include <Arduino.h>
 #include <NeoDigito.h>
 #include "DHT.h"
 #include <MQUnifiedsensor.h>
+#include <WiFi.h> //import for wifi functionality
+#include <WiFiMulti.h>
+#include <WebSocketsServer.h> //import for websocket
+#include "SPIFFS.h"
+#include "FS.h"
+#include <ArduinoJson.h>
+
+JsonObject obj;
+DynamicJsonDocument doc(1024);
+//const char *ssid =  "SmartPanel";   //Wifi SSID (Name)   
+//const char *pass = "12345678"; //wifi password
+const char *filename = "/config.json";
+File file;
+
 
 
 #define MIC 36 
@@ -40,8 +54,15 @@
 // Specified the number of displays and the number of neopixels per segment, some arguments of the neopixel strip used must be added. 
 NeoDigito display1 = NeoDigito(DIGITS, PIXPERSEG, PIN, NEO_GRB + NEO_KHZ800); // For more info abaut the last argumets check Adafruit_Neopixel documentation.
 DHT dht(DHTPIN, DHTTYPE);
+
+WebSocketsServer webSocket = WebSocketsServer(81); //websocket init with port 81
+void webSocketEvent(uint8_t num, WStype_t w_type, uint8_t * payload, size_t length);
+WiFiMulti wifiMulti;
+
+
 //Declare Sensor
 MQUnifiedsensor MQ135(placa, Voltage_Resolution, ADC_Bit_Resolution, mq_pin, type);
+//JsonObject getJSonFromFile(DynamicJsonDocument *doc, String filename, bool forceCleanONJsonError = true );
 int t;
 int h;
 int db;
@@ -57,66 +78,89 @@ const int airSample = 1000;                              // Sample window width 
 unsigned long airRefresh= 0;
 unsigned long startMillis= 0;
 int contador;
+const uint32_t connectTimeoutMs = 60000;
+unsigned long  timestamp;
 
 
-
-//------------------------------------------------------------------------------- setup
-void setup()
-{
-  Serial.begin(115200);
-  dht.begin();
-  MQ135.setRegressionMethod(1); //_PPM =  a*ratio^b
-  MQ135.setA(605.18); MQ135.setB(-3.937); // Configure the equation to calculate CO concentration value
-  MQ135.init(); 
-  pinMode(MIC,INPUT);
-  display1.begin();             // This fuction calls Adafruit_NeoPixel.begin() to configure.
-  display1.clear();  
-  //display1.setColor(yellow); // Color specified by a 32bit hex, or 8bit numbers (red, green, blue), Also colors names, red, white, yellow, etc.    
-  display1.print("0123456789ABCDEFG");      // It prints the value.
-  display1.updateColor(Rainbow);
-  display1.show();              // Lights up the pixels.
-  Serial.println("hecho");
-  delay(3000);
-  display1.clear();  
-  display1.show();
-  display1.print("oC",red); 
-  display1.print("% ",green);
-  display1.print("uV",purple);
-  display1.print("dB ",blue);
-  display1.print("luxe",white);
-  display1.print("PPN.N",cian);
-  //display1.print("8:8.",white);
-  display1.show();
-  delay(3000);
-  display1.clear();
-  display1.updateColor(Random,13,16);
-
-  Serial.print("Calibrating MQ135 please wait.");
-  float calcR0 = 0;
-  for(int i = 1; i<=10; i ++)
-  {
-    MQ135.update(); // Update data, the arduino will read the voltage from the analog pin
-    calcR0 += MQ135.calibrate(RatioMQ135CleanAir);
-    Serial.print(".");
-  }
-  MQ135.setR0(calcR0/10);
-  Serial.println("  done!.");
-  
-  
-  tempRefresh = millis();
-  soundRefresh = millis();
-  airRefresh = millis();
+// -------------------------------------------------- saveJSonToAFile
+bool saveJSonToAFile(JsonObject *doc, String filename) {
+    //SD.remove(filename);
+ 
+    // open the file. note that only one file can be open at a time,
+    // so you have to close this one before opening another.
+    Serial.println(F("Open file in write mode"));
+    file = SPIFFS.open(filename, FILE_WRITE);
+    if (file) {
+        Serial.print(F("Filename --> "));
+        Serial.println(filename);
+ 
+        Serial.print(F("Start write..."));
+ 
+        serializeJson(*doc, file);
+ 
+        Serial.print(F("..."));
+        // close the file:
+        file.close();
+        Serial.println(F("done."));
+ 
+        return true;
+    } else {
+        // if the file didn't open, print an error:
+        Serial.print(F("Error opening "));
+        Serial.println(filename);
+ 
+        return false;
+    }
 }
 
 
-//----------------------------------------------------------------------------- loop
-void loop()
+// ------------------------------------------- getJsonFromFile
+JsonObject getJSonFromFile(DynamicJsonDocument *doc, String filename, bool forceCleanONJsonError = true ) 
 {
-  
-  ReadSensors();
-  delay(500);
+    // open the file for reading:
+    file = SPIFFS.open(filename);;
+    if (file) 
+    {
+      Serial.println("Opening File");
+      //return;
 
+    size_t size = file.size();
+    Serial.println(size);
+    
+    if(size > 1024)
+    {
+      Serial.println("Too large file");
+      //return false;
+    }
+ 
+    DeserializationError error = deserializeJson(*doc, file);
+    if (error) 
+    {
+      // if the file didn't open, print an error:
+      Serial.print(F("Error parsing JSON "));
+      Serial.println(error.c_str());
+ 
+      if (forceCleanONJsonError)
+      {
+        return doc->to<JsonObject>();
+      }
+    }
+ 
+        // close the file:
+        file.close();
+ 
+        return doc->as<JsonObject>();
+    } else {
+        // if the file didn't open, print an error:
+        Serial.print(F("Error opening (or file not exists) "));
+        Serial.println(filename);
+ 
+        Serial.println(F("Empty json created"));
+        return doc->to<JsonObject>();
+    }
+ 
 }
+
 
 // -------------------------------------------------------------------------------ReadSensors()
 void ReadSensors()
@@ -238,8 +282,8 @@ void ReadSensors()
     CO = CO/10;
     if(CO>9999)
         CO = 9999;
-    Serial.print(CO);
-    Serial.println();
+    //Serial.print(CO);
+    //Serial.println();
     
     display1.setCursor(13);
     display1.print("    ");
@@ -262,9 +306,266 @@ void ReadSensors()
 
      airRefresh = millis();
   }
-  
+  display1.show();
+}
 
+// -------------------------- websocket_event
+void webSocketEvent(uint8_t num, WStype_t w_type, uint8_t * payload, size_t length)
+{
+  StaticJsonDocument<200> webDoc;
+//webscket event method
+    String cmd = "";
+    switch(w_type) {
+        case WStype_DISCONNECTED:
+            Serial.println("Websocket is disconnected");
+            //case when Websocket is disconnected
+            break;
+        case WStype_CONNECTED:{
+            //wcase when websocket is connected
+            Serial.println("Websocket is connected");
+            Serial.println(webSocket.remoteIP(num).toString());
+            webSocket.sendTXT(num, "connected");}
+            break;
+        case WStype_TEXT:
+            cmd = "";
+            for(int i = 0; i < length; i++) {
+                cmd = cmd + (char) payload[i]; 
+            } //merging payload to single string
+            Serial.println(cmd);
+
+            //if(cmd == "poweron")
+            //{ //when command from app is "poweron"
+                //Serial.println(obj["wifi"]["sta"]["ssid"].as<const char*>());
+                //wifi_Init(obj["wifi"]["sta"]["ssid"].as<const char*>(),obj["wifi"]["sta"]["pass"].as<const char*>());
+               // wifiMulti.addAP(obj["wifi"]["sta"]["ssid"].as<const char*>(),obj["wifi"]["sta"]["pass"].as<const char*>());
+               // obj["wifi"]["sta"]["enable"] = true;  
+               // obj["wifi"]["ap"]["enable"] = false; 
+               // obj["cmd"]=cmd;       
+
+            //deserializeMsgPack(doc, cmd);
+              //deserializeJson(doc, cmd);
+              deserializeJson(webDoc, cmd);
+              obj["cmd"]= webDoc["cmd"];
+              serializeJson(obj,Serial);
+              
+                       
+                //boolean isSaved = saveJSonToAFile(&obj, filename);
+ 
+                //if (isSaved)
+                //{
+                //  Serial.println("File saved!");
+                //}
+                //else
+                //{
+                //  Serial.println("Error on save File!");
+                //}
+                //digitalWrite(ledpin, HIGH);   //make ledpin output to HIGH  
+                //display1.updateColor(Rainbow);
+                //display1.show();
+           // }
+            //else if(cmd == "poweroff")
+            //{
+            //    display1.updateColor(Rainbow);
+            //    display1.show();
+                //digitalWrite(ledpin, LOW);    //make ledpin output to LOW on 'pweroff' command.
+            //}
+
+             webSocket.sendTXT(num, cmd+":someID");
+             //send response to mobile, if command is "poweron" then response will be "poweron:success"
+             //this response can be used to track down the success of command in mobile app.
+            break;
+        case WStype_FRAGMENT_TEXT_START:
+            break;
+        case WStype_FRAGMENT_BIN_START:
+            break;
+        //case WStype_BIN:
+        //    hexdump(payload, length);
+            break;
+        default:
+            break;
+    }
+}
+
+// ---------------------------------- sensorInit
+void sensorInit()
+{
+  dht.begin();
+  MQ135.setRegressionMethod(1); //_PPM =  a*ratio^b
+  MQ135.setA(605.18); MQ135.setB(-3.937); // Configure the equation to calculate CO concentration value
+  MQ135.init();
+  Serial.print("Calibrating MQ135 please wait.");
+  float calcR0 = 0;
+  for(int i = 1; i<=10; i ++)
+  {
+    MQ135.update(); // Update data, the arduino will read the voltage from the analog pin
+    calcR0 += MQ135.calibrate(RatioMQ135CleanAir);
+    Serial.print(".");
+  }
+  MQ135.setR0(calcR0/10); 
+  pinMode(MIC,INPUT);
+}
+
+// --------------------------------------- dispalyInit
+void displayInit()
+{
+  display1.begin();             // This fuction calls Adafruit_NeoPixel.begin() to configure.
+  display1.clear();  
+  //display1.setColor(yellow); // Color specified by a 32bit hex, or 8bit numbers (red, green, blue), Also colors names, red, white, yellow, etc.    
+  display1.print("0123456789ABCDEFG");      // It prints the value.
+  display1.updateColor(Rainbow);
+  display1.show();              // Lights up the pixels.
+  Serial.println("Display ready");
+  delay(300);
+  display1.clear();  
+  display1.show();
+  display1.print("oC",red); 
+  display1.print("% ",green);
+  display1.print("uV",purple);
+  display1.print("dB ",blue);
+  display1.print("luxe",white);
+  display1.print("PPN.N",cian);
+  //display1.print("8:8.",white);
+  display1.show();
+  delay(300);
+  display1.clear();
+  display1.updateColor(Random,13,16);
+  Serial.println("Display  done!.");
   //display1.updateColor(random(0,0xFFFFFF),13,16);
   //display1.print(contador,0,0,255);      // It prints the value.
   display1.show();
+}
+
+
+// ---------------------------------------- loadConfig
+void loadConfig()
+{
+  //serializeJson(obj,Serial);
+  //StaticJsonDocument<1024> doc;
+  //deserializeJson(doc,file);
+  //obj = doc.as<JsonObject>();
+  
+  if(obj["wifi"]["sta"]["enable"].as<bool>() && (wifiMulti.run() != WL_CONNECTED))
+  {
+    WiFi.mode(WIFI_STA);
+    wifiMulti.addAP(obj["wifi"]["sta"]["ssid"].as<const char*>(),obj["wifi"]["sta"]["pass"].as<const char*>());
+    Serial.println("Connecting to WiFi");
+    //WiFi.begin(doc["wifi"]["sta"]["ssid"].as<const char*>(),doc["wifi"]["sta"]["pass"].as<const char*>());
+    //WiFi.begin(ssid,pass);
+    //Serial.println(ssid);
+    //Serial.println(pass);
+    if(wifiMulti.run() == WL_CONNECTED) {
+      Serial.println("");
+      Serial.println("WiFi connected");
+      Serial.println(WiFi.SSID());
+      Serial.println("IP address: ");
+      Serial.println(WiFi.localIP());
+      obj["wifi"]["ap"]["enable"] = false;      
+    }
+  }
+  
+  if(obj["wifi"]["ap"]["enable"].as<bool>())
+  {
+    ap_Init(obj["wifi"]["ap"]["ssid"].as<const char*>(),obj["wifi"]["ap"]["pass"].as<const char*>());
+  }
+  else
+  {
+    WiFi.softAPdisconnect(true);
+  }
+
+  serializeJson(obj,Serial);
+  Serial.println("Config Ready");
+  
+}
+
+// ------------------------------------------------ ap_init
+void ap_Init(const char *ssid, const char *pass)
+{
+  Serial.println("Starting AP");
+  IPAddress apIP(192, 168, 0, 1);   //Static IP for wifi gateway
+  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0)); //set Static IP gateway on NodeMCU
+  WiFi.softAP(ssid, pass); //turn on WIFI 
+  Serial.println("AP Ready");
+  Serial.println(ssid);
+  websocketInit();
+}
+
+
+// --------------------------------------------- checkServer
+void checkServer()
+{
+    if(millis() - timestamp > connectTimeoutMs)  //
+  { 
+    if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED) {
+      Serial.print("WiFi connected: ");
+      Serial.print(WiFi.SSID());
+      Serial.print(" ");
+      Serial.println(WiFi.RSSI());
+      obj["wifi"]["ap"]["enable"] = false;
+      //WiFi.softAPdisconnect(true);
+      
+    }
+    else {
+      Serial.println("WiFi not connected!");
+      obj["wifi"]["ap"]["enable"] = true;
+      
+    }
+
+    loadConfig();
+    Serial.println();
+
+    timestamp = millis();
+  }
+}
+
+
+// ---------------------------------------------- websockerInit
+void websocketInit()
+{
+  webSocket.begin(); //websocket Begin
+  webSocket.onEvent(webSocketEvent); //set Event for websocket
+  Serial.println("Websocket is started");
+}
+
+
+//------------------------------------------------------------------------------- setup
+void setup()
+{
+  Serial.begin(115200);
+
+  // Sensors Init
+  sensorInit();
+   
+  // Display Init
+  displayInit();
+   
+
+  // SPIFFS Init
+  if (!SPIFFS.begin(true)) {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
+
+  obj = getJSonFromFile(&doc, filename);
+  
+  
+  tempRefresh = millis();
+  soundRefresh = millis();
+  airRefresh = millis();
+  timestamp = millis();
+  //ap_Init(obj["wifi"]["ap"]["ssid"].as<const char*>(),obj["wifi"]["ap"]["pass"].as<const char*>());
+  loadConfig();
+  
+}
+
+
+//----------------------------------------------------------------------------- loop
+void loop()
+{
+  
+  ReadSensors();
+  webSocket.loop(); //keep this line on loop method
+  checkServer();
+  
+  //delay(500);
+
 }
