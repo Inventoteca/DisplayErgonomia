@@ -19,6 +19,8 @@
 #include "SPIFFS.h"
 #include "FS.h"
 #include <ArduinoJson.h>
+#include "mjson.h"  // Sketch -> Add File -> Add mjson.h
+#include "sensors.h"
 
 JsonObject obj;
 DynamicJsonDocument doc(1024);
@@ -60,6 +62,7 @@ void webSocketEvent(uint8_t num, WStype_t w_type, uint8_t * payload, size_t leng
 WiFiMulti wifiMulti;
 
 
+
 //Declare Sensor
 MQUnifiedsensor MQ135(placa, Voltage_Resolution, ADC_Bit_Resolution, mq_pin, type);
 //JsonObject getJSonFromFile(DynamicJsonDocument *doc, String filename, bool forceCleanONJsonError = true );
@@ -80,87 +83,10 @@ unsigned long startMillis= 0;
 int contador;
 const uint32_t connectTimeoutMs = 60000;
 unsigned long  timestamp;
-
-
-// -------------------------------------------------- saveJSonToAFile
-bool saveJSonToAFile(JsonObject *doc, String filename) {
-    //SD.remove(filename);
- 
-    // open the file. note that only one file can be open at a time,
-    // so you have to close this one before opening another.
-    Serial.println(F("Open file in write mode"));
-    file = SPIFFS.open(filename, FILE_WRITE);
-    if (file) {
-        Serial.print(F("Filename --> "));
-        Serial.println(filename);
- 
-        Serial.print(F("Start write..."));
- 
-        serializeJson(*doc, file);
- 
-        Serial.print(F("..."));
-        // close the file:
-        file.close();
-        Serial.println(F("done."));
- 
-        return true;
-    } else {
-        // if the file didn't open, print an error:
-        Serial.print(F("Error opening "));
-        Serial.println(filename);
- 
-        return false;
-    }
-}
-
-
-// ------------------------------------------- getJsonFromFile
-JsonObject getJSonFromFile(DynamicJsonDocument *doc, String filename, bool forceCleanONJsonError = true ) 
-{
-    // open the file for reading:
-    file = SPIFFS.open(filename);;
-    if (file) 
-    {
-      Serial.println("Opening File");
-      //return;
-
-    size_t size = file.size();
-    Serial.println(size);
-    
-    if(size > 1024)
-    {
-      Serial.println("Too large file");
-      //return false;
-    }
- 
-    DeserializationError error = deserializeJson(*doc, file);
-    if (error) 
-    {
-      // if the file didn't open, print an error:
-      Serial.print(F("Error parsing JSON "));
-      Serial.println(error.c_str());
- 
-      if (forceCleanONJsonError)
-      {
-        return doc->to<JsonObject>();
-      }
-    }
- 
-        // close the file:
-        file.close();
- 
-        return doc->as<JsonObject>();
-    } else {
-        // if the file didn't open, print an error:
-        Serial.print(F("Error opening (or file not exists) "));
-        Serial.println(filename);
- 
-        Serial.println(F("Empty json created"));
-        return doc->to<JsonObject>();
-    }
- 
-}
-
+//static int ledOn = 0;  // Current LED status
+char buf[800];
+int i;
+uint8_t numx;
 
 // -------------------------------------------------------------------------------ReadSensors()
 void ReadSensors()
@@ -184,10 +110,10 @@ void ReadSensors()
       //Serial.print(F("Failed to read from DHT sensor!"));
       display1.print("--");
       display1.print("--");
-      Serial.print("--");
-      Serial.print("\t");
-      Serial.print("--");
-      Serial.print("\t");
+      //Serial.print("--");
+      //Serial.print("\t");
+      //Serial.print("--");
+      //Serial.print("\t");
       //return;
       
     }
@@ -309,12 +235,104 @@ void ReadSensors()
   display1.show();
 }
 
+
+// -------------------------------------------------- saveJSonToAFile
+bool saveJSonToAFile(JsonObject *doc, String filename) {
+    //SD.remove(filename);
+ 
+    // open the file. note that only one file can be open at a time,
+    // so you have to close this one before opening another.
+    Serial.println(F("Open file in write mode"));
+    file = SPIFFS.open(filename, FILE_WRITE);
+    if (file) {
+        Serial.print(F("Filename --> "));
+        Serial.println(filename);
+ 
+        Serial.print(F("Start write..."));
+ 
+        serializeJson(*doc, file);
+ 
+        Serial.print(F("..."));
+        // close the file:
+        file.close();
+        Serial.println(F("done."));
+ 
+        return true;
+    } else {
+        // if the file didn't open, print an error:
+        Serial.print(F("Error opening "));
+        Serial.println(filename);
+ 
+        return false;
+    }
+}
+
+
+// ------------------------------------------- getJsonFromFile
+JsonObject getJSonFromFile(DynamicJsonDocument *doc, String filename, bool forceCleanONJsonError = true ) 
+{
+    // open the file for reading:
+    file = SPIFFS.open(filename);;
+    if (file) 
+    {
+      Serial.println("Opening File");
+      //return;
+
+    size_t size = file.size();
+    Serial.println(size);
+    
+    if(size > 1024)
+    {
+      Serial.println("Too large file");
+      //return false;
+    }
+ 
+    DeserializationError error = deserializeJson(*doc, file);
+    if (error) 
+    {
+      // if the file didn't open, print an error:
+      Serial.print(F("Error parsing JSON "));
+      Serial.println(error.c_str());
+ 
+      if (forceCleanONJsonError)
+      {
+        return doc->to<JsonObject>();
+      }
+    }
+ 
+        // close the file:
+        file.close();
+ 
+        return doc->as<JsonObject>();
+    } else {
+        // if the file didn't open, print an error:
+        Serial.print(F("Error opening (or file not exists) "));
+        Serial.println(filename);
+ 
+        Serial.println(F("Empty json created"));
+        return doc->to<JsonObject>();
+    }
+ 
+}
+
+
+
+
+//----------------------------------------------------------------- webSender
+//void webSender(uint8_t num,int len,char cmd[200],)
+//{
+ 
+//}
+
 // -------------------------- websocket_event
 void webSocketEvent(uint8_t num, WStype_t w_type, uint8_t * payload, size_t length)
 {
-  StaticJsonDocument<200> webDoc;
-//webscket event method
-    String cmd = "";
+  //webscket event method
+ // StaticJsonDocument<200> webDoc;
+
+    char cmd[200];
+    int len;
+    
     switch(w_type) {
         case WStype_DISCONNECTED:
             Serial.println("Websocket is disconnected");
@@ -327,11 +345,13 @@ void webSocketEvent(uint8_t num, WStype_t w_type, uint8_t * payload, size_t leng
             webSocket.sendTXT(num, "connected");}
             break;
         case WStype_TEXT:
-            cmd = "";
+            //cmd[0] = '\0';// Empty the cmd
+            memset(cmd,0,length+1);
             for(int i = 0; i < length; i++) {
-                cmd = cmd + (char) payload[i]; 
+              //  cmd = cmd + (char) payload[i]; 
+               cmd[i] = (char)payload[i]; 
             } //merging payload to single string
-            Serial.println(cmd);
+            //Serial.println(cmd);
 
             //if(cmd == "poweron")
             //{ //when command from app is "poweron"
@@ -344,9 +364,13 @@ void webSocketEvent(uint8_t num, WStype_t w_type, uint8_t * payload, size_t leng
 
             //deserializeMsgPack(doc, cmd);
               //deserializeJson(doc, cmd);
-              deserializeJson(webDoc, cmd);
-              obj["cmd"]= webDoc["cmd"];
-              serializeJson(obj,Serial);
+              //deserializeJson(webDoc, cmd);
+              
+              len = strlen(cmd);
+              numx=num;
+              jsonrpc_process(cmd, len, senderWS, NULL, NULL);
+              //webSender(num,cmd,len);
+              //serializeJson(obj,Serial);
               
                        
                 //boolean isSaved = saveJSonToAFile(&obj, filename);
@@ -370,7 +394,7 @@ void webSocketEvent(uint8_t num, WStype_t w_type, uint8_t * payload, size_t leng
                 //digitalWrite(ledpin, LOW);    //make ledpin output to LOW on 'pweroff' command.
             //}
 
-             webSocket.sendTXT(num, cmd+":someID");
+             //webSocket.sendTXT(num, cmd);
              //send response to mobile, if command is "poweron" then response will be "poweron:success"
              //this response can be used to track down the success of command in mobile app.
             break;
@@ -459,7 +483,7 @@ void loadConfig()
       Serial.println(WiFi.SSID());
       Serial.println("IP address: ");
       Serial.println(WiFi.localIP());
-      obj["wifi"]["ap"]["enable"] = false;      
+      //obj["wifi"]["ap"]["enable"] = false;      
     }
   }
   
@@ -472,7 +496,7 @@ void loadConfig()
     WiFi.softAPdisconnect(true);
   }
 
-  serializeJson(obj,Serial);
+  //serializeJson(obj,Serial);
   Serial.println("Config Ready");
   
 }
@@ -500,13 +524,13 @@ void checkServer()
       Serial.print(WiFi.SSID());
       Serial.print(" ");
       Serial.println(WiFi.RSSI());
-      obj["wifi"]["ap"]["enable"] = false;
+      //obj["wifi"]["ap"]["enable"] = false;
       //WiFi.softAPdisconnect(true);
       
     }
     else {
       Serial.println("WiFi not connected!");
-      obj["wifi"]["ap"]["enable"] = true;
+      //obj["wifi"]["ap"]["enable"] = true;
       
     }
 
@@ -526,11 +550,61 @@ void websocketInit()
   Serial.println("Websocket is started");
 }
 
+// ------------------------------------------------- sender (Serial)
+static int sender(const char *frame, int frame_len, void *privdata) {
+  return Serial.write(frame, frame_len);
+}
+
+// ------------------------------------------------- senderWS (WS)
+static int senderWS(const char *frame, int frame_len, void *privdata) {
+  return webSocket.sendTXT(numx, frame);
+  //return webSocket.sendTXT(fra, cmd);
+}
+
+
+//---------------------------------------------------- reportState
+static void reportState(struct jsonrpc_request *r) {
+  mjson_printf(sender, NULL,
+               "{\"method\":\"Shadow.Report\",\"params\":{\"on\":%s}}\n",
+               digitalRead(25) ? "true" : "false");
+}
+
+//---------------------------------------------------- count
+static void counter(struct jsonrpc_request *r) {
+  i++;
+  mjson_printf(senderWS, NULL,"%d",i);
+  //return i;    
+}
+
+
+// ---------------------------------------------- resultState
+static void resultState(void) {
+  mjson_printf(sender, NULL,
+               "{\"result\":{\"on\":%s}}\n",
+               digitalRead(25) ? "true" : "false");
+}
+
+// ---------------------------------------------- Cfg_get
+static void Cfg_get(struct jsonrpc_request *r) {
+  int ledOn = 0;
+  mjson_get_bool(r->params, r->params_len, "$.on", &ledOn);
+  digitalWrite(25,ledOn);              // Set LED to the "on" value
+  //obj["wifi"]["ap"]["enable"] = ledOn;
+  //resultState();                    // Let shadow know our new state
+  //jsonrpc_return_success(r, NULL);  // Report success
+  counter(r);
+}
+
 
 //------------------------------------------------------------------------------- setup
 void setup()
 {
   Serial.begin(115200);
+  jsonrpc_init(NULL, NULL);
+  jsonrpc_export("Config.Set", Cfg_get);
+  jsonrpc_export("cmd", reportState);
+  jsonrpc_export("count", counter);
+  pinMode(25, OUTPUT);  // Configure LED pin
 
   // Sensors Init
   sensorInit();
@@ -554,6 +628,7 @@ void setup()
   timestamp = millis();
   //ap_Init(obj["wifi"]["ap"]["ssid"].as<const char*>(),obj["wifi"]["ap"]["pass"].as<const char*>());
   loadConfig();
+  reportState(NULL);
   
 }
 
@@ -564,8 +639,13 @@ void loop()
   
   ReadSensors();
   webSocket.loop(); //keep this line on loop method
-  checkServer();
+  //checkServer();
+
   
+  if (Serial.available() > 0) {
+    int len = Serial.readBytes(buf, sizeof(buf));
+    jsonrpc_process(buf, len, sender, NULL, NULL);
+  }
   //delay(500);
 
 }
