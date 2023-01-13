@@ -1,0 +1,2540 @@
+[
+    {
+        "id": "7b29af391472fdb5",
+        "type": "tab",
+        "label": "Serial",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "673a17fcb9cd0081",
+        "type": "tab",
+        "label": "Sensors File",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "6265f8fe738618a8",
+        "type": "tab",
+        "label": "MQTT",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "349086a1cc359eb5",
+        "type": "tab",
+        "label": "Config",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "cc47c4887527d2fa",
+        "type": "tab",
+        "label": "Remote",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "e7b4609e6976d686",
+        "type": "tab",
+        "label": "FireBase",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "0b60cae28cd999af",
+        "type": "serial-port",
+        "serialport": "/dev/ttyUSB0",
+        "serialbaud": "115200",
+        "databits": "8",
+        "parity": "none",
+        "stopbits": "1",
+        "waitfor": "",
+        "dtr": "none",
+        "rts": "none",
+        "cts": "none",
+        "dsr": "none",
+        "newline": "\\n",
+        "bin": "false",
+        "out": "char",
+        "addchar": "",
+        "responsetimeout": "10000"
+    },
+    {
+        "id": "2bea77c35cf67101",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "inventoteca.com",
+        "port": "",
+        "clientid": "",
+        "autoConnect": false,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "9ed007b756328c64",
+        "type": "ngrokauth",
+        "name": ""
+    },
+    {
+        "id": "1ccdd4b510f7b97a",
+        "type": "firebase-config",
+        "name": "FireBasePanel",
+        "cred": "{   \"type\": \"service_account\",   \"project_id\": \"fir-panel-6af08\",   \"private_key_id\": \"580af01ae882f2e4340d8eee96d91a691f377227\",   \"private_key\": \"-----BEGIN PRIVATE KEY-----\\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCo338ZY7+Pwqpl\\nBXM8aJn1oV0uciqzl+hSHpjrbZSAoX1L4oFpeqsJOX6CEltOkOUo+HnndG4al8lv\\nN71yzVgpdge9cGZP8NGZeYMKdC/NXd6CbV23maFsqoaNZ92R3eKh11wbLEZDmFFn\\nn4qe1u/f+LnTk/sMMjuDRb1UW++9rs0WigoDuzmzT+IR30AmjCHPdO5jOl5MVUdw\\nHevhxfJraXtBoCLCcxwLM1B9uTUD1q6KMLsdhqYxjg2EWV0XT4H9GBVfHQzz6C1p\\naV2cjaSSoLUpQ93WY2/F0v4yzixFDboWuaMuqwoKy8mnmJ4vbCCFuaatkGYCBJXp\\n4ruURAWBAgMBAAECggEAElXn8y4HKdkJTrwrgara0pZxa15WgBb1kNsFIATPG7NN\\nCyz9/6GjyfXd5EoRc2Ocmhj2hXi5Drad1q9O6NTeZmwMFZfLaBEd9OPCZGNuoEX5\\np6AvzYRHCGkwgFB/eHvGxGtBcyrYuzSh3BYwwyPTujYDmTMnTjDzEMME9lCgJHBV\\noBJmTMiQptjsQtG3WXYev80+oU2KPCcw24VJeNMbRkkFZaX/GFBH6z1/ejUcbM3f\\nA3efJ4LU8nwx6F5h/xuY5yJ/ERP2o/raFSIEK+RiZPvuoNs+CB7IvD50LcMct1oK\\n+BsARjqzqQXKI8clMsBkYM4EZJQPS1eHskEbO/9DkQKBgQDozzD+seH8mDHqca0x\\nbtX8RI1TFjhYNympVu7UATVcLNkAkUdiX3cfC4I85LUYc7bwsCzWtTH5lV8S7WJC\\ndeIa/xo3ohBQNshaA2nbcnx0/5p81r8ovWf75J/PVdUGzuwBZ8e3GYIf8+XKmfaJ\\n2RaWwG56/V3R7os/vP78+i/uOQKBgQC5seHnT0Nc4FjCDpcgovRC9Mr4xm57jp7u\\nU9IMmoG0/806Yjo8EmIk7pZ9tkw7EvpcC9Z8RxbE5p0kknCTG3lvotuVEC5yyoID\\nMZzZkEiPt6L704/WUV+CMoSgsbNzmpEOpyg7rCUq9w1QFDcvXkpqsFmd+3ZRXHMe\\nzBfGqCnRiQKBgQCaDdinAUDAbFnDgJuRtX0mJJq8G10HiuEnrF33riEIMKkcBgaN\\nowxpX6077D+lwZSR6pKRNW+vb1dtZ+X4gpcvNBW+MKDI46dqYQ3gZ/7RUP6Ck3wF\\nUmiHt77EbVC845oqR+lRUTDZQgSSL5WDnEKlWQsCmbxGmapNcBvvfQLQiQKBgQCI\\nR50T5h747YkWOiD9ibob3Y2MkAyLTzsii4+PQmFI1abnXyl/5rnygssdTYmanS3y\\nGZn6sS1rqhfPvE00GSjBHlNqjWqZQjeyYlnLbdFi8BGEIVrhneyrH6ooSOH7SIeG\\nqnSjfo30f0Vc7MknUVrp+6x5fg/yXBf8lSop2EaAiQKBgQCWQ6b4qQYN8z5ZN/k6\\nKgDzVbxsPlW4yzoQfJdNcNcgdqQjhNT1mv07mc0+PjQi4Kal8y+9Wh+URugLzOyK\\nd4ExA5O3nLnCP2ceu0oIewTRkUpleTxKo53gQxJLngKIN0c90vGBHWb2lpEyjKoP\\nIQu16EojuVaVHNZtsQJo+D0Shw==\\n-----END PRIVATE KEY-----\\n\",   \"client_email\": \"firebase-adminsdk-3jnwk@fir-panel-6af08.iam.gserviceaccount.com\",   \"client_id\": \"101153942293637936492\",   \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",   \"token_uri\": \"https://oauth2.googleapis.com/token\",   \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",   \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-3jnwk%40fir-panel-6af08.iam.gserviceaccount.com\" }",
+        "dburl": "https://fir-panel-6af08-default-rtdb.firebaseio.com",
+        "bucket": ""
+    },
+    {
+        "id": "4ff1f9bad0eb433b",
+        "type": "serial in",
+        "z": "7b29af391472fdb5",
+        "name": "",
+        "serial": "0b60cae28cd999af",
+        "x": 170,
+        "y": 240,
+        "wires": [
+            [
+                "9d834367279f879d"
+            ]
+        ]
+    },
+    {
+        "id": "9d0198ef342ddfed",
+        "type": "serial request",
+        "z": "7b29af391472fdb5",
+        "name": "",
+        "serial": "0b60cae28cd999af",
+        "x": 270,
+        "y": 420,
+        "wires": [
+            [
+                "e8d4d81f415443c4",
+                "e6a7e3fc7732bdbd"
+            ]
+        ]
+    },
+    {
+        "id": "9d834367279f879d",
+        "type": "link out",
+        "z": "7b29af391472fdb5",
+        "name": "Serial-Read",
+        "mode": "link",
+        "links": [
+            "46ae12c3248704af"
+        ],
+        "x": 415,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "bb185e6232aca8a3",
+        "type": "link in",
+        "z": "7b29af391472fdb5",
+        "name": "Serial-Request",
+        "links": [
+            "50f66dcef8686754"
+        ],
+        "x": 125,
+        "y": 420,
+        "wires": [
+            [
+                "9d0198ef342ddfed"
+            ]
+        ]
+    },
+    {
+        "id": "e8d4d81f415443c4",
+        "type": "link out",
+        "z": "7b29af391472fdb5",
+        "name": "Serial-Response",
+        "mode": "link",
+        "links": [
+            "c8f0e3114a0478f5"
+        ],
+        "x": 415,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "3d9c49f4b0c1cf29",
+        "type": "catch",
+        "z": "7b29af391472fdb5",
+        "name": "",
+        "scope": [
+            "4ff1f9bad0eb433b",
+            "9d0198ef342ddfed"
+        ],
+        "uncaught": false,
+        "x": 170,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e21f2c3d61f375e7",
+        "type": "link out",
+        "z": "7b29af391472fdb5",
+        "name": "ErrorLog",
+        "mode": "link",
+        "links": [
+            "59e8f4807ec5bc72"
+        ],
+        "x": 295,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "e6a7e3fc7732bdbd",
+        "type": "debug",
+        "z": "7b29af391472fdb5",
+        "name": "debug 19",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 480,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "a2e64f42940e2b8e",
+        "type": "json",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 238,
+        "y": 116,
+        "wires": [
+            [
+                "157988b302a16585"
+            ]
+        ]
+    },
+    {
+        "id": "0ed08ed2db4e06b2",
+        "type": "change",
+        "z": "673a17fcb9cd0081",
+        "name": "new payload",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload.sensors",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 80,
+        "wires": [
+            [
+                "c9234e834b81d53c",
+                "ae4291910661ae85"
+            ]
+        ]
+    },
+    {
+        "id": "157988b302a16585",
+        "type": "switch",
+        "z": "673a17fcb9cd0081",
+        "name": "sensors?",
+        "property": "payload.sensors",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 368,
+        "y": 116,
+        "wires": [
+            [
+                "679f2faf3a955336"
+            ],
+            [
+                "c555881a71e0c094"
+            ]
+        ]
+    },
+    {
+        "id": "679f2faf3a955336",
+        "type": "switch",
+        "z": "673a17fcb9cd0081",
+        "name": "readings?",
+        "property": "payload.sensors",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "enable",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 520,
+        "y": 80,
+        "wires": [
+            [],
+            [
+                "0ed08ed2db4e06b2"
+            ]
+        ]
+    },
+    {
+        "id": "46ae12c3248704af",
+        "type": "link in",
+        "z": "673a17fcb9cd0081",
+        "name": "SensorFile-SerialRead",
+        "links": [
+            "9d834367279f879d"
+        ],
+        "x": 153,
+        "y": 116,
+        "wires": [
+            [
+                "a2e64f42940e2b8e"
+            ]
+        ]
+    },
+    {
+        "id": "96c0d99137f93c0e",
+        "type": "link out",
+        "z": "673a17fcb9cd0081",
+        "name": "SensorsTime-CSV",
+        "mode": "link",
+        "links": [
+            "ccc80467e942c9c1"
+        ],
+        "x": 1105,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "ccc80467e942c9c1",
+        "type": "link in",
+        "z": "673a17fcb9cd0081",
+        "name": "SensorsCSV",
+        "links": [
+            "96c0d99137f93c0e"
+        ],
+        "x": 155,
+        "y": 280,
+        "wires": [
+            [
+                "6db16ae8b480bc5d"
+            ]
+        ]
+    },
+    {
+        "id": "7fcf8968db47f19f",
+        "type": "link in",
+        "z": "673a17fcb9cd0081",
+        "name": "SensorsFile-Get-MQTT",
+        "links": [
+            "beb30afa7ab86614"
+        ],
+        "x": 265,
+        "y": 540,
+        "wires": [
+            [
+                "75083c1188ccf334"
+            ]
+        ]
+    },
+    {
+        "id": "53c60b555a517951",
+        "type": "file in",
+        "z": "673a17fcb9cd0081",
+        "name": "Send CSV",
+        "filename": "filenameCSV",
+        "filenameType": "msg",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 630,
+        "y": 540,
+        "wires": [
+            [
+                "aea0d1360c9c9b55"
+            ]
+        ]
+    },
+    {
+        "id": "7805b6540703455e",
+        "type": "link out",
+        "z": "673a17fcb9cd0081",
+        "name": "SensorsFile-Response-FireBase",
+        "mode": "link",
+        "links": [
+            "5924ad613c091ebe"
+        ],
+        "x": 925,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "e91680ddd46c1f8e",
+        "type": "inject",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "filename",
+                "v": "filename",
+                "vt": "flow"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"t\":17,\"h\":38,\"uv\":0,\"db\":57,\"lux\":272,\"ppm\":400,\"timestamp\":1671135249012}",
+        "payloadType": "json",
+        "x": 210,
+        "y": 320,
+        "wires": [
+            [
+                "6db16ae8b480bc5d"
+            ]
+        ]
+    },
+    {
+        "id": "f462b84791cd3f3c",
+        "type": "file",
+        "z": "673a17fcb9cd0081",
+        "name": "New File",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 740,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1c3608ded75ad9e2",
+        "type": "debug",
+        "z": "673a17fcb9cd0081",
+        "name": "debug 7",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "cf33cb5f9f13e1ab",
+        "type": "function",
+        "z": "673a17fcb9cd0081",
+        "name": "Push New",
+        "func": "\nmsg.payload.push(msg.new);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 280,
+        "wires": [
+            [
+                "5575c2a1a3202839"
+            ]
+        ]
+    },
+    {
+        "id": "698460690998c281",
+        "type": "json",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 790,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "41fec29cfbcc655e",
+        "type": "function",
+        "z": "673a17fcb9cd0081",
+        "name": "Create New Json File",
+        "func": "msg.filename = flow.get('filename') ||'/home/pi/jsonData/default.json';\n//flow.set('filename', msg.filename);\n//msg.filenameCSV = flow.get('filenameCSV') || '/home/pi/data/default.csv';\n//flow.set('filenameCSV', msg.filenameCSV);\nmsg.payload = [];\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 740,
+        "wires": [
+            [
+                "f462b84791cd3f3c"
+            ]
+        ]
+    },
+    {
+        "id": "5575c2a1a3202839",
+        "type": "file",
+        "z": "673a17fcb9cd0081",
+        "name": "Save",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 970,
+        "y": 280,
+        "wires": [
+            [
+                "1c3608ded75ad9e2"
+            ]
+        ]
+    },
+    {
+        "id": "6db16ae8b480bc5d",
+        "type": "change",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "new",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "filename",
+                "pt": "msg",
+                "to": "filename",
+                "tot": "flow"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 320,
+        "y": 280,
+        "wires": [
+            [
+                "2a96739133d1421c"
+            ]
+        ]
+    },
+    {
+        "id": "75083c1188ccf334",
+        "type": "change",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "filename",
+                "pt": "msg",
+                "to": "filename",
+                "tot": "flow"
+            },
+            {
+                "t": "set",
+                "p": "filenameCSV",
+                "pt": "msg",
+                "to": "filenameCSV",
+                "tot": "flow"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 400,
+        "y": 540,
+        "wires": [
+            [
+                "53c60b555a517951",
+                "f97f0b940f53cc60"
+            ]
+        ]
+    },
+    {
+        "id": "6b040b2ab8e46323",
+        "type": "catch",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "scope": [
+            "2a96739133d1421c"
+        ],
+        "uncaught": false,
+        "x": 190,
+        "y": 740,
+        "wires": [
+            [
+                "41fec29cfbcc655e"
+            ]
+        ]
+    },
+    {
+        "id": "b8d0035bd48375e2",
+        "type": "inject",
+        "z": "673a17fcb9cd0081",
+        "name": "New Name Daily check",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "00 12 * * *",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 250,
+        "y": 620,
+        "wires": [
+            [
+                "814cfbfb50f891ed"
+            ]
+        ]
+    },
+    {
+        "id": "814cfbfb50f891ed",
+        "type": "function",
+        "z": "673a17fcb9cd0081",
+        "name": "Check File New Day",
+        "func": "var actual = new Date();\nvar y = actual.getFullYear();\nvar m = actual.getMonth();\nvar d = actual.getDate();\nvar name = global.get('name') || 'Reporte';\nname = name.replace(/\\s+/g, '');\nname = y + '_' + (m + 1) + '_' + name;\nglobal.set('filename', name);\n//msg.filenameCSV = '/home/pi/data/' + y + '_' + (m + 1) + '_' + (d) + '.csv';\n//msg.filename = '/home/pi/jsonData/' + y + '_' + (m + 1) + '_' + (d) + '.json';\nmsg.filenameCSV = '/home/pi/data/'  + name + '.csv';\nmsg.filename = '/home/pi/jsonData/' + name + '.json';\nflow.set('filename', msg.filename);\nflow.set('filenameCSV', msg.filenameCSV);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 620,
+        "wires": [
+            [
+                "e069f27195bc9974"
+            ]
+        ]
+    },
+    {
+        "id": "391a30f2d0342749",
+        "type": "inject",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "props": [
+            {
+                "p": "filename",
+                "v": "filename",
+                "vt": "flow"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "3600",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "x": 210,
+        "y": 500,
+        "wires": [
+            [
+                "75083c1188ccf334"
+            ]
+        ]
+    },
+    {
+        "id": "558967858e65df5a",
+        "type": "cronplus",
+        "z": "673a17fcb9cd0081",
+        "d": true,
+        "name": "Report",
+        "outputField": "payload",
+        "timeZone": "",
+        "persistDynamic": false,
+        "commandResponseMsgOutput": "output1",
+        "outputs": 1,
+        "options": [
+            {
+                "name": "schedule1",
+                "topic": "topic1",
+                "payloadType": "default",
+                "payload": "",
+                "expressionType": "cron",
+                "expression": "0 0 10 1 * ? *",
+                "location": "",
+                "offset": "0",
+                "solarType": "all",
+                "solarEvents": "sunrise,sunset"
+            }
+        ],
+        "x": 210,
+        "y": 400,
+        "wires": [
+            [
+                "71a1be1204ef17b9"
+            ]
+        ]
+    },
+    {
+        "id": "e2db440908efdf25",
+        "type": "file in",
+        "z": "673a17fcb9cd0081",
+        "d": true,
+        "name": "",
+        "filename": "filename",
+        "filenameType": "msg",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 660,
+        "y": 400,
+        "wires": [
+            [
+                "40162ff95593e2a4"
+            ]
+        ]
+    },
+    {
+        "id": "71a1be1204ef17b9",
+        "type": "function",
+        "z": "673a17fcb9cd0081",
+        "d": true,
+        "name": "Send Prev FileName",
+        "func": "var actual = new Date();\nvar prev = subtractMonths(actual, 1);\nvar y = prev.getFullYear();\nvar m = prev.getMonth();\nmsg.filename = '/home/pi/data/' + y + '_' + (m + 1) + '.json';\nreturn msg;\n\n\n/**\n* @param {string | number | Date} date\n* @param {number} months\n*/\nfunction subtractMonths(date, months) {\n    // 👇 Make copy with \"Date\" constructor\n    const dateCopy = new Date(date);\n    dateCopy.setMonth(dateCopy.getMonth() - months);\n    return dateCopy;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 400,
+        "wires": [
+            [
+                "e2db440908efdf25"
+            ]
+        ]
+    },
+    {
+        "id": "947752a7a373894e",
+        "type": "comment",
+        "z": "673a17fcb9cd0081",
+        "name": "New File",
+        "info": "",
+        "x": 200,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "a377267264a4488e",
+        "type": "comment",
+        "z": "673a17fcb9cd0081",
+        "name": "Add Reading",
+        "info": "",
+        "x": 170,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "8e4eccf2f5e0f964",
+        "type": "comment",
+        "z": "673a17fcb9cd0081",
+        "name": "Add Reading",
+        "info": "",
+        "x": 210,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "76b2ab35afe7834e",
+        "type": "comment",
+        "z": "673a17fcb9cd0081",
+        "name": "Request Actual File",
+        "info": "",
+        "x": 210,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "0e0e7c371e17a71a",
+        "type": "comment",
+        "z": "673a17fcb9cd0081",
+        "name": "Prev Report",
+        "info": "",
+        "x": 230,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "40162ff95593e2a4",
+        "type": "link out",
+        "z": "673a17fcb9cd0081",
+        "d": true,
+        "name": "SensorsFile-Prev-MQTT",
+        "mode": "link",
+        "links": [
+            "e1ea30b375cedabc"
+        ],
+        "x": 805,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "fe61203605d48b3d",
+        "type": "link out",
+        "z": "673a17fcb9cd0081",
+        "name": "SensorFileLogs",
+        "mode": "link",
+        "links": [
+            "3e9ddce7fbb7a665"
+        ],
+        "x": 635,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "3e9ddce7fbb7a665",
+        "type": "link in",
+        "z": "673a17fcb9cd0081",
+        "name": "SensorFileFileName",
+        "links": [
+            "fe61203605d48b3d"
+        ],
+        "x": 315,
+        "y": 840,
+        "wires": [
+            [
+                "f9455c5587205019"
+            ]
+        ]
+    },
+    {
+        "id": "dc6d5c818d13e5c2",
+        "type": "comment",
+        "z": "673a17fcb9cd0081",
+        "name": "Log Files",
+        "info": "",
+        "x": 200,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "f9455c5587205019",
+        "type": "function",
+        "z": "673a17fcb9cd0081",
+        "name": "LogFile",
+        "func": "var actual = new Date();\nvar y = actual.getFullYear();\nvar m = actual.getMonth();\nmsg.filename = '/home/pi/logs/' + y + '_' + (m + 1) + '.txt';\nmsg.payload.timestamp = actual;\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 940,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8b9756fb9e47e2d2",
+        "type": "catch",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "scope": [
+            "a2e64f42940e2b8e",
+            "157988b302a16585",
+            "679f2faf3a955336",
+            "9fcf94383b0c147e",
+            "53c60b555a517951",
+            "f462b84791cd3f3c",
+            "47d47aad0538b0b5",
+            "698460690998c281",
+            "cf33cb5f9f13e1ab",
+            "5575c2a1a3202839",
+            "41fec29cfbcc655e",
+            "558967858e65df5a",
+            "e2db440908efdf25",
+            "814cfbfb50f891ed",
+            "f9455c5587205019",
+            "1678f73830e2ca73"
+        ],
+        "uncaught": false,
+        "x": 200,
+        "y": 940,
+        "wires": [
+            [
+                "0efd584de2af6842"
+            ]
+        ]
+    },
+    {
+        "id": "0efd584de2af6842",
+        "type": "link out",
+        "z": "673a17fcb9cd0081",
+        "name": "ErrorLog",
+        "mode": "link",
+        "links": [
+            "59e8f4807ec5bc72"
+        ],
+        "x": 315,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "59e8f4807ec5bc72",
+        "type": "link in",
+        "z": "673a17fcb9cd0081",
+        "name": "ErrorLogFile",
+        "links": [
+            "05a6b5e896a7910e",
+            "0efd584de2af6842",
+            "e21f2c3d61f375e7",
+            "fb61e2f25d6eb3ce"
+        ],
+        "x": 295,
+        "y": 1040,
+        "wires": [
+            [
+                "f9455c5587205019"
+            ]
+        ]
+    },
+    {
+        "id": "c555881a71e0c094",
+        "type": "switch",
+        "z": "673a17fcb9cd0081",
+        "name": "alert?",
+        "property": "payload.alert",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 180,
+        "wires": [
+            [
+                "d4ecba65ba4e9459"
+            ],
+            [
+                "fe61203605d48b3d"
+            ]
+        ]
+    },
+    {
+        "id": "d4ecba65ba4e9459",
+        "type": "debug",
+        "z": "673a17fcb9cd0081",
+        "name": "Alert",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 670,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "409a73d466f74dec",
+        "type": "debug",
+        "z": "673a17fcb9cd0081",
+        "name": "debug 10",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 980,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "47d47aad0538b0b5",
+        "type": "json",
+        "z": "673a17fcb9cd0081",
+        "name": "load json",
+        "property": "payload",
+        "action": "obj",
+        "pretty": true,
+        "x": 640,
+        "y": 280,
+        "wires": [
+            [
+                "cf33cb5f9f13e1ab",
+                "b493d599edba406c"
+            ]
+        ]
+    },
+    {
+        "id": "2a96739133d1421c",
+        "type": "file in",
+        "z": "673a17fcb9cd0081",
+        "name": "Load",
+        "filename": "filename",
+        "filenameType": "msg",
+        "format": "",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 490,
+        "y": 280,
+        "wires": [
+            [
+                "47d47aad0538b0b5"
+            ]
+        ]
+    },
+    {
+        "id": "b493d599edba406c",
+        "type": "debug",
+        "z": "673a17fcb9cd0081",
+        "name": "debug 11",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 980,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "b588effc57e41531",
+        "type": "file",
+        "z": "673a17fcb9cd0081",
+        "name": "New File CSV",
+        "filename": "filenameCSV",
+        "filenameType": "msg",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 760,
+        "y": 780,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c9234e834b81d53c",
+        "type": "function",
+        "z": "673a17fcb9cd0081",
+        "name": "Add Timestamp ",
+        "func": "//var t = msg.payload.t;\nvar timestamp = new Date().toLocaleString();\nvar obj={\n            \"timestamp\": timestamp,\n            \"t\":msg.payload.t,\n            \"h\": msg.payload.h,\n            \"uv\": msg.payload.uv,\n            \"db\": msg.payload.db,\n            \"lux\": msg.payload.lux,\n            \"ppm\": msg.payload.ppm\n            };\nmsg.payload  = obj; \nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 120,
+        "wires": [
+            [
+                "cb839d56b6470e86"
+            ]
+        ]
+    },
+    {
+        "id": "771be784b64dc6e4",
+        "type": "debug",
+        "z": "673a17fcb9cd0081",
+        "name": "debug 12",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1320,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "cb839d56b6470e86",
+        "type": "csv",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "sep": ",",
+        "hdrin": "",
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\n",
+        "temp": "timestamp,t,h,uv,db,lux,ppm",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 1090,
+        "y": 100,
+        "wires": [
+            [
+                "8e5c8d22a65001da"
+            ]
+        ]
+    },
+    {
+        "id": "0e12f65fce0b2957",
+        "type": "file",
+        "z": "673a17fcb9cd0081",
+        "name": "Save CSV",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 1350,
+        "y": 160,
+        "wires": [
+            [
+                "771be784b64dc6e4"
+            ]
+        ]
+    },
+    {
+        "id": "8e5c8d22a65001da",
+        "type": "change",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "filename",
+                "pt": "msg",
+                "to": "filenameCSV",
+                "tot": "flow"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1250,
+        "y": 100,
+        "wires": [
+            [
+                "0e12f65fce0b2957"
+            ]
+        ]
+    },
+    {
+        "id": "f97f0b940f53cc60",
+        "type": "file in",
+        "z": "673a17fcb9cd0081",
+        "name": "Send JSON",
+        "filename": "filename",
+        "filenameType": "msg",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 630,
+        "y": 500,
+        "wires": [
+            [
+                "698460690998c281"
+            ]
+        ]
+    },
+    {
+        "id": "ae4291910661ae85",
+        "type": "change",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.timestamp",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 920,
+        "y": 60,
+        "wires": [
+            [
+                "96c0d99137f93c0e"
+            ]
+        ]
+    },
+    {
+        "id": "aea0d1360c9c9b55",
+        "type": "csv",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "sep": ",",
+        "hdrin": "",
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\n",
+        "temp": "timestamp,t,h,uv,db,lux,ppm",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 790,
+        "y": 540,
+        "wires": [
+            [
+                "409a73d466f74dec",
+                "7805b6540703455e"
+            ]
+        ]
+    },
+    {
+        "id": "c0993f43643216bd",
+        "type": "catch",
+        "z": "673a17fcb9cd0081",
+        "name": "",
+        "scope": [
+            "0e12f65fce0b2957"
+        ],
+        "uncaught": false,
+        "x": 190,
+        "y": 780,
+        "wires": [
+            [
+                "7e97f5729724dc8a"
+            ]
+        ]
+    },
+    {
+        "id": "7e97f5729724dc8a",
+        "type": "function",
+        "z": "673a17fcb9cd0081",
+        "name": "Create New CSV File",
+        "func": "//msg.filename = flow.get('filename') ||'/home/pi/data/default.json';\n//flow.set('filename', msg.filename);\nmsg.filenameCSV = flow.get('filenameCSV') || '/home/pi/data/default.csv';\n//flow.set('filenameCSV', msg.filenameCSV);\n//msg.payload = [];\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 780,
+        "wires": [
+            [
+                "b588effc57e41531"
+            ]
+        ]
+    },
+    {
+        "id": "e069f27195bc9974",
+        "type": "debug",
+        "z": "673a17fcb9cd0081",
+        "name": "debug 14",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 720,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "edf525d131d3258a",
+        "type": "inject",
+        "z": "673a17fcb9cd0081",
+        "d": true,
+        "name": "New Name Hourly check",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "3600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 250,
+        "y": 660,
+        "wires": [
+            [
+                "814cfbfb50f891ed"
+            ]
+        ]
+    },
+    {
+        "id": "fa26a1f53a9e0f54",
+        "type": "debug",
+        "z": "6265f8fe738618a8",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 500,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "9b73c63015c7623c",
+        "type": "inject",
+        "z": "6265f8fe738618a8",
+        "name": "connect",
+        "props": [
+            {
+                "p": "action",
+                "v": "",
+                "vt": "date"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.2",
+        "topic": "",
+        "x": 120,
+        "y": 280,
+        "wires": [
+            [
+                "194747e05e659b5b"
+            ]
+        ]
+    },
+    {
+        "id": "94c71b24910ba584",
+        "type": "debug",
+        "z": "6265f8fe738618a8",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "194747e05e659b5b",
+        "type": "function",
+        "z": "6265f8fe738618a8",
+        "name": "connect",
+        "func": "var broker = global.get('broker');\nvar port = global.get('port');\n\nmsg.action = \"connect\";\nmsg.broker = {\"broker\":broker,\"port\":port};\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 280,
+        "wires": [
+            [
+                "9b1591e95b50916a"
+            ]
+        ]
+    },
+    {
+        "id": "3cf51b1fa6092989",
+        "type": "function",
+        "z": "6265f8fe738618a8",
+        "name": "subscribe",
+        "func": "var id = global.get('id');\n//var qos = global.get('port');\n\nmsg.action = \"subscribe\";\nmsg.topic = \"smart/panels/\" + id + \"/app\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 420,
+        "wires": [
+            [
+                "9b1591e95b50916a"
+            ]
+        ]
+    },
+    {
+        "id": "9b1591e95b50916a",
+        "type": "mqtt in",
+        "z": "6265f8fe738618a8",
+        "name": "",
+        "topic": "",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "2bea77c35cf67101",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 1,
+        "x": 430,
+        "y": 340,
+        "wires": [
+            [
+                "d4eae2bd845a9710",
+                "8bb5a3adf951e870"
+            ]
+        ]
+    },
+    {
+        "id": "0c04b3936d010736",
+        "type": "inject",
+        "z": "6265f8fe738618a8",
+        "name": "disconnect",
+        "props": [
+            {
+                "p": "action",
+                "v": "disconnect",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 120,
+        "y": 360,
+        "wires": [
+            [
+                "9b1591e95b50916a"
+            ]
+        ]
+    },
+    {
+        "id": "95a2d7bc55e1a36b",
+        "type": "complete",
+        "z": "6265f8fe738618a8",
+        "name": "",
+        "scope": [
+            "194747e05e659b5b"
+        ],
+        "uncaught": false,
+        "x": 110,
+        "y": 420,
+        "wires": [
+            [
+                "3cf51b1fa6092989"
+            ]
+        ]
+    },
+    {
+        "id": "d4eae2bd845a9710",
+        "type": "switch",
+        "z": "6265f8fe738618a8",
+        "name": "method:Chart",
+        "property": "payload.method",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "cont",
+                "v": "Chart",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 600,
+        "y": 340,
+        "wires": [
+            [
+                "94c71b24910ba584",
+                "beb30afa7ab86614"
+            ]
+        ]
+    },
+    {
+        "id": "beb30afa7ab86614",
+        "type": "link out",
+        "z": "6265f8fe738618a8",
+        "name": "MQTT-Get-SensorFile",
+        "mode": "link",
+        "links": [
+            "7fcf8968db47f19f"
+        ],
+        "x": 755,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "996b88f1385e71fd",
+        "type": "link in",
+        "z": "6265f8fe738618a8",
+        "name": "MQTT-SensorsFile-Response",
+        "links": [],
+        "x": 215,
+        "y": 600,
+        "wires": [
+            [
+                "ef866f1bd6cd8de2"
+            ]
+        ]
+    },
+    {
+        "id": "42d42374c6dcb939",
+        "type": "mqtt out",
+        "z": "6265f8fe738618a8",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "2bea77c35cf67101",
+        "x": 550,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "ef866f1bd6cd8de2",
+        "type": "function",
+        "z": "6265f8fe738618a8",
+        "name": "publish Chart",
+        "func": "var id = global.get('id');\n//var qos = global.get('port');\n\n//msg.action = \"subscribe\";\nmsg.topic = \"smart/panels/\" + id + \"/app/response\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 600,
+        "wires": [
+            [
+                "690a5d931400da37",
+                "42d42374c6dcb939"
+            ]
+        ]
+    },
+    {
+        "id": "690a5d931400da37",
+        "type": "debug",
+        "z": "6265f8fe738618a8",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 560,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "e1ea30b375cedabc",
+        "type": "link in",
+        "z": "6265f8fe738618a8",
+        "name": "MQTT-SensorsFile-Response",
+        "links": [
+            "40162ff95593e2a4"
+        ],
+        "x": 225,
+        "y": 560,
+        "wires": [
+            [
+                "d1a8f4baf4ab53a4"
+            ]
+        ]
+    },
+    {
+        "id": "d1a8f4baf4ab53a4",
+        "type": "function",
+        "z": "6265f8fe738618a8",
+        "name": "publish report",
+        "func": "var id = global.get('id');\n//var qos = global.get('port');\n\n//msg.action = \"subscribe\";\nmsg.topic = \"smart/panels/\" + id + \"/app/report\";\nmsg.qos = 2;\nmsg.retain = false;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 560,
+        "wires": [
+            [
+                "42d42374c6dcb939",
+                "690a5d931400da37"
+            ]
+        ]
+    },
+    {
+        "id": "b713004e87982a77",
+        "type": "catch",
+        "z": "6265f8fe738618a8",
+        "name": "",
+        "scope": [
+            "9b1591e95b50916a",
+            "42d42374c6dcb939"
+        ],
+        "uncaught": false,
+        "x": 130,
+        "y": 860,
+        "wires": [
+            [
+                "05a6b5e896a7910e"
+            ]
+        ]
+    },
+    {
+        "id": "05a6b5e896a7910e",
+        "type": "link out",
+        "z": "6265f8fe738618a8",
+        "name": "ErrorLog",
+        "mode": "link",
+        "links": [
+            "59e8f4807ec5bc72"
+        ],
+        "x": 255,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "8bb5a3adf951e870",
+        "type": "switch",
+        "z": "6265f8fe738618a8",
+        "name": "method:Remote",
+        "property": "payload.method",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "cont",
+                "v": "Remote",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 600,
+        "y": 260,
+        "wires": [
+            [
+                "87a8d35b13461a53",
+                "94c71b24910ba584"
+            ]
+        ]
+    },
+    {
+        "id": "87a8d35b13461a53",
+        "type": "link out",
+        "z": "6265f8fe738618a8",
+        "name": "mqtt_remote",
+        "mode": "link",
+        "links": [
+            "7f10d8ad9540f278"
+        ],
+        "x": 775,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "0cb5dd1ca98ab07d",
+        "type": "function",
+        "z": "6265f8fe738618a8",
+        "name": "publish Remote",
+        "func": "var id = global.get('id');\n//var qos = global.get('port');\n\n//msg.action = \"subscribe\";\nmsg.topic = \"smart/panels/\" + id + \"/app/remote/response\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 680,
+        "wires": [
+            [
+                "42d42374c6dcb939",
+                "690a5d931400da37"
+            ]
+        ]
+    },
+    {
+        "id": "ae2794366d0fc96d",
+        "type": "link in",
+        "z": "6265f8fe738618a8",
+        "name": "mqtt_remote_response",
+        "links": [
+            "59eb2fe03afbfcf1"
+        ],
+        "x": 225,
+        "y": 680,
+        "wires": [
+            [
+                "0cb5dd1ca98ab07d"
+            ]
+        ]
+    },
+    {
+        "id": "2672d2a8ad01eb0b",
+        "type": "inject",
+        "z": "349086a1cc359eb5",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"method\":\"Config.Get\"}",
+        "payloadType": "json",
+        "x": 237,
+        "y": 235,
+        "wires": [
+            [
+                "50f66dcef8686754"
+            ]
+        ]
+    },
+    {
+        "id": "50f66dcef8686754",
+        "type": "link out",
+        "z": "349086a1cc359eb5",
+        "name": "link out 1",
+        "mode": "link",
+        "links": [
+            "bb185e6232aca8a3"
+        ],
+        "x": 442,
+        "y": 235,
+        "wires": []
+    },
+    {
+        "id": "c8f0e3114a0478f5",
+        "type": "link in",
+        "z": "349086a1cc359eb5",
+        "name": "Config-Response",
+        "links": [
+            "e8d4d81f415443c4"
+        ],
+        "x": 122,
+        "y": 322,
+        "wires": [
+            [
+                "7813d35209a12afa"
+            ]
+        ]
+    },
+    {
+        "id": "96c6f537cde76864",
+        "type": "debug",
+        "z": "349086a1cc359eb5",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 607,
+        "y": 322,
+        "wires": []
+    },
+    {
+        "id": "7813d35209a12afa",
+        "type": "change",
+        "z": "349086a1cc359eb5",
+        "name": "Load Config",
+        "rules": [
+            {
+                "t": "set",
+                "p": "id",
+                "pt": "global",
+                "to": "payload.id",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "broker",
+                "pt": "global",
+                "to": "payload.mqtt.broker",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "port",
+                "pt": "global",
+                "to": "payload.mqtt.port",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "name",
+                "pt": "global",
+                "to": "payload.name",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "email",
+                "pt": "global",
+                "to": "payload.email",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 297,
+        "y": 322,
+        "wires": [
+            [
+                "96c6f537cde76864",
+                "14bbd3455f5a3860"
+            ]
+        ]
+    },
+    {
+        "id": "713a68959c5ff723",
+        "type": "exec",
+        "z": "349086a1cc359eb5",
+        "command": "sudo service networking restart",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 897,
+        "y": 402,
+        "wires": [
+            [
+                "7947c0d8076ff6ec"
+            ],
+            [
+                "7947c0d8076ff6ec",
+                "fb61e2f25d6eb3ce"
+            ],
+            [
+                "7947c0d8076ff6ec"
+            ]
+        ]
+    },
+    {
+        "id": "10e78daaa6399732",
+        "type": "function",
+        "z": "349086a1cc359eb5",
+        "name": "Wifi Format",
+        "func": "var ssid = msg.payload.wifi.sta.ssid;\nvar psk = msg.payload.wifi.sta.pass;\n\n\nvar formato = 'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev'\nformato += '\\n';\nformato += 'update_config=1'\nformato += '\\n';\nformato += 'country=MX'\nformato += '\\n';\n\nformato += 'network={'\nformato += '\\n\\t';\nformato += 'ssid=\"'\nformato += ssid;\nformato += '\"\\n\\t';\nformato += 'psk=\"';\nformato += psk\nformato += '\"\\n\\t';\nformato += 'id_str=\"AP2\"'\nformato += '\\n\\t';\nformato += \"}\";\n\nmsg = { payload: formato };\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 337,
+        "y": 402,
+        "wires": [
+            [
+                "169d9404d0999cff"
+            ]
+        ]
+    },
+    {
+        "id": "169d9404d0999cff",
+        "type": "file",
+        "z": "349086a1cc359eb5",
+        "name": "",
+        "filename": "/etc/wpa_supplicant/wpa_supplicant.conf",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 587,
+        "y": 402,
+        "wires": [
+            [
+                "713a68959c5ff723"
+            ]
+        ]
+    },
+    {
+        "id": "74c3803e313cbfdc",
+        "type": "catch",
+        "z": "349086a1cc359eb5",
+        "name": "",
+        "scope": [
+            "713a68959c5ff723",
+            "10e78daaa6399732"
+        ],
+        "uncaught": false,
+        "x": 190,
+        "y": 500,
+        "wires": [
+            [
+                "fb61e2f25d6eb3ce"
+            ]
+        ]
+    },
+    {
+        "id": "fb61e2f25d6eb3ce",
+        "type": "link out",
+        "z": "349086a1cc359eb5",
+        "name": "ErrorLog",
+        "mode": "link",
+        "links": [
+            "59e8f4807ec5bc72"
+        ],
+        "x": 835,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "7947c0d8076ff6ec",
+        "type": "debug",
+        "z": "349086a1cc359eb5",
+        "name": "debug 9",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1187,
+        "y": 402,
+        "wires": []
+    },
+    {
+        "id": "14bbd3455f5a3860",
+        "type": "switch",
+        "z": "349086a1cc359eb5",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 150,
+        "y": 400,
+        "wires": [
+            [
+                "10e78daaa6399732"
+            ]
+        ]
+    },
+    {
+        "id": "6ad1e104417b26e6",
+        "type": "inject",
+        "z": "cc47c4887527d2fa",
+        "name": "on",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "on",
+        "payloadType": "str",
+        "x": 210,
+        "y": 240,
+        "wires": [
+            [
+                "b50576d4a23c28fd"
+            ]
+        ]
+    },
+    {
+        "id": "b50576d4a23c28fd",
+        "type": "ngrok",
+        "z": "cc47c4887527d2fa",
+        "port": "",
+        "portType": "node-red",
+        "host": "",
+        "hostType": "localhost",
+        "creds": "9ed007b756328c64",
+        "region": "us",
+        "regionType": "us",
+        "proto": "http",
+        "bind_tls": "",
+        "bind_tlsType": "https",
+        "subdomain": "",
+        "subdomainType": "none",
+        "auth": "",
+        "authType": "none",
+        "hostHeader": "",
+        "hostHeaderType": "none",
+        "name": "",
+        "inputs": 1,
+        "x": 430,
+        "y": 140,
+        "wires": [
+            [
+                "e286971722725a01",
+                "59eb2fe03afbfcf1"
+            ]
+        ]
+    },
+    {
+        "id": "12ab7223d7e626a7",
+        "type": "inject",
+        "z": "cc47c4887527d2fa",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "off",
+        "payloadType": "str",
+        "x": 210,
+        "y": 300,
+        "wires": [
+            [
+                "b50576d4a23c28fd"
+            ]
+        ]
+    },
+    {
+        "id": "e286971722725a01",
+        "type": "debug",
+        "z": "cc47c4887527d2fa",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "7f10d8ad9540f278",
+        "type": "link in",
+        "z": "cc47c4887527d2fa",
+        "name": "remote_mqtt",
+        "links": [
+            "87a8d35b13461a53"
+        ],
+        "x": 125,
+        "y": 140,
+        "wires": [
+            [
+                "875eab724bec3a79"
+            ]
+        ]
+    },
+    {
+        "id": "59eb2fe03afbfcf1",
+        "type": "link out",
+        "z": "cc47c4887527d2fa",
+        "name": "remote_link",
+        "mode": "link",
+        "links": [
+            "ae2794366d0fc96d"
+        ],
+        "x": 655,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "875eab724bec3a79",
+        "type": "change",
+        "z": "cc47c4887527d2fa",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.params.state",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 260,
+        "y": 140,
+        "wires": [
+            [
+                "b50576d4a23c28fd"
+            ]
+        ]
+    },
+    {
+        "id": "5924ad613c091ebe",
+        "type": "link in",
+        "z": "e7b4609e6976d686",
+        "name": "SensorFile_FireBase",
+        "links": [
+            "7805b6540703455e"
+        ],
+        "x": 135,
+        "y": 120,
+        "wires": [
+            [
+                "1a84afb9700195c9"
+            ]
+        ]
+    },
+    {
+        "id": "1a84afb9700195c9",
+        "type": "debug",
+        "z": "e7b4609e6976d686",
+        "name": "debug 15",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 380,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "7cb5c86fa6ffd625",
+        "type": "storage-list",
+        "z": "e7b4609e6976d686",
+        "name": "",
+        "path": "",
+        "bucket": "gs://fir-panel-6af08.appspot.com",
+        "cred": "1ccdd4b510f7b97a",
+        "delimiter": "/",
+        "x": 390,
+        "y": 280,
+        "wires": [
+            [
+                "56bb7f60c1bf331c"
+            ]
+        ]
+    },
+    {
+        "id": "991a7fbf046eb46f",
+        "type": "inject",
+        "z": "e7b4609e6976d686",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 200,
+        "y": 280,
+        "wires": [
+            [
+                "7cb5c86fa6ffd625"
+            ]
+        ]
+    },
+    {
+        "id": "56bb7f60c1bf331c",
+        "type": "debug",
+        "z": "e7b4609e6976d686",
+        "name": "debug 16",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 580,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "6ac3cf5289514d40",
+        "type": "storage-write",
+        "z": "e7b4609e6976d686",
+        "name": "",
+        "path": "test.csv",
+        "bucket": "gs://fir-panel-6af08.appspot.com/",
+        "cred": "1ccdd4b510f7b97a",
+        "x": 330,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "69244eaa75422052",
+        "type": "inject",
+        "z": "e7b4609e6976d686",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "49b61c4fbf9a55a6",
+        "type": "debug",
+        "z": "e7b4609e6976d686",
+        "name": "debug 17",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 780,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "42874019a68a6370",
+        "type": "storage-list",
+        "z": "e7b4609e6976d686",
+        "name": "",
+        "path": "smart/users/info@inventoteca.com/data/",
+        "bucket": "gs://fir-panel-6af08.appspot.com",
+        "cred": "1ccdd4b510f7b97a",
+        "delimiter": "/",
+        "x": 390,
+        "y": 220,
+        "wires": [
+            [
+                "56bb7f60c1bf331c"
+            ]
+        ]
+    },
+    {
+        "id": "c84bb7a278a4d1cd",
+        "type": "inject",
+        "z": "e7b4609e6976d686",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 200,
+        "y": 220,
+        "wires": [
+            [
+                "42874019a68a6370"
+            ]
+        ]
+    },
+    {
+        "id": "827beeb46fdf456f",
+        "type": "storage-write",
+        "z": "e7b4609e6976d686",
+        "name": "",
+        "path": "",
+        "bucket": "gs://fir-panel-6af08.appspot.com/",
+        "cred": "1ccdd4b510f7b97a",
+        "x": 630,
+        "y": 520,
+        "wires": [
+            [
+                "49b61c4fbf9a55a6"
+            ]
+        ]
+    },
+    {
+        "id": "a8b1cd4e4d17e359",
+        "type": "inject",
+        "z": "e7b4609e6976d686",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            },
+            {
+                "p": "filename",
+                "v": "/home/pi/data/2022_12_Paneldeprueba.csv",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 480,
+        "wires": [
+            [
+                "fb64ffff8fe997c7"
+            ]
+        ]
+    },
+    {
+        "id": "fb64ffff8fe997c7",
+        "type": "file in",
+        "z": "e7b4609e6976d686",
+        "name": "Open CSV",
+        "filename": "filename",
+        "filenameType": "msg",
+        "format": "",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 310,
+        "y": 460,
+        "wires": [
+            [
+                "7f2dd14ee6da05c8"
+            ]
+        ]
+    },
+    {
+        "id": "e6383d2b8e3e3ce4",
+        "type": "function",
+        "z": "e7b4609e6976d686",
+        "name": "function 2",
+        "func": " //= 'info@inventoteca.com/data/';\nvar name = global.get('filename')||'dump.json';\nvar email = global.get('email')||'info@inventoteca.com';\nif (email.length == 0) email = 'info@inventoteca.com'\nvar path = 'smart/users/'+ email +'/data/' + name + '.csv';\nmsg.path = path;\nmsg.contentType = 'text/csv';\nmsg.filename = path;\nmsg.public = true;// optional\nmsg.private = false; // optional\n//msg.metadata =  'very interesting';\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 580,
+        "wires": [
+            [
+                "827beeb46fdf456f"
+            ]
+        ]
+    },
+    {
+        "id": "7f2dd14ee6da05c8",
+        "type": "change",
+        "z": "e7b4609e6976d686",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "contents",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 270,
+        "y": 560,
+        "wires": [
+            [
+                "e6383d2b8e3e3ce4",
+                "1235dd7104763c01"
+            ]
+        ]
+    },
+    {
+        "id": "1235dd7104763c01",
+        "type": "debug",
+        "z": "e7b4609e6976d686",
+        "name": "debug 20",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 640,
+        "y": 440,
+        "wires": []
+    }
+]

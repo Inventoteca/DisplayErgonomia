@@ -1,0 +1,83 @@
+{
+  "id": "CC:50:E3:99:25:94",
+  "type": "ergo",
+  "name": "Panel de prueba",
+  "oled": false,
+  "neodisplay": false,
+  "registered": false,
+  "email": "inventotk@gmail.com",
+  "wifi": {
+    "sta": {
+      "ssid": "Inventoteca_2G",
+      "pass": "science_7425",
+      "enable": false,
+      "registered": false
+    },
+    "ap": {
+      "ssid": "SmartIndustry",
+      "pass": "12345678",
+      "enable": false
+    }
+  },
+  "mqtt": {
+    "broker": "inventoteca.com",
+    "enable": false,
+    "port": 1883,
+    "registered": false
+  },
+  "sensors": {
+    "enable": true,
+    "time": 1000,
+    "t": {
+      "max": 25,
+      "min": 20,
+      "cal": -1,
+      "colMax": 4294901760,
+      "colMin": 4278190335,
+      "colDef": 4294967295
+    },
+    "h": {
+      "max": 45,
+      "min": 35,
+      "colMax": 4278255360,
+      "colMin": 4294901760,
+      "colDef": 4294967295
+    },
+    "uv": {
+      "max": 4,
+      "min": 0,
+      "colMax": 4294901760,
+      "colMin": 4294967295,
+      "colDef": 4294967295
+    },
+    "db": {
+      "max": 60,
+      "min": 0,
+      "colMax": 4294901760,
+      "colMin": 4294967295,
+      "colDef": 4294967295
+    },
+    "lux": {
+      "max": 220,
+      "min": 50,
+      "colMax": 4294901760,
+      "colMin": 4294901760,
+      "colDef": 4294967295
+    },
+    "ppm": {
+      "max": 450,
+      "min": 0,
+      "cal": 400,
+      "colMax": 4294901760,
+      "colMin": 4294967295,
+      "colDef": 4294967295
+    }
+  },
+  "lora": {
+    "enable": true,
+    "local": 6,
+    "remote": 0,
+    "band": 915000000,
+    "registered": false
+  }
+}
