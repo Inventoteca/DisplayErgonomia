@@ -1,15 +1,9 @@
 {
   "id": "",
   "type": "ergo",
-  "name": "Neoclock 1",
+  "name": "Nuevo",
   "oled": true,
-  "neodisplay": {
-    "enable": true,
-    "digits": 17,
-    "pixels": 2,
-    "status": 17,
-    "pin": 25
-  },
+  "neodisplay": true,
   "registered": false,
   "email": "",
   "wifi": {
@@ -18,7 +12,7 @@
       "pass": "",
       "enable": true,
       "registered": false,
-      "count": 0
+      "count":0
     },
     "ap": {
       "ssid": "SmartIndustry",
@@ -28,12 +22,12 @@
   },
   "mqtt": {
     "broker": "inventoteca.com",
-    "enable": true,
+    "enable": false,
     "port": 1883,
     "registered": false
   },
   "sensors": {
-    "enable": false,
+    "enable": true,
     "time": 1000,
     "t": {
       "max": 25,
@@ -58,7 +52,7 @@
       "colDef": 4294967295
     },
     "db": {
-      "max": 65,
+      "max": 60,
       "min": 0,
       "colMax": 4294901760,
       "colMin": 4294967295,
@@ -82,9 +76,9 @@
   },
   "lora": {
     "enable": true,
-    "local": 203,
+    "local": 0,
     "remote": 0,
     "band": 915000000,
     "registered": false
   }
-}
+}				

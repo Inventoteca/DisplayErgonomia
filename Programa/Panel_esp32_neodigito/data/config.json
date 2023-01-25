@@ -1,14 +1,14 @@
 {
   "id": "",
-  "type": "ergo",
+  "type": "neo",
   "name": "Neoclock 1",
   "oled": true,
   "neodisplay": {
-    "enable": true,
-    "digits": 17,
-    "pixels": 2,
-    "status": 17,
-    "pin": 25
+    "enable":true,
+    "digits":4,
+    "pixels":2,
+    "status":1,
+    "pin":25
   },
   "registered": false,
   "email": "",
@@ -18,7 +18,7 @@
       "pass": "",
       "enable": true,
       "registered": false,
-      "count": 0
+      "count":0
     },
     "ap": {
       "ssid": "SmartIndustry",
@@ -87,4 +87,4 @@
     "band": 915000000,
     "registered": false
   }
-}
+}				

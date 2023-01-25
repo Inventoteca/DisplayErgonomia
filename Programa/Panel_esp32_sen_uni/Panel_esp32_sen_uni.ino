@@ -56,13 +56,13 @@
 #define NEO_PIN     25    // Pin where the display will be attached
 #define Sound_RX    13    // gpio 16 es OLED_Reset
 #define Sound_TX    12    // gpio 17 es neopixels
-#define PIX_STATUS  1    // Decimal poimt as LED status
+#define PIX_STATUS  17    // Decimal poimt as LED status
 #define FACTORY_BT  0     // gpio 2 as factory reset button
 //int gas_sensor = 36; //Sensor pin
 
 // -------------- neodigits
 #define DIGITS      17    // Number of NeoDigitos connected
-#define PIXPERSEG    2    // NeoPixels per segment
+#define PIXPERSEG   2    // NeoPixels per segment
 
 // --------------  DHT & MQ Definitions & Sound
 #define DHTTYPE     DHT22   // DHT 22  (AM2302), AM2321
@@ -84,6 +84,7 @@
 
 // ----------------- Objects
 NeoDigito display1 = NeoDigito(DIGITS, PIXPERSEG, NEO_PIN, NEO_GRB + NEO_KHZ800); // For more info abaut the last argumets check Adafruit_Neopixel documentation.
+//NeoDigito display1 = NeoDigito(0, 0, -1);  // Params Loaded on loadConfig
 DHT dht(DHTPIN, DHTTYPE);
 //MQUnifiedsensor MQ135(placa, Voltage_Resolution, ADC_Bit_Resolution, mq_pin, mq_type);
 Adafruit_TSL2561_Unified tsl = Adafruit_TSL2561_Unified(TSL2561_ADDR_FLOAT, 12345);
@@ -126,6 +127,7 @@ bool sensors_init = false;
 char ch_db[10];
 int last_db;
 bool neo_digits_status = false;
+short color_status[3] = {0, 0, 0};
 
 //mq-135
 float m = -0.318; //Slope
@@ -158,7 +160,7 @@ unsigned long startMillis = 0;
 unsigned long printRefresh = 0;
 unsigned long printTime = 1000;
 int contador;
-const uint32_t connectTimeoutMs = 2000;
+const uint32_t connectTimeoutMs = 3000;
 unsigned long  timestamp;
 //static int ledOn = 0;  // Current LED status
 int i;
@@ -230,11 +232,11 @@ void reconnect() {
       // Once connected, publish an announcement...
       if (obj["registered"].as<bool>()) // Device registered on user db
       {
-        client.publish(userEmail.c_str(), "{}", true);
+        client.publish(userEmail.c_str(), "{}", false);
       }
       else
       {
-        client.publish(userEmail.c_str(), msgPanel.c_str(), true);
+        client.publish(userEmail.c_str(), msgPanel.c_str(), false);
         Serial.println(msgPanel);
       }
 
@@ -305,7 +307,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       serializeJson(obj, msgPanel);
       Serial.println(msgPanel);
       // No cabe toda la configuracion por mqtt al parecer
-      client.publish(clientId.c_str(), msgPanel.c_str(), true);
+      client.publish(clientId.c_str(), msgPanel.c_str(), false);
       Serial.println("{\"user\":true}");
     }
 
@@ -324,7 +326,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   if (obj["registered"] == false)
   {
-    client.publish(userEmail.c_str(), "{}", true);
+    client.publish(userEmail.c_str(), "{}", false);
     obj["registered"] = true;
     Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
   }
@@ -538,37 +540,38 @@ void onReceive(int packetSize)
           char bufsen[100];
           const char* topicRoot = "smart/panels/%s/sensors/%s";
 
-          /*
-            sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "t");
-            sprintf(bufsen, "%i", t);
-            client.publish(buftop, bufsen);
 
-            sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "h");
-            sprintf(bufsen, "%i", h);
-            client.publish(buftop, bufsen);
+          sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "t");
+          sprintf(bufsen, "%i", t);
+          client.publish(buftop, bufsen);
 
-            sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "uv");
-            sprintf(bufsen, "%.1f", uv);
-            client.publish(buftop, bufsen);
+          sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "h");
+          sprintf(bufsen, "%i", h);
+          client.publish(buftop, bufsen);
 
-            sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "db");
-            sprintf(bufsen, "%i", db);
-            client.publish(buftop, bufsen);
+          sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "uv");
+          sprintf(bufsen, "%.1f", uv);
+          client.publish(buftop, bufsen);
 
-            sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "lux");
-            sprintf(bufsen, "%i", lux);
-            client.publish(buftop, bufsen);
+          sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "db");
+          sprintf(bufsen, "%i", db);
+          client.publish(buftop, bufsen);
 
-            sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "ppm");
-            sprintf(bufsen, "%i", ppm);
-            client.publish(buftop, bufsen);
-          */
+          sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "lux");
+          sprintf(bufsen, "%i", lux);
+          client.publish(buftop, bufsen);
+
+          sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "ppm");
+          sprintf(bufsen, "%i", ppm);
+          client.publish(buftop, bufsen);
+
 
           // All object channel
           sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "all");
           //sprintf(bufsen, "%i", t);
           client.publish(buftop, buf);
-          printLocalTime();
+
+          //printLocalTime();
 
           Serial.println("{\"mqtt_send\":true}");
         }
@@ -635,18 +638,37 @@ void sendMessage(String outgoing)
 void neoConfig()
 {
 
-  if (!wifi_config) // Si aun no se inicia la config
+  //if (wifi_config == false) // Si aun no se inicia la config
+  if (!WiFi.smartConfigDone() && (wifi_config == false))
   {
-    obj["wifi"]["sta"]["count"] = 0;
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
+    if (obj["wifi"]["sta"]["count"] > 0)
+    {
+      obj["wifi"]["sta"]["count"] = 0;
+      Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_wifi_count\":true}" : "{\"file_saved\":false}");
+    }
+
     WiFi.disconnect(true);
-    WiFi.mode(WIFI_AP_STA);
-    wifi_config = WiFi.beginSmartConfig(SC_TYPE_ESPTOUCH_V2);
+    WiFi.beginSmartConfig(SC_TYPE_ESPTOUCH_V2);
+    //WiFi.mode(WIFI_STA);
+
+    if (obj["neodisplay"]["enable"].as<bool>())
+    {
+      //display1.updatePoint(obj["neodisplay"]["status"], white); //no funciona
+      //display1.updatePoint(obj["neodisplay"]["status"], 255, 255, 255); //no funciona, la libreria es u_int
+
+      //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 255, 255);
+      //display1.show();
+
+      color_status[0] = 255;
+      color_status[1] = 255;
+      color_status[2] = 255;
+    }
+
+    wifi_config = true;
+
     Serial.print("{\"SmartConfig\":");
-    Serial.print(wifi_config);
+    Serial.print("true");
     Serial.println("}");
-    display1.updatePoint(PIX_STATUS, 255, 255, 255);
-    display1.show();
 
     //while (!WiFi.smartConfigDone());
     //if (!wifi_config) ESP.restart();
@@ -654,13 +676,13 @@ void neoConfig()
   //else // Configuracion iniciada
   //{
   //Serial.print("Wait conection response");
-  if (WiFi.smartConfigDone()) // Configuracion correcta
-  {
-    //WiFi.stopSmartConfig();
-    wifi_config = false;
-    wifi_trys = 0;
-    Serial.print("SmartConfig Started Done");
-  }
+  //if (WiFi.smartConfigDone()) // Configuracion correcta
+  //{
+  //WiFi.stopSmartConfig();
+  // wifi_config = false;
+  // wifi_trys = 0;
+  //Serial.print("SmartConfig Started Done");
+  //}
 
 }
 
@@ -703,10 +725,14 @@ void PrintOut()
     if (obj["neodisplay"]["enable"].as<bool>())
     {
       display1.setCursor(0);
+      if (t < 10)
+        display1.print(" ");
       display1.print(t, (t >= (obj["sensors"]["t"]["max"].as<int>())) ?
                      (obj["sensors"]["t"]["colMax"].as<uint32_t>()) : (t <= (obj["sensors"]["t"]["min"].as<int>())) ?
                      (obj["sensors"]["t"]["colMin"].as<uint32_t>()) : (obj["sensors"]["t"]["colDef"].as<uint32_t>()));
       display1.setCursor(2);
+      if (h < 10)
+        display1.print(" ");
       display1.print(h, (h >= (obj["sensors"]["h"]["max"].as<int>())) ?
                      (obj["sensors"]["h"]["colMax"].as<uint32_t>()) : (h <= (obj["sensors"]["h"]["min"].as<int>())) ?
                      (obj["sensors"]["h"]["colMin"].as<uint32_t>()) : (obj["sensors"]["h"]["colDef"].as<uint32_t>()));
@@ -748,6 +774,27 @@ void PrintOut()
       display1.print(ppm, (ppm >= (obj["sensors"]["ppm"]["max"].as<int>())) ?
                      (obj["sensors"]["ppm"]["colMax"].as<uint32_t>()) : (ppm <= (obj["sensors"]["ppm"]["min"].as<int>())) ?
                      (obj["sensors"]["ppm"]["colMin"].as<uint32_t>()) : (obj["sensors"]["ppm"]["colDef"].as<uint32_t>()));
+
+
+      if (WiFi.status() == WL_CONNECTED)
+      {
+        if (blk == true)
+        {
+          display1.updatePoint(obj["neodisplay"]["status"].as<int>(), obj["sensors"]["ppm"]["colDef"].as<uint32_t>());
+          //display1.show();
+        }
+        else
+        {
+          display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 0, 0);
+          //display1.show();
+        }
+      }
+      else
+      {
+        display1.updatePoint(obj["neodisplay"]["status"].as<int>(), color_status[0], color_status[1], color_status[2]);
+      }
+
+
       display1.show();
 
     }
@@ -1162,33 +1209,68 @@ void sensorInit()
 // ---------------------------------------------------------------------------------------------------------- dispalyInit
 void displayInit()
 {
+
+  display1.setPin(obj["neodisplay"]["pin"].as<int>());
+  //display1.setPin(25);
+  display1.updateDigitType(obj["neodisplay"]["digits"].as<int>(), obj["neodisplay"]["pixels"].as<int>());
+  //display1.updateDigitType(17,2);
+
   display1.begin();             // This fuction calls Adafruit_NeoPixel.begin() to configure.
   display1.clear();
-  //display1.setColor(yellow); // Color specified by a 32bit hex, or 8bit numbers (red, green, blue), Also colors names, red, white, yellow, etc.
-  display1.print("'8:8:8:8:8:8:8:8:8:8:8:8.8:8:8.8:8.");      // It prints the value.
-  display1.updateColor(white);
-  display1.show();              // Lights up the pixels.
-  //Serial.println("Display ready");
-  delay(1000);
-  display1.clear();
   display1.show();
-  display1.print("oC", red);
-  display1.print("% ", green);
-  display1.print("uV", purple);
-  display1.print("dB ", blue);
-  display1.print("luxe", white);
-  display1.print("PPN.N", cian);
-  //display1.print("8:8.",white);
-  //display1.show();
-  delay(1000);
-  //display1.clear();
-  display1.updateColor(RANDOM, 13, 16);
+
+  if (obj["type"].as<String>() == "ergo")
+  {
+    for (int disp_num = 0; disp_num < obj["neodisplay"]["digits"].as<unsigned int>(); disp_num++)
+    {
+      display1.setCursor(disp_num);
+      display1.print("'8.");      // It prints the value.
+      display1.show();              // Lights up the pixels.
+      delay(200);
+      display1.setCursor(disp_num);
+      display1.print(" ");
+      //
+    }
+
+    display1.clear();
+    display1.print("oC", red);
+    display1.print("% ", green);
+    display1.print("uV", purple);
+    display1.print("dB ", blue);
+    display1.print("luxe", white);
+    display1.print("PPN.N", cian);
+    display1.show();
+    delay(1000);
+    display1.clear();
+    display1.show();
+
+  }
+
+  if (obj["type"].as<String>() == "neo")
+  {
+    for (int disp_num = 0; disp_num < obj["neodisplay"]["digits"].as<unsigned int>(); disp_num++)
+    {
+      display1.updateColor(RANDOM); //Before for all display
+      display1.setCursor(disp_num);
+      display1.print(disp_num);      // It prints the value.
+      display1.show();              // Lights up the pixels.
+      delay(300);
+      //display1.setCursor(disp_num);
+      //display1.print(" ");
+      //display1.clear();
+    }
+
+    //display1.updateColor(Random); //Before for all display
+    display1.clear();
+    display1.print("12:00");
+    display1.updateColor(RANDOM, 0, 3); //After for each digit
+  }
+
   //Serial.println("Display  done!.");
+  //display1.show();
   Serial.println("{\"neodigits\":true}");
   neo_digits_status = true;
-  //display1.updateColor(random(0,0xFFFFFF),13,16);
-  //display1.print(contador,0,0,255);      // It prints the value.
-  display1.show();
+
 }
 
 
@@ -1198,6 +1280,7 @@ void loadConfig()
 {
   count  = obj["wifi"]["sta"]["count"];  // retrys and reboots
 
+  // --------------------------- OLED
   if (obj["oled"].as<bool>())
   {
     Heltec.display->clear();
@@ -1205,6 +1288,7 @@ void loadConfig()
     //Heltec.display->flipScreenVertically();
   }
 
+  // ------------------------- NeoDisplay
   if (obj["neodisplay"]["enable"].as<bool>())
   {
     // Display Init
@@ -1212,22 +1296,45 @@ void loadConfig()
       displayInit();
   }
 
+  // ----------------------- WiFi STA
   if (obj["wifi"]["sta"]["enable"].as<bool>() == true /*&& (WiFi.status() != WL_CONNECTED)*/)
   {
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.onEvent(WiFiEvent);
-
     String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
+
+    // ---- New WiFi or wrong configured
     if (((obj["wifi"]["sta"]["registered"].as<bool>() == false) && (obj["wifi"]["sta"]["count"] >= 2)) || (auxssid.length() == 0))
     {
-      //WiFi.disconnect(true);
+      // ---  New Wifi
+      wifi_config = false;
+      WiFi.stopSmartConfig();
+
+
+      if (auxssid.length() == 0)
+      {
+        Serial.println("{\"load_new_wifi\":true}");
+      }
+      else
+      {
+        Serial.println("{\"wrong_new_wifi\":true}");
+      }
       neoConfig();
-      //obj["lora"]["enable"] = false;
     }
 
+    // ---- WiFi already Registered or try to connect a new wifi
     else if ((obj["wifi"]["sta"]["registered"].as<bool>() == true) || (obj["wifi"]["sta"]["count"] < 2))
     {
       //Serial.println("Connecting to WiFi");
+      if (obj["wifi"]["sta"]["registered"].as<bool>() == true)
+      {
+        Serial.println("{\"load_registered_wifi\":true}");
+      }
+
+      else
+      {
+        Serial.printf("{\"try_load_new_wifi\":\"%d\"}", count);
+        Serial.println();
+      }
+
       WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
       //Serial.print("WiFi connecting: \t");
       Serial.print("{\"wifi\":{\"ssid\":\"");
@@ -1256,7 +1363,7 @@ void loadConfig()
     WiFi.softAPdisconnect(true);
   }
 
-  // Sensors Init
+  //---------------- Sensors Init
   if (obj["sensors"]["enable"].as<bool>())
   {
     sensorInit();
@@ -1265,13 +1372,15 @@ void loadConfig()
     tempRefresh = obj["sensors"]["time"].as<unsigned int>() + millis();
     soundRefresh = millis();
     airRefresh = millis();
-    timestamp = millis();
+    timestamp = millis() ;
   }
 
   //Serial.println(WiFi.macAddress());
 
   // check for id or mac is the config.json file
 
+
+  // ------------- ID and LoRa
   String s_aux;
   s_aux = obj["id"].as<String>();
   int len = s_aux.length();
@@ -1341,10 +1450,13 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
       {
         Serial.println("{\"wifi_event\":\"scan\"}");
         contador = 0;
-        display1.updatePoint(PIX_STATUS, 255, 255, 255);
-        display1.show();
-        //display1.updatePoint(PIX_STATUS, 0, 0, 0);
-        //display1.show();
+        if (obj["neodisplay"]["enable"].as<bool>())
+        {
+          color_status[0] = 255;
+          color_status[1] = 255;
+          color_status[2] = 255;
+          //PrintOut();
+        }
       }
       break;
 
@@ -1352,8 +1464,18 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
       {
         //Serial.println("Found channel");
         Serial.println("{\"wifi_event\":\"found\"}");
-        display1.updatePoint(PIX_STATUS, 0, 255, 255);
-        display1.show();
+        //display1.updatePoint(PIX_STATUS, 0, 255, 255);
+        //display1.show();
+
+        if (obj["neodisplay"]["enable"].as<bool>())
+        {
+          //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 0, 255);
+          //display1.show();
+          color_status[0] = 255;
+          color_status[1] = 0;
+          color_status[2] = 255;
+          //PrintOut();
+        }
         contador = 0;
 
       }
@@ -1394,8 +1516,15 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         correct = false;
         // COMENTED FOR TEST DEV, UNCOMENT FOR PROD
         Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
-        display1.updatePoint(PIX_STATUS, 0, 0, 255);
-        display1.show();
+        if (obj["neodisplay"]["enable"].as<bool>())
+        {
+          //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 0, 255);
+          //display1.show();
+          color_status[0] = 0;
+          color_status[1] = 0;
+          color_status[2] = 255;
+          PrintOut();
+        }
 
       }
       break;
@@ -1409,8 +1538,15 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         doc["wifi"]["sta"]["registered"] = true;
         // COMENTED FOR TEST DEV, UNCOMENT FOR PROD
         Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
-        display1.updatePoint(PIX_STATUS, 0, 255, 0);
-        display1.show();
+        if (obj["neodisplay"]["enable"].as<bool>())
+        {
+          //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 255, 0);
+          //display1.show();
+          color_status[0] = 0;
+          color_status[1] = 255;
+          color_status[2] = 0;
+          PrintOut();
+        }
       }
       break;
 
@@ -1421,17 +1557,24 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
 
         Serial.println("{\"wifi_event\":\"disconected\"}");
         contador++;
-        if ((obj["wifi"]["sta"]["registered"] == false) && ((contador > 5)))
+        if ((obj["wifi"]["sta"]["registered"] == false) && ((contador > 10)))
         {
-          display1.updatePoint(PIX_STATUS, 255, 0, 0);
-          display1.show();
+          if (obj["neodisplay"]["enable"].as<bool>())
+          {
+            //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 0, 0);
+            //display1.show();
+            color_status[0] = 255;
+            color_status[1] = 0;
+            color_status[2] = 0;
+            //PrintOut();
+          }
           count++;
           obj["wifi"]["sta"]["count"] = count;
           //obj["wifi"]["sta"]["registered"] = false;
           obj["wifi"]["sta"]["enable"] = true;
           obj["wifi"]["sta"]["ssid"] = "";
           obj["wifi"]["sta"]["pass"] = "";
-          Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
+          Serial.println(saveJSonToAFile(&obj, filename) ? "{\"wifi_disconected_saved\":true}" : "{\"file_saved\":false}");
           loadConfig();
         }
 
@@ -1447,18 +1590,29 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
     case SYSTEM_EVENT_STA_STOP:
       {
         Serial.println("{\"wifi_event\":\"stop\"}");
-        display1.updatePoint(PIX_STATUS, 255, 0, 0);
-        display1.show();
+        String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
+
+        if (obj["neodisplay"]["enable"].as<bool>())
+        {
+          //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 0, 0);
+          //display1.show();
+          color_status[0] = 255;
+          color_status[1] = 0;
+          color_status[2] = 0;
+          //PrintOut();
+        }
         //obj["wifi"]["sta"]["ssid"] = "";
         //obj["wifi"]["sta"]["pass"] = "";
         //loadConfig();
         //
-        if (obj["wifi"]["sta"]["registered"] == false)
+
+        // New wifi fail, so reset wifi to new
+        if ((obj["wifi"]["sta"]["registered"] == false ) && ( (auxssid.length() != 0)))
         {
           //WiFi.disconnect(true);
           obj["wifi"]["sta"]["ssid"] = "";
           obj["wifi"]["sta"]["pass"] = "";
-          Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
+          Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_wifi_stop\":true}" : "{\"file_saved\":false}");
           //ESP.restart();
           loadConfig();
           //WiFi.mode(WIFI_AP_STA);
@@ -1503,48 +1657,21 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
 void checkServer()
 {
 
-  /*if (WiFi.smartConfigDone() && correct == false) //save config succes
-    {
-    Serial.println("SmartConfig Success");
-    WiFi.printDiag(Serial);
-    correct = true;
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
-    WiFi.stopSmartConfig();
-
-    }*/
-
-  if (millis() - timestamp > connectTimeoutMs) //
+  if ((millis() - timestamp) >= connectTimeoutMs) // check to an interval of time
   {
+    String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
 
-
+    // ------------------ Wifi Connected
     if (WiFi.status() == WL_CONNECTED)
     {
-      //if ((strip->getPixelColor(32) != 0) && (Color != 0))
-      //{
-      // strip->setPixelColor(32, Color);
-      //strip->setPixelColor(i, (strip -> gamma8(R)),(strip -> gamma8(G)),(strip -> gamma8(B)));
-      //strip->setPixelColor(i, (strip -> gamma32(R)),(strip -> gamma32(G)),(strip -> gamma32(B)));
-      //}
-      if (blk == true)
-      {
-        display1.updatePoint(PIX_STATUS, obj["sensors"]["ppm"]["colDef"].as<uint32_t>());
-        //display1.updatePoint(PIX_STATUS,0,255,0);
-        display1.show();
-      }
-      else
-      {
-        display1.updatePoint(PIX_STATUS, 0, 0, 0);
-        display1.show();
-      }
-      blk = !blk;
+      //Serial.println("{\"wifi_server\":\"connected\"}");
+      //wifi_config = false;
 
-      wifi_config = false;
       if (obj["wifi"]["sta"]["registered"] == false)
       {
         obj["wifi"]["sta"]["registered"] = true;
         obj["wifi"]["sta"]["count"] = 0;
-        // COMENTED FOR TEST DEV, UNCOMENT FOR PROD
-        Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
+        Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_new_wifi\":true}" : "{\"file_saved\":false}");
 
       }
 
@@ -1552,76 +1679,70 @@ void checkServer()
       {
         if (!client.connected())
         {
+          Serial.println("{\"mqtt_server\":\"reconnect\"}");
+          blk = false;
           reconnect();
         }
-      }
-
-
-
-
-      //if(correct == false)
-      //{
-      //  obj["wifi"]["sta"]["enable"] = true;
-      //  correct = true;
-      // Serial.println(saveJSonToAFile(&obj, filename)? "File saved!":"Error on save File!");
-      // }
-      //}
-    }
-    else
-    {
-      if (obj["wifi"]["sta"]["registered"] == true)
-      {
-        //WiFi.reconnect();
-        // aqui debo contar o distinguir si hay error
-        if (obj["wifi"]["sta"]["enable"].as<bool>())
-        {
-          //Serial.println("WiFi not connected!");
-          //WiFi.reconnect();
-
-
-          //wifi_trys++;
-          //if (wifi_trys < 5)
-          {
-            //Serial.println("Connecting to WiFi");
-            Serial.println("{\"wifi_event\":\"reconnect\"}");
-            WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
-            if (blk == true)
-            {
-              display1.updatePoint(PIX_STATUS, 255, 0, 0);
-              display1.show();
-            }
-            else
-            {
-              display1.updatePoint(PIX_STATUS, 0, 0, 0);
-              display1.show();
-            }
-            blk = !blk;
-          }
-          //else
-          //{
-          //Serial.println("WiFi not available... new config");
-          //WiFi.stopSmartConfig();
-          //neoConfig();
-
-          // }
-
-        }
+        // Blink led status on printOut
         else
         {
-          //Serial.println("WiFi not enabled!");
-          //if (obj["wifi"]["sta"]["registered"].as<bool>() == false)
-          // {
-          //   WiFi.stopSmartConfig();
-          //   neoConfig();
-          // }
-
-
+          //Serial.println("{\"mqtt_server\":\"connected\"}");
+          /*if (obj["neodisplay"]["enable"].as<bool>())
+            {
+            display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 255, 0);
+            display1.show();
+            }*/
+          blk = !blk;
         }
+
+      }
+    }
+
+    // -------------- Wifi configured, enable, and registered but not connected yet,
+    else if ((obj["wifi"]["sta"]["registered"].as<bool>() == true) && (obj["wifi"]["sta"]["enable"].as<bool>() == true))
+    {
+      Serial.println("{\"wifi_event_check_server\":\"reconnect\"}");
+      blk = true;
+      WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
+
+      if (obj["neodisplay"]["enable"].as<bool>())
+      {
+        //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 0, 0);
+        //display1.show();
+        color_status[0] = 255;
+        color_status[1] = 255;
+        color_status[2] = 0;
+       // PrintOut();
       }
 
     }
 
+    // ------------  Test new wifi
+    else if (obj["wifi"]["sta"]["registered"].as<bool>() == false && (obj["wifi"]["sta"]["enable"].as<bool>() == true) && (obj["wifi"]["sta"]["count"].as<unsigned int>() < 2) && (auxssid.length() != 0))
+    {
+      Serial.println("{\"wifi_event_check_server\":\"test try\"}");
+      blk = true;
+      wifi_trys++;
+      WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
+
+      if (obj["neodisplay"]["enable"].as<bool>())
+      {
+        //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 0, 0);
+        //display1.show();
+        color_status[0] = 255;
+        color_status[1] = 255;
+        color_status[2] = 0;
+        //PrintOut();
+      }
+    }
+    //else if(auxssid.length() == 0)
+    //{
+    //  Serial.println("{\"wait_config\":true}");
+    //}
+
     //Serial.println();
+    PrintOut();
+    //Serial.println("{\"server_check\":true}");
     timestamp = millis();
   }
 }
@@ -2057,8 +2178,10 @@ void setup()
   Heltec.begin(true     /*DisplayEnable*/, true /*LoRa */, true /*Serial */, true /*PABOOST */, BAND /* BAND*/);
   //Wire.begin(); //
 
-  WiFi.mode(WIFI_AP_STA);
+  //WiFi.mode(WIFI_AP_STA);
   //printLocalTime();
+  WiFi.mode(WIFI_STA);
+  WiFi.onEvent(WiFiEvent);
 
   //Heltec.begin(true, false, true);
   //
@@ -2075,7 +2198,7 @@ void setup()
   jsonrpc_export("Accesory.Del", accesory_del);
   jsonrpc_export("LoRa.Send", lora_send);
   //jsonrpc_export("count", counter);
-  pinMode(NEO_PIN, OUTPUT);
+  //pinMode(NEO_PIN, OUTPUT);
   pinMode(FACTORY_BT, INPUT);
 
   // SPIFFS Init
