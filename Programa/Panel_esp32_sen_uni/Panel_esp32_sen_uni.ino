@@ -29,6 +29,8 @@
 #include <Adafruit_TSL2561_U.h>
 #include <PubSubClient.h>
 #include "time.h"
+#include <Firebase_ESP_Client.h>
+#include <addons/TokenHelper.h>         // Provide the token generation process info.
 
 
 
@@ -91,14 +93,23 @@ Adafruit_TSL2561_Unified tsl = Adafruit_TSL2561_Unified(TSL2561_ADDR_FLOAT, 1234
 sensors_event_t event;
 JsonObject obj;
 JsonArray dev;
-StaticJsonDocument<1024> dev_doc;
-StaticJsonDocument<1736> doc;
+JsonObject sen;
+StaticJsonDocument<512> dev_doc;
+StaticJsonDocument<1024> doc;
+StaticJsonDocument<1024> sen_doc;
 
 File file;
 
 //--------------- MQTT
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+// Define Firebase Data object
+FirebaseData fbdo;
+
+FirebaseAuth auth;
+FirebaseConfig config;
+bool taskCompleted = false;
 
 //WebSocketsServer webSocket = WebSocketsServer(81); //websocket init with port 81
 //void webSocketEvent(uint8_t num, WStype_t w_type, uint8_t * payload, size_t length);
@@ -138,6 +149,7 @@ float R0 = 9.000; //Sensor Resistance in fresh air f
 // --------- file variables
 const char *filedefault = "/default.json";
 const char *filename = "/config.json";
+const char *sen_filename = "/sensors.json";
 const char *device_list = "/devices.json";
 bool correct = false;
 bool wifi_config = false;
@@ -190,6 +202,54 @@ unsigned long lastMsg = 0;
 
 
 // ################################################################## CodeFunctions ###########################################
+static void update_ota(struct jsonrpc_request * r) {
+  // Firebase.ready() should be called repeatedly to handle authentication tasks.
+
+  if (Firebase.ready() && !taskCompleted)
+  {
+    taskCompleted = true;
+
+    // If you want to get download url to use with your own OTA update process using core update library,
+    // see Metadata.ino example
+
+    Serial.println("\nDownload firmware file...\n");
+
+    // In ESP8266, this function will allocate 16k+ memory for internal SSL client.
+    if (!Firebase.Storage.downloadOTA(&fbdo, obj["firebase"]["bucked_id"].as<String>() /* Firebase Storage bucket id */, obj["firebase"]["firmware_path"].as<String>()  /* path of firmware file stored in the bucket */, fcsDownloadCallback /* callback function */))
+      Serial.println(fbdo.errorReason());
+  }
+}
+
+
+
+void fcsDownloadCallback(FCS_DownloadStatusInfo info)
+{
+  if (info.status == fb_esp_fcs_download_status_init)
+  {
+    Serial.printf("Downloading firmware %s (%d)\n", info.remoteFileName.c_str(), info.fileSize);
+  }
+  else if (info.status == fb_esp_fcs_download_status_download)
+  {
+    Serial.printf("Downloaded %d%s, Elapsed time %d ms\n", (int)info.progress, "%", info.elapsedTime);
+  }
+  else if (info.status == fb_esp_fcs_download_status_complete)
+  {
+    Serial.println("Update firmware completed.");
+    Serial.println();
+    Serial.println("Restarting...\n\n");
+    delay(2000);
+#if defined(ESP32) || defined(ESP8266)
+    ESP.restart();
+#elif defined(PICO_RP2040)
+    rp2040.restart();
+#endif
+  }
+  else if (info.status == fb_esp_fcs_download_status_error)
+  {
+    Serial.printf("Download firmware failed, %s\n", info.errorMsg.c_str());
+  }
+}
+
 // Local time
 void printLocalTime()
 {
@@ -285,7 +345,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   String clientId = "smart/panels/" + obj["id"].as<String>() + "/conf/response";
 
   //Serial.println(dataConfig);
-  StaticJsonDocument<1736> docConf;
+  StaticJsonDocument<1024> docConf;
   deserializeJson(docConf, dataConfig);
   JsonObject objConf;
   objConf = docConf.as<JsonObject>();
@@ -297,13 +357,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
     if ((char)payload[0] == '0') {
       Serial.println("{\"user\":false}");
       // it is active low on the ESP-01)
-    } else if ((char)payload[0] == '1') {
-      //msg["sensors"]["t"] = obj["sensors"]["t"];
-      //msg["sensors"]["h"] = obj["sensors"]["h"];
-      //msg["sensors"]["uv"] = obj["sensors"]["uv"];
-      //msg["sensors"]["db"] = obj["sensors"]["db"];
-      //msg["sensors"]["lux"] = obj["sensors"]["lux"];
-      //msg["sensors"]["ppm"] = obj["sensors"]["ppm"];
+    } else if ((char)payload[0] == '1')
+    {
       serializeJson(obj, msgPanel);
       Serial.println(msgPanel);
       // No cabe toda la configuracion por mqtt al parecer
@@ -700,7 +755,7 @@ void PrintOut()
       Heltec.display->setFont(ArialMT_Plain_16);
 
 
-      Heltec.display->drawString(0, 0, "  Sensor  Box   ");
+      Heltec.display->drawString(0, 0, obj["name"]);
 
       //Heltec.display->setFont(ArialMT_Plain_10);
       Heltec.display->drawString(0, 16, String(t));
@@ -724,76 +779,76 @@ void PrintOut()
 
     if (obj["neodisplay"]["enable"].as<bool>())
     {
-      display1.setCursor(0);
-      if (t < 10)
-        display1.print(" ");
-      display1.print(t, (t >= (obj["sensors"]["t"]["max"].as<int>())) ?
-                     (obj["sensors"]["t"]["colMax"].as<uint32_t>()) : (t <= (obj["sensors"]["t"]["min"].as<int>())) ?
-                     (obj["sensors"]["t"]["colMin"].as<uint32_t>()) : (obj["sensors"]["t"]["colDef"].as<uint32_t>()));
-      display1.setCursor(2);
-      if (h < 10)
-        display1.print(" ");
-      display1.print(h, (h >= (obj["sensors"]["h"]["max"].as<int>())) ?
-                     (obj["sensors"]["h"]["colMax"].as<uint32_t>()) : (h <= (obj["sensors"]["h"]["min"].as<int>())) ?
-                     (obj["sensors"]["h"]["colMin"].as<uint32_t>()) : (obj["sensors"]["h"]["colDef"].as<uint32_t>()));
-      display1.setCursor(4);
-      if (uv == 0)
-        display1.print("0.0", (uv >= (obj["sensors"]["uv"]["max"].as<int>())) ?
-                       (obj["sensors"]["uv"]["colMax"].as<uint32_t>()) : (uv <= (obj["sensors"]["uv"]["min"].as<int>())) ?
-                       (obj["sensors"]["uv"]["colMin"].as<uint32_t>()) : (obj["sensors"]["uv"]["colDef"].as<uint32_t>()));
-      else
-        display1.print(String(uv, 1), (uv >= (obj["sensors"]["uv"]["max"].as<int>())) ?
-                       (obj["sensors"]["uv"]["colMax"].as<uint32_t>()) : (uv <= (obj["sensors"]["uv"]["min"].as<int>())) ?
-                       (obj["sensors"]["uv"]["colMin"].as<uint32_t>()) : (obj["sensors"]["uv"]["colDef"].as<uint32_t>()));
-      display1.setCursor(6);
-      if (db < 10)
-        display1.print("  ");
-      else if (db < 100)
-        display1.print(" ");
-      display1.print(db, (db >= (obj["sensors"]["db"]["max"].as<int>())) ?
-                     (obj["sensors"]["db"]["colMax"].as<uint32_t>()) : (db <= (obj["sensors"]["db"]["min"].as<int>())) ?
-                     (obj["sensors"]["db"]["colMin"].as<uint32_t>()) : (obj["sensors"]["db"]["colDef"].as<uint32_t>()));
-      display1.setCursor(9);
-      if (lux < 10)
-        display1.print("   ");
-      else if (lux < 100)
-        display1.print("  ");
-      else if (lux < 1000)
-        display1.print(" ");
-      display1.print(lux, (lux >= (obj["sensors"]["lux"]["max"].as<int>())) ?
-                     (obj["sensors"]["lux"]["colMax"].as<uint32_t>()) : (lux <= (obj["sensors"]["lux"]["min"].as<int>())) ?
-                     (obj["sensors"]["lux"]["colMin"].as<uint32_t>()) : (obj["sensors"]["lux"]["colDef"].as<uint32_t>()));
-      display1.setCursor(13);
-      if (ppm < 10)
-        display1.print("   ");
-      else if (ppm < 100)
-        display1.print("  ");
-      else if (ppm < 1000)
-        display1.print(" ");
-      else if (ppm > 9999)ppm = 9999;
-      display1.print(ppm, (ppm >= (obj["sensors"]["ppm"]["max"].as<int>())) ?
-                     (obj["sensors"]["ppm"]["colMax"].as<uint32_t>()) : (ppm <= (obj["sensors"]["ppm"]["min"].as<int>())) ?
-                     (obj["sensors"]["ppm"]["colMin"].as<uint32_t>()) : (obj["sensors"]["ppm"]["colDef"].as<uint32_t>()));
+      /* display1.setCursor(0);
+        if (t < 10)
+         display1.print(" ");
+        display1.print(t, (t >= (sen["sensors"]["t"]["max"].as<int>())) ?
+                      (sen["sensors"]["t"]["colMax"].as<uint32_t>()) : (t <= (sen["sensors"]["t"]["min"].as<int>())) ?
+                      (sen["sensors"]["t"]["colMin"].as<uint32_t>()) : (sen["sensors"]["t"]["colDef"].as<uint32_t>()));
+        display1.setCursor(2);
+        if (h < 10)
+         display1.print(" ");
+        display1.print(h, (h >= (sen["sensors"]["h"]["max"].as<int>())) ?
+                      (sen["sensors"]["h"]["colMax"].as<uint32_t>()) : (h <= (sen["sensors"]["h"]["min"].as<int>())) ?
+                      (sen["sensors"]["h"]["colMin"].as<uint32_t>()) : (sen["sensors"]["h"]["colDef"].as<uint32_t>()));
+        display1.setCursor(4);
+        if (uv == 0)
+         display1.print("0.0", (uv >= (sen["sensors"]["uv"]["max"].as<int>())) ?
+                        (sen["sensors"]["uv"]["colMax"].as<uint32_t>()) : (uv <= (sen["sensors"]["uv"]["min"].as<int>())) ?
+                        (sen["sensors"]["uv"]["colMin"].as<uint32_t>()) : (sen["sensors"]["uv"]["colDef"].as<uint32_t>()));
+        else
+         display1.print(String(uv, 1), (uv >= (sen["sensors"]["uv"]["max"].as<int>())) ?
+                        (sen["sensors"]["uv"]["colMax"].as<uint32_t>()) : (uv <= (sen["sensors"]["uv"]["min"].as<int>())) ?
+                        (sen["sensors"]["uv"]["colMin"].as<uint32_t>()) : (sen["sensors"]["uv"]["colDef"].as<uint32_t>()));
+        display1.setCursor(6);
+        if (db < 10)
+         display1.print("  ");
+        else if (db < 100)
+         display1.print(" ");
+        display1.print(db, (db >= (sen["sensors"]["db"]["max"].as<int>())) ?
+                      (sen["sensors"]["db"]["colMax"].as<uint32_t>()) : (db <= (sen["sensors"]["db"]["min"].as<int>())) ?
+                      (sen["sensors"]["db"]["colMin"].as<uint32_t>()) : (sen["sensors"]["db"]["colDef"].as<uint32_t>()));
+        display1.setCursor(9);
+        if (lux < 10)
+         display1.print("   ");
+        else if (lux < 100)
+         display1.print("  ");
+        else if (lux < 1000)
+         display1.print(" ");
+        display1.print(lux, (lux >= (sen["sensors"]["lux"]["max"].as<int>())) ?
+                      (sen["sensors"]["lux"]["colMax"].as<uint32_t>()) : (lux <= (sen["sensors"]["lux"]["min"].as<int>())) ?
+                      (sen["sensors"]["lux"]["colMin"].as<uint32_t>()) : (sen["sensors"]["lux"]["colDef"].as<uint32_t>()));
+        display1.setCursor(13);
+        if (ppm < 10)
+         display1.print("   ");
+        else if (ppm < 100)
+         display1.print("  ");
+        else if (ppm < 1000)
+         display1.print(" ");
+        else if (ppm > 9999)ppm = 9999;
+        display1.print(ppm, (ppm >= (sen["sensors"]["ppm"]["max"].as<int>())) ?
+                      (sen["sensors"]["ppm"]["colMax"].as<uint32_t>()) : (ppm <= (sen["sensors"]["ppm"]["min"].as<int>())) ?
+                      (sen["sensors"]["ppm"]["colMin"].as<uint32_t>()) : (sen["sensors"]["ppm"]["colDef"].as<uint32_t>()));
 
 
-      if (WiFi.status() == WL_CONNECTED)
-      {
-        if (blk == true)
+        if (WiFi.status() == WL_CONNECTED)
         {
-          display1.updatePoint(obj["neodisplay"]["status"].as<int>(), obj["sensors"]["ppm"]["colDef"].as<uint32_t>());
-          //display1.show();
+         if (blk == true)
+         {
+           display1.updatePoint(obj["neodisplay"]["status"].as<int>(), sen["sensors"]["ppm"]["colDef"].as<uint32_t>());
+           //display1.show();
+         }
+         else
+         {
+           display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 0, 0);
+           //display1.show();
+         }
         }
         else
         {
-          display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 0, 0);
-          //display1.show();
+         display1.updatePoint(obj["neodisplay"]["status"].as<int>(), color_status[0], color_status[1], color_status[2]);
         }
-      }
-      else
-      {
-        display1.updatePoint(obj["neodisplay"]["status"].as<int>(), color_status[0], color_status[1], color_status[2]);
-      }
-
+      */
 
       display1.show();
 
@@ -819,7 +874,7 @@ float mapfloat(float x, float in_min, float in_max, float out_min, float out_max
 void ReadSensors()
 {
 
-  if (obj["sensors"]["enable"] == true) // Sensors available
+  //if (sen["sensors"]["enable"] == true) // Sensors available
   {
     if (sensors_init == false)          // Sensors not already init
     {
@@ -863,7 +918,7 @@ void ReadSensors()
       last_db = db;
     }
 
-    if ((millis() - tempRefresh) >= obj["sensors"]["time"].as<unsigned int>() /*tempSample*/)
+    //if ((millis() - tempRefresh) >= sen["sensors"]["time"].as<unsigned int>() /*tempSample*/)
     {
       tempRefresh = millis();
 
@@ -871,7 +926,7 @@ void ReadSensors()
 
       // -------------------------- Temperature
       t = dht.readTemperature();
-      t = t + (obj["sensors"]["t"]["cal"].as<int>());
+      //t = t + (sen["sensors"]["t"]["cal"].as<int>());
 
       // -------------------------- Humidity
       h = dht.readHumidity();
@@ -899,7 +954,7 @@ void ReadSensors()
       // ----------------------------  Lux
       tsl.getEvent(&event);
       lux = event.light;
-      lux = lux * float(obj["sensors"]["lux"]["cal"].as<float>()); // Porceltual adjust
+      //lux = lux * float(sen["sensors"]["lux"]["cal"].as<float>()); // Porceltual adjust
       //lux = lux * float(1.1);
       if (lux > 9999)lux = 9999; //oversaturated
 
@@ -928,7 +983,7 @@ void ReadSensors()
 
       double ppm_log = (log10(ratio) - b) / m; //Get ppm value in linear scale according to the the ratio value
       ppm = pow(10, ppm_log); //Convert ppm value to log scale
-      ppm = ppm + (obj["sensors"]["ppm"]["cal"].as<int>()); // Fresh air
+      //ppm = ppm + (sen["sensors"]["ppm"]["cal"].as<int>()); // Fresh air
       if (ppm > 9999) ppm = 9999;
       //double percentage = ppm / 10000; //Convert to percentage
 
@@ -972,7 +1027,7 @@ bool saveJSonToAFile(JsonObject * doc, String filename) {
 
 // ------------------------------------------------------------------------------------------------ getJsonFromFile
 
-JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1736> *doc, String filename, bool forceCleanONJsonError = true )
+JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1024> *doc, String filename, bool forceCleanONJsonError = true )
 {
   // open the file for reading:
   file = SPIFFS.open(filename);;
@@ -1020,7 +1075,7 @@ JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1736>
 
 // ------------------------------------------------------------------------------------------------ getJsonArrayFromFile
 
-JsonArray getJSonArrayFromFile(StaticJsonDocument<1024> *dev_doc, String filename, bool forceCleanONJsonError = true )
+JsonArray getJSonArrayFromFile(StaticJsonDocument<512> *dev_doc, String filename, bool forceCleanONJsonError = true )
 {
   // open the file for reading:
   file = SPIFFS.open(filename);;
@@ -1233,12 +1288,12 @@ void displayInit()
     }
 
     display1.clear();
-    display1.print("oC", red);
-    display1.print("% ", green);
-    display1.print("uV", purple);
-    display1.print("dB ", blue);
-    display1.print("luxe", white);
-    display1.print("PPN.N", cian);
+    display1.print("oC", Red);
+    display1.print("% ", Green);
+    display1.print("uV", Purple);
+    display1.print("dB ", Blue);
+    display1.print("luxe", White);
+    display1.print("PPN.N", Cian);
     display1.show();
     delay(1000);
     display1.clear();
@@ -1250,7 +1305,7 @@ void displayInit()
   {
     for (int disp_num = 0; disp_num < obj["neodisplay"]["digits"].as<unsigned int>(); disp_num++)
     {
-      display1.updateColor(RANDOM); //Before for all display
+      display1.updateColor(Random); //Before for all display
       display1.setCursor(disp_num);
       display1.print(disp_num);      // It prints the value.
       display1.show();              // Lights up the pixels.
@@ -1263,7 +1318,7 @@ void displayInit()
     //display1.updateColor(Random); //Before for all display
     display1.clear();
     display1.print("12:00");
-    display1.updateColor(RANDOM, 0, 3); //After for each digit
+    display1.updateColor(Random, 0, 3); //After for each digit
   }
 
   //Serial.println("Display  done!.");
@@ -1278,12 +1333,14 @@ void displayInit()
 // Update a new config in the file an change behivor
 void loadConfig()
 {
+
   count  = obj["wifi"]["sta"]["count"];  // retrys and reboots
 
   // --------------------------- OLED
   if (obj["oled"].as<bool>())
   {
     Heltec.display->clear();
+    Heltec.display->drawString(0, 0, obj["name"]);
     Heltec.display->display();
     //Heltec.display->flipScreenVertically();
   }
@@ -1364,12 +1421,12 @@ void loadConfig()
   }
 
   //---------------- Sensors Init
-  if (obj["sensors"]["enable"].as<bool>())
+  //  if (sen["sensors"]["enable"].as<bool>())
   {
     sensorInit();
 
     //tempRefresh = millis();
-    tempRefresh = obj["sensors"]["time"].as<unsigned int>() + millis();
+    //    tempRefresh = sen["sensors"]["time"].as<unsigned int>() + millis();
     soundRefresh = millis();
     airRefresh = millis();
     timestamp = millis() ;
@@ -1389,17 +1446,13 @@ void loadConfig()
 
 
   // if ((strcmp(s_aux.c_str(), WiFi.macAddress().c_str()) != 0) && (len == 0))
-  if (len == 0)
+  if ((len == 0) && (i_aux == 0))
   {
     Serial.println("{\"update_id\":true}");
 
     obj["id"].set( WiFi.macAddress());
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
-    serializeJson(obj, Serial);
-  }
+    // obj["id"] = WiFi.macAddress().c_str());
 
-  if (i_aux == 0)
-  {
     Serial.println("{\"update_lora\":true}");
     strcpy(aux_buf, s_aux.c_str());
     localAddress = 0;
@@ -1407,18 +1460,25 @@ void loadConfig()
     for ( int i = 0; i < len; i++)
       localAddress += aux_buf[i];
 
-    if (localAddress == 0)localAddress = random(1, 255);
+    if ((localAddress == 0) || (localAddress == 255))localAddress = random(1, 254);
     obj["lora"]["local"].set(localAddress);
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
+    //Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
 
     //Serial.println( localAddress, HEX);
+    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"lora_id_file_saved\":true}" : "{\"lora_id_file_saved\":false}" );
+    serializeJson(obj, Serial);
+  }
+
+
+  {
+
   }
 
 
 
   if (obj["mqtt"]["enable"].as<bool>())
   {
-    client.setBufferSize(1736);
+    client.setBufferSize(1024);
     client.setServer(obj["mqtt"]["broker"].as<const char*>(), obj["mqtt"]["port"].as<unsigned int>());
     //client.setServer(obj["mqtt"]["broker"].as<const char*>(),1883);
     //client.setServer("inventoteca.com", 1883);
@@ -1510,7 +1570,7 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         doc["wifi"]["sta"]["registered"] = false;
 
         if (sizeof(email) > 0)doc["email"] = email;
-        else doc["email"] = "inventotk@gmail.com";
+        else obj["email"] = "inventotk@gmail.com";
         //obj["mq"]
         //wifi_config = false;
         correct = false;
@@ -1535,7 +1595,7 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         Serial.println("{\"wifi_event\":\"ack\"}");
         correct = true;
         contador = 0;
-        doc["wifi"]["sta"]["registered"] = true;
+        obj["wifi"]["sta"]["registered"] = true;
         // COMENTED FOR TEST DEV, UNCOMENT FOR PROD
         Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
         if (obj["neodisplay"]["enable"].as<bool>())
@@ -1571,9 +1631,9 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
           count++;
           obj["wifi"]["sta"]["count"] = count;
           //obj["wifi"]["sta"]["registered"] = false;
-          obj["wifi"]["sta"]["enable"] = true;
-          obj["wifi"]["sta"]["ssid"] = "";
-          obj["wifi"]["sta"]["pass"] = "";
+          //obj["wifi"]["sta"]["enable"] = true;
+          //obj["wifi"]["sta"]["ssid"] = "";
+          //obj["wifi"]["sta"]["pass"] = "";
           Serial.println(saveJSonToAFile(&obj, filename) ? "{\"wifi_disconected_saved\":true}" : "{\"file_saved\":false}");
           loadConfig();
         }
@@ -1712,7 +1772,7 @@ void checkServer()
         color_status[0] = 255;
         color_status[1] = 255;
         color_status[2] = 0;
-       // PrintOut();
+        // PrintOut();
       }
 
     }
@@ -1838,6 +1898,7 @@ static void Cfg_get(struct jsonrpc_request * r)
   // open file to load config
 
   obj = getJSonFromFile(&doc, filename);
+  //  sen = getJSonFromFile(&sen_doc, sen_filename);
   dev = getJSonArrayFromFile(&dev_doc, device_list);
 
   //StaticJsonDocument<2048> doc_cfg;
@@ -1855,6 +1916,8 @@ static void Cfg_get(struct jsonrpc_request * r)
   serializeJson(obj, Serial);
   Serial.println();
   serializeJson(dev, Serial);
+  Serial.println();
+  //serializeJson(sen, Serial);
   Serial.println();
   //}
   //else
@@ -1994,17 +2057,17 @@ static void sensors_set(struct jsonrpc_request * r) {
   mjson_get_bool(r->params, r->params_len, "$.enable", &sensors);
   //mjson_get_string(r->params, r->params_len, "$.type", buf, sizeof(buf));
   //digitalWrite(25,ledOn);              // Set LED to the "on" value
-  obj["sensors"]["enable"] = sensors ? true : false;
-  //obj["server"]["type"] = buf;
-  //isSaved = ;
+  //  sen["sensors"]["enable"] = sensors ? true : false;
 
-  Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
+  //Serial.println(saveJSonToAFile(&sen, filename) ? "{\"sensor_file_saved\":true}" : "{\"sensor_file_saved\":false}");
+
+
   //resultState();                    // Let shadow know our new state
   jsonrpc_return_success(r, NULL);  // Report success
   //counter(r);
   loadConfig();
   Serial.println();
-  serializeJson(obj, Serial);
+  //serializeJson(sen, Serial);
 }
 
 // --------------------------------------------------------------------------------------------------------- sensors_get
@@ -2012,17 +2075,11 @@ static void sensors_set(struct jsonrpc_request * r) {
 static void sensors_get(struct jsonrpc_request * r) {
   //DynamicJsonDocument msg(1024);
   //String message;
-  if (obj["sensors"]["enable"].as<bool>())
+
+  //  if (sen["sensors"]["enable"].as<bool>())
   {
     sensorInit();
     ReadSensors();
-    //msg["t"] = t;
-    //msg["h"] = h;
-    //msg["u"] = uv;
-    //msg["d"] = db;
-    //msg["l"] = lux;
-    //msg["c"] = CO;
-    //serializeMsgPack(msg, message);
   }
 
   mjson_printf(sender, NULL,
@@ -2055,7 +2112,7 @@ static void display_set(struct jsonrpc_request * r) {
   //counter(r);
   //loadConfig();
   display1.clear();
-  display1.print(buf, white);
+  display1.print(buf, White);
   display1.show();
 }
 
@@ -2190,7 +2247,7 @@ void setup()
   jsonrpc_export("Config.Get", Cfg_get);
   jsonrpc_export("Config.Set", Cfg_set);
   jsonrpc_export("WiFi.Set", Wifi_set);
-  jsonrpc_export("Server.Set", server_set);
+  //jsonrpc_export("Server.Set", server_set);
   jsonrpc_export("Sensors.Set", sensors_set);
   jsonrpc_export("Sensors.Get", sensors_get);
   jsonrpc_export("Display.Set", display_set);
@@ -2198,6 +2255,7 @@ void setup()
   jsonrpc_export("Accesory.Del", accesory_del);
   jsonrpc_export("LoRa.Send", lora_send);
   //jsonrpc_export("count", counter);
+  jsonrpc_export("Update", update_ota);
   //pinMode(NEO_PIN, OUTPUT);
   pinMode(FACTORY_BT, INPUT);
 
@@ -2212,7 +2270,24 @@ void setup()
   Cfg_get(NULL);
   loadConfig();
 
+  /*
+    // Assign the api key (required)
+    config.api_key = obj["firebase"]["api_key"].as<String>();
+    // Assign the user sign in credentials
+    auth.user.email = obj["firebase"]["email"].as<String>();
+    auth.user.password = obj["firebase"]["pass"].as<String>();
+    // Assign the callback function for the long running token generation task
+    config.token_status_callback = tokenStatusCallback; // see addons/TokenHelper.h
 
+    // Assign download buffer size in byte
+    // Data to be downloaded will read as multiple chunks with this size, to compromise between speed and memory used for buffering.
+    // The memory from external SRAM/PSRAM will not use in the TCP client internal rx buffer.
+    config.fcs.download_buffer_size = 2048;
+
+    Firebase.begin(&config, &auth);
+
+    Firebase.reconnectWiFi(true);
+  */
 
   //reportState(NULL);
 
@@ -2229,6 +2304,7 @@ void setup()
 void loop()
 {
   ReadSerial();
+
 
   if (obj["wifi"]["sta"]["enable"].as<bool>())
   {
@@ -2256,12 +2332,12 @@ void loop()
     Serial.println("{\"factory_reset\":true}");
     // Save config
     // obj not save complete ssid, better use doc
-    doc["wifi"]["sta"]["ssid"] = "";
-    doc["wifi"]["sta"]["pass"] = "";
-    doc["wifi"]["sta"]["enable"] = true;
-    doc["wifi"]["sta"]["count"] = 0;
-    doc["wifi"]["sta"]["registered"] = false;
-    doc["email"] = "inventotk@gmail.com";
+    obj["wifi"]["sta"]["ssid"] = "";
+    obj["wifi"]["sta"]["pass"] = "";
+    obj["wifi"]["sta"]["enable"] = true;
+    obj["wifi"]["sta"]["count"] = 0;
+    obj["wifi"]["sta"]["registered"] = false;
+    obj["email"] = "inventotk@gmail.com";
     Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
     ESP.restart();
   }

@@ -1,8 +1,10 @@
 {
   "id": "",
+  "name": "Caja sensores",
   "type": "ergo",
-  "name": "Neoclock 1",
   "oled": true,
+  "registered": false,
+  "email": "",
   "neodisplay": {
     "enable": true,
     "digits": 17,
@@ -10,8 +12,6 @@
     "status": 17,
     "pin": 25
   },
-  "registered": false,
-  "email": "",
   "wifi": {
     "sta": {
       "ssid": "",
@@ -32,59 +32,18 @@
     "port": 1883,
     "registered": false
   },
-  "sensors": {
-    "enable": false,
-    "time": 1000,
-    "t": {
-      "max": 25,
-      "min": 20,
-      "cal": 0,
-      "colMax": 4294901760,
-      "colMin": 4278190335,
-      "colDef": 4294967295
-    },
-    "h": {
-      "max": 45,
-      "min": 35,
-      "colMax": 4278255360,
-      "colMin": 4294901760,
-      "colDef": 4294967295
-    },
-    "uv": {
-      "max": 4,
-      "min": 0,
-      "colMax": 4294901760,
-      "colMin": 4294967295,
-      "colDef": 4294967295
-    },
-    "db": {
-      "max": 65,
-      "min": 0,
-      "colMax": 4294901760,
-      "colMin": 4294967295,
-      "colDef": 4294967295
-    },
-    "lux": {
-      "max": 220,
-      "min": 50,
-      "colMax": 4294901760,
-      "colMin": 4294901760,
-      "colDef": 4294967295
-    },
-    "ppm": {
-      "max": 450,
-      "min": 0,
-      "cal": 400,
-      "colMax": 4294901760,
-      "colMin": 4294967295,
-      "colDef": 4294967295
-    }
-  },
-  "lora": {
+ "lora": {
     "enable": true,
-    "local": 203,
+    "local": 0,
     "remote": 0,
     "band": 915000000,
     "registered": false
+  },
+  "firebase": {
+  	"email":"info@inventoteca.com",
+  	"pass":"Homerosim",
+  	"api_key":"AIzaSyAOfGOjdpVQZtnhwTjmNRy8mApY993zHfc",
+  	"bucked_id":"smart-industry-panels.appspot.com",
+  	"firmware_path":"smart/panels/firmware/firmware.bin"
   }
 }
