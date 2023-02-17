@@ -23,7 +23,7 @@
 #include <ArduinoJson.h>
 #include "mjson.h"  // Sketch -> Add File -> Add mjson.h
 //#include <WiFiUdp.h>
-#include "heltec.h"
+//#include "heltec.h"
 //#include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_TSL2561_U.h>
@@ -388,7 +388,7 @@ static void lora_send(struct jsonrpc_request *r)
 
 
 
-  if (obj["oled"].as<bool>())
+ /* if (obj["oled"].as<bool>())
   {
     Heltec.display->clear();
     Heltec.display->display();
@@ -399,7 +399,7 @@ static void lora_send(struct jsonrpc_request *r)
 
     Heltec.display->drawString(0, 10, s_cmd);
     Heltec.display->display();
-  }
+  }*/
 
 
 }
@@ -408,7 +408,7 @@ static void lora_send(struct jsonrpc_request *r)
 // -------------------------------------------------------------------------------------- SendData
 void SendData()
 {
-  DynamicJsonDocument msg(1024);
+  /*DynamicJsonDocument msg(1024);
   String message;
   //message = "HeLoRa World!";   // send a message
   //msg["method"] =
@@ -421,7 +421,7 @@ void SendData()
   last_db = 0;
   serializeJson(msg, message);
   Serial.println(message);
-  sendMessage(message);
+  sendMessage(message);*/
 }
 
 
@@ -429,7 +429,7 @@ void SendData()
 void onReceive(int packetSize)
 {
 
-  if (packetSize == 0) return;          // if there's no packet, return
+/*  if (packetSize == 0) return;          // if there's no packet, return
   //Serial.println();
   //Serial.println("LoRa:");
 
@@ -593,14 +593,15 @@ void onReceive(int packetSize)
 
   }
 
-
+*/
 }
 
 
 //----------------------------------------------------------------------------------------- sendMessage
 void sendMessage(String outgoing)
 {
-  if (dev.size() >= 0) // list of devices
+ 
+   /*if (dev.size() >= 0) // list of devices
   { //  Serial.println("Sending LoRa...");
     for (JsonArray::iterator it = dev.begin(); it != dev.end(); ++it)
     {
@@ -629,7 +630,7 @@ void sendMessage(String outgoing)
   }
 
 
-
+*/
 }
 
 
@@ -692,7 +693,7 @@ void PrintOut()
 {
   //if (millis() - printRefresh > printTime)
   {
-    if (obj["oled"].as<bool>())
+    /*if (obj["oled"].as<bool>())
     {
       Heltec.display->clear();
       Heltec.display->display();
@@ -719,7 +720,7 @@ void PrintOut()
       Heltec.display->drawString(95, 45, "ppm");
 
       Heltec.display->display();
-    }
+    }*/
 
 
     if (obj["neodisplay"]["enable"].as<bool>())
@@ -1120,9 +1121,9 @@ void sensorInit()
     Serial1.write(0x01);
     Serial1.write(0x84);
     Serial1.write(0x0A);
-    while (!Serial1.available());
+    //while (!Serial1.available());
 
-    while (Serial1.available())
+    //while (Serial1.available())
     {
       ch_db[i] = Serial1.read();
       //Serial.println(ch[i], HEX);
@@ -1233,12 +1234,12 @@ void displayInit()
     }
 
     display1.clear();
-    display1.print("oC", red);
-    display1.print("% ", green);
-    display1.print("uV", purple);
-    display1.print("dB ", blue);
-    display1.print("luxe", white);
-    display1.print("PPN.N", cian);
+    display1.print("oC", Red);
+    display1.print("% ", Green);
+    display1.print("uV", Purple);
+    display1.print("dB ", Blue);
+    display1.print("luxe", White);
+    display1.print("PPN.N", Cian);
     display1.show();
     delay(1000);
     display1.clear();
@@ -1250,7 +1251,7 @@ void displayInit()
   {
     for (int disp_num = 0; disp_num < obj["neodisplay"]["digits"].as<unsigned int>(); disp_num++)
     {
-      display1.updateColor(RANDOM); //Before for all display
+      display1.updateColor(Random); //Before for all display
       display1.setCursor(disp_num);
       display1.print(disp_num);      // It prints the value.
       display1.show();              // Lights up the pixels.
@@ -1263,7 +1264,7 @@ void displayInit()
     //display1.updateColor(Random); //Before for all display
     display1.clear();
     display1.print("12:00");
-    display1.updateColor(RANDOM, 0, 3); //After for each digit
+    display1.updateColor(Random, 0, 3); //After for each digit
   }
 
   //Serial.println("Display  done!.");
@@ -1281,12 +1282,12 @@ void loadConfig()
   count  = obj["wifi"]["sta"]["count"];  // retrys and reboots
 
   // --------------------------- OLED
-  if (obj["oled"].as<bool>())
+  /*if (obj["oled"].as<bool>())
   {
     Heltec.display->clear();
     Heltec.display->display();
     //Heltec.display->flipScreenVertically();
-  }
+  }*/
 
   // ------------------------- NeoDisplay
   if (obj["neodisplay"]["enable"].as<bool>())
@@ -2055,7 +2056,7 @@ static void display_set(struct jsonrpc_request * r) {
   //counter(r);
   //loadConfig();
   display1.clear();
-  display1.print(buf, white);
+  display1.print(buf, White);
   display1.show();
 }
 
@@ -2173,19 +2174,18 @@ void ReadSerial()
 //################################################################----------------------- setup--------------------- #############################
 void setup()
 {
-  //Heltec.begin(true /*DisplayEnable */, true /*LoRa*/, true /*Serial Enable*/);
-
-  Heltec.begin(true     /*DisplayEnable*/, true /*LoRa */, true /*Serial */, true /*PABOOST */, BAND /* BAND*/);
+  //Heltec.begin(false /*DisplayEnable */, false /*LoRa*/, true /*Serial Enable*/);
+  //Heltec.begin(true     /*DisplayEnable*/, true /*LoRa */, true /*Serial */, true /*PABOOST */, BAND /* BAND*/);
   //Wire.begin(); //
-
   //WiFi.mode(WIFI_AP_STA);
   //printLocalTime();
+  Serial.begin(115200);
   WiFi.mode(WIFI_STA);
   WiFi.onEvent(WiFiEvent);
 
   //Heltec.begin(true, false, true);
   //
-  //Serial.begin(115200);
+  //
   jsonrpc_init(NULL, NULL);
   jsonrpc_export("Config.Get", Cfg_get);
   jsonrpc_export("Config.Set", Cfg_set);
@@ -2240,10 +2240,10 @@ void loop()
   }
 
 
-  if (obj["lora"]["enable"].as<bool>())
+  /*if (obj["lora"]["enable"].as<bool>())
   {
     onReceive(LoRa.parsePacket());
-  }
+  }*/
 
   if (digitalRead(FACTORY_BT) == LOW)
   {
