@@ -1,5 +1,5 @@
 {
-  "id": "40:91:51:93:45:B8",
+  "id": "",
   "type": "ergo",
   "name": "Neoclock 1",
   "oled": false,
@@ -10,10 +10,10 @@
   "url": "smart-industry-panels-default-rtdb.firebaseio.com",
   "wifi": {
     "sta": {
-      "ssid": "Inventoteca_2G",
-      "pass": "science_7425",
+      "ssid": "",
+      "pass": "",
       "enable": true,
-      "registered": true,
+      "registered": false,
       "count": 0
     }
   },

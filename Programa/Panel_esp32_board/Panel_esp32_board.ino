@@ -21,15 +21,16 @@
 #include "SPIFFS.h"
 #include "FS.h"
 #include <ArduinoJson.h>
-#include "mjson.h"  // Sketch -> Add File -> Add mjson.h
+//#include "mjson.h"  // Sketch -> Add File -> Add mjson.h
 //#include <WiFiUdp.h>
 //#include "heltec.h"
 //#include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_TSL2561_U.h>
-#include <PubSubClient.h>
+//#include <PubSubClient.h>
 #include "time.h"
 #include <Firebase_ESP_Client.h>
+//#include <FirebaseJson.h>
 #include <addons/TokenHelper.h>         // Provide the token generation process info.
 #include <addons/RTDBHelper.h>          // Provide the RTDB payload printing info and other helper functions.
 #include <esp_task_wdt.h>
@@ -97,17 +98,19 @@ DHT dht(DHTPIN, DHTTYPE);
 Adafruit_TSL2561_Unified tsl = Adafruit_TSL2561_Unified(TSL2561_ADDR_FLOAT, 12345);
 sensors_event_t event;
 JsonObject obj;
+JsonObject conf;
 JsonArray dev;
 //JsonObject sen;
 StaticJsonDocument<512> dev_doc;
 StaticJsonDocument<1736> doc;
+StaticJsonDocument<1736> conf_doc;
 //StaticJsonDocument<1024> sen_doc;
 
 File file;
 
 //--------------- MQTT
-WiFiClient espClient;
-PubSubClient client(espClient);
+//WiFiClient espClient;
+//PubSubClient client(espClient);
 
 // Define Firebase Data object
 FirebaseData fbdo;
@@ -116,6 +119,8 @@ FirebaseConfig config;
 bool taskCompleted = false;
 FirebaseJson json;
 String nodeName;
+volatile bool dataChanged = false;
+FirebaseData stream;
 
 //WebSocketsServer webSocket = WebSocketsServer(81); //websocket init with port 81
 //void webSocketEvent(uint8_t num, WStype_t w_type, uint8_t * payload, size_t length);
@@ -144,6 +149,7 @@ bool sensors_init = false;
 char ch_db[10];
 int last_db;
 bool neo_digits_status = false;
+bool tsl_status = false;
 short color_status[3] = {0, 0, 0};
 
 //mq-135
@@ -158,7 +164,7 @@ const char *filename = "/config.json";
 const char *sen_filename = "/sensors.json";
 const char *device_list = "/devices.json";
 bool correct = false;
-bool wifi_config = false;
+bool smart_config = false;
 int wifi_trys;
 boolean isSaved = false;
 char buf[1024];
@@ -177,6 +183,10 @@ unsigned long airRefresh = 0;
 unsigned long startMillis = 0;
 unsigned long printRefresh = 0;
 unsigned long printTime = 1000;
+unsigned long factory_time = 0;
+unsigned long prev_factory_time = 0;
+bool factory_press = false;
+bool reset_time = false;
 int contador;
 const uint32_t connectTimeoutMs = 3000;
 unsigned long  timestamp;
@@ -269,133 +279,133 @@ unsigned long lastMsg = 0;
 //}
 
 // ------------------------------------------------------------------------------ reconnect
-void reconnect() {
-  // Loop until we're reconnected
-  if (!client.connected())
-  {
-    //Serial.print("Attempting MQTT connection...");
-    // Create a random client ID
-    String clientId = "";
-    String userEmail = "";
-    String msgPanel = "";
+//void reconnect() {
+//  // Loop until we're reconnected
+//  if (!client.connected())
+//  {
+//    //Serial.print("Attempting MQTT connection...");
+//    // Create a random client ID
+//    String clientId = "";
+//    String userEmail = "";
+//    String msgPanel = "";
+//
+//    // Attempt to connect
+//    clientId = obj["id"].as<String>();
+//    userEmail = "smart/users/" + obj["email"].as<String>() + "/add";
+//    //msgPanel = "{\"id\":\"\" + clientId  + "",\"type\":\"" + obj["type"].as<String>() + "\",\"name\":\"" + obj["name"].as<String>() + "\",\"mod\":true}";
+//
+//    DynamicJsonDocument msg(1024);
+//
+//    msg["id"] = obj["id"];
+//    msg["name"] = obj["name"];
+//    msg["type"] = obj["type"];
+//    msg["mod"] = true; // email registrated
+//    serializeJson(msg, msgPanel);
+//
+//
+//    if (client.connect(clientId.c_str()))
+//    {
+//      //Serial.println("connected");
+//      // Once connected, publish an announcement...
+//      if (obj["registered"].as<bool>()) // Device registered on user db
+//      {
+//        client.publish(userEmail.c_str(), "{}", false);
+//      }
+//      else
+//      {
+//        client.publish(userEmail.c_str(), msgPanel.c_str(), false);
+//        Serial.println(msgPanel);
+//      }
+//
+//      // ... and resubscribe
+//      //  char buftop[100];
+//      //  char bufsen[10];
+//      //  const char* topicRoot = "test/panels/%s/%s";
+//      //  sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "t");
+//      //  sprintf(bufsen, "%i", t);
+//      //client.publish(buftop, bufsen);
+//
+//
+//      clientId = "smart/panels/" + clientId + "/app";
+//      client.subscribe(clientId.c_str());
+//      Serial.println("{\"mqtt\":true}");
+//    }
+//    else
+//    {
+//      //Serial.print("failed, rc=");
+//      //Serial.print(client.state());
+//      //Serial.println(" try again in 1 seconds");
+//      // Wait 5 seconds before retrying
+//      //delay(5000);
+//      Serial.println("{\"mqtt\":false}");
+//    }
+//  }
+//}
 
-    // Attempt to connect
-    clientId = obj["id"].as<String>();
-    userEmail = "smart/users/" + obj["email"].as<String>() + "/add";
-    //msgPanel = "{\"id\":\"\" + clientId  + "",\"type\":\"" + obj["type"].as<String>() + "\",\"name\":\"" + obj["name"].as<String>() + "\",\"mod\":true}";
-
-    DynamicJsonDocument msg(1024);
-
-    msg["id"] = obj["id"];
-    msg["name"] = obj["name"];
-    msg["type"] = obj["type"];
-    msg["mod"] = true; // email registrated
-    serializeJson(msg, msgPanel);
-
-
-    if (client.connect(clientId.c_str()))
-    {
-      //Serial.println("connected");
-      // Once connected, publish an announcement...
-      if (obj["registered"].as<bool>()) // Device registered on user db
-      {
-        client.publish(userEmail.c_str(), "{}", false);
-      }
-      else
-      {
-        client.publish(userEmail.c_str(), msgPanel.c_str(), false);
-        Serial.println(msgPanel);
-      }
-
-      // ... and resubscribe
-      //  char buftop[100];
-      //  char bufsen[10];
-      //  const char* topicRoot = "test/panels/%s/%s";
-      //  sprintf(buftop, topicRoot, obj["id"].as<const char*>(), "t");
-      //  sprintf(bufsen, "%i", t);
-      //client.publish(buftop, bufsen);
-
-
-      clientId = "smart/panels/" + clientId + "/app";
-      client.subscribe(clientId.c_str());
-      Serial.println("{\"mqtt\":true}");
-    }
-    else
-    {
-      //Serial.print("failed, rc=");
-      //Serial.print(client.state());
-      //Serial.println(" try again in 1 seconds");
-      // Wait 5 seconds before retrying
-      //delay(5000);
-      Serial.println("{\"mqtt\":false}");
-    }
-  }
-}
-
-// ----------------------------------------------------------------------------------- callback
-void callback(char* topic, byte* payload, unsigned int length) {
-
-  String dataConfig = "";
-
-  Serial.print("{\"mqtt_msg_rec\":{\"topic\":\"");
-  Serial.print(topic);
-  Serial.print("\",\"payload\":");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-    dataConfig += (char)payload[i];
-  }
-  Serial.print("}}");
-  Serial.println();
-
-  String msgPanel;
-  String userEmail  = "smart/users/" + obj["email"].as<String>() + "/add";
-  String clientId = "smart/panels/" + obj["id"].as<String>() + "/conf/response";
-
-  //Serial.println(dataConfig);
-  StaticJsonDocument<1024> docConf;
-  deserializeJson(docConf, dataConfig);
-  JsonObject objConf;
-  objConf = docConf.as<JsonObject>();
-
-
-  if (objConf.isNull())
-  {
-    // Switch on the LED if an 1 was received as first character
-    if ((char)payload[0] == '0') {
-      Serial.println("{\"user\":false}");
-      // it is active low on the ESP-01)
-    } else if ((char)payload[0] == '1')
-    {
-      serializeJson(obj, msgPanel);
-      Serial.println(msgPanel);
-      // No cabe toda la configuracion por mqtt al parecer
-      client.publish(clientId.c_str(), msgPanel.c_str(), false);
-      Serial.println("{\"user\":true}");
-    }
-
-  }
-  else if (objConf["method"] == "Config.Set")
-  {
-    serializeJsonPretty(objConf, Serial);
-    obj = objConf["params"];
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
-  }
-
-  //DynamicJsonDocument msg(1024);
-
-
-
-
-  if (obj["registered"] == false)
-  {
-    client.publish(userEmail.c_str(), "{}", false);
-    obj["registered"] = true;
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
-  }
-
-
-
-}
+//// ----------------------------------------------------------------------------------- callback
+//void callback(char* topic, byte* payload, unsigned int length) {
+//
+//  String dataConfig = "";
+//
+//  Serial.print("{\"mqtt_msg_rec\":{\"topic\":\"");
+//  Serial.print(topic);
+//  Serial.print("\",\"payload\":");
+//  for (int i = 0; i < length; i++) {
+//    Serial.print((char)payload[i]);
+//    dataConfig += (char)payload[i];
+//  }
+//  Serial.print("}}");
+//  Serial.println();
+//
+//  String msgPanel;
+//  String userEmail  = "smart/users/" + obj["email"].as<String>() + "/add";
+//  String clientId = "smart/panels/" + obj["id"].as<String>() + "/conf/response";
+//
+//  //Serial.println(dataConfig);
+//  StaticJsonDocument<1024> docConf;
+//  deserializeJson(docConf, dataConfig);
+//  JsonObject objConf;
+//  objConf = docConf.as<JsonObject>();
+//
+//
+//  if (objConf.isNull())
+//  {
+//    // Switch on the LED if an 1 was received as first character
+//    if ((char)payload[0] == '0') {
+//      Serial.println("{\"user\":false}");
+//      // it is active low on the ESP-01)
+//    } else if ((char)payload[0] == '1')
+//    {
+//      serializeJson(obj, msgPanel);
+//      Serial.println(msgPanel);
+//      // No cabe toda la configuracion por mqtt al parecer
+//      client.publish(clientId.c_str(), msgPanel.c_str(), false);
+//      Serial.println("{\"user\":true}");
+//    }
+//
+//  }
+//  else if (objConf["method"] == "Config.Set")
+//  {
+//    serializeJsonPretty(objConf, Serial);
+//    obj = objConf["params"];
+//    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
+//  }
+//
+//  //DynamicJsonDocument msg(1024);
+//
+//
+//
+//
+//  if (obj["registered"] == false)
+//  {
+//    client.publish(userEmail.c_str(), "{}", false);
+//    obj["registered"] = true;
+//    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
+//  }
+//
+//
+//
+//}
 
 
 // -------------------------------------------------------------------------------------- lora_send
@@ -404,64 +414,64 @@ void callback(char* topic, byte* payload, unsigned int length) {
 static void lora_send(struct jsonrpc_request *r)
 {
 
-  char cmd[100];
-  char cmd_params[100];
-  StaticJsonDocument<124> doc_cmd;
-  const char *buf;  // Get `b` sub-object
-  int len;
-  StaticJsonDocument<124> doc_params;
-  //StaticJsonDocument<124> doc_aux;
-  String s_cmd;
-  //JsonObject cmd_params = doc_cmd.createNestedObject("params");
-
-
-
-
-  if (mjson_get_string(r->params, r->params_len, "$.method", cmd, sizeof(cmd)) > 0)
-  {
-    doc_cmd["method"] = cmd;
-    //Serial.println(cmd);
-    //serializeJsonPretty(doc_cmd, Serial);
-    if (mjson_find(r->params, r->params_len, "$.params", &buf, &len))
-    {
-      //Serial.println(buf);
-      deserializeJson(doc_params, buf);
-      doc_cmd["params"] = doc_params;
-      //JsonObject root = doc_aux.createNestedObject();
-      //
-
-      //
-
-      //
-
-      //root["params"] = doc_params;
-      //serializeJsonPretty(doc_params, Serial);
-      //doc_cmd["params"].set(root);
-      //message = cmd;
-      //
-
-    }
-    serializeJson(doc_cmd, s_cmd);
-    Serial.println(s_cmd);
-    sendMessage(s_cmd);
-    //serializeJsonPretty(doc_cmd, Serial);
-
-  }
-
-
-
-  if (obj["oled"].as<bool>())
-  {
-    //Heltec.display->clear();
-    //Heltec.display->display();
-    //    Heltec.display->setTextAlignment(TEXT_ALIGN_LEFT);
-    //
-    //
-    //    Heltec.display->drawString(0, 0, "Enviado");
-    //
-    //    Heltec.display->drawString(0, 10, s_cmd);
-    //    Heltec.display->display();
-  }
+  //  char cmd[100];
+  //  char cmd_params[100];
+  //  StaticJsonDocument<124> doc_cmd;
+  //  const char *buf;  // Get `b` sub-object
+  //  int len;
+  //  StaticJsonDocument<124> doc_params;
+  //  //StaticJsonDocument<124> doc_aux;
+  //  String s_cmd;
+  //  //JsonObject cmd_params = doc_cmd.createNestedObject("params");
+  //
+  //
+  //
+  //
+  //  if (mjson_get_string(r->params, r->params_len, "$.method", cmd, sizeof(cmd)) > 0)
+  //  {
+  //    doc_cmd["method"] = cmd;
+  //    //Serial.println(cmd);
+  //    //serializeJsonPretty(doc_cmd, Serial);
+  //    if (mjson_find(r->params, r->params_len, "$.params", &buf, &len))
+  //    {
+  //      //Serial.println(buf);
+  //      deserializeJson(doc_params, buf);
+  //      doc_cmd["params"] = doc_params;
+  //      //JsonObject root = doc_aux.createNestedObject();
+  //      //
+  //
+  //      //
+  //
+  //      //
+  //
+  //      //root["params"] = doc_params;
+  //      //serializeJsonPretty(doc_params, Serial);
+  //      //doc_cmd["params"].set(root);
+  //      //message = cmd;
+  //      //
+  //
+  //    }
+  //    serializeJson(doc_cmd, s_cmd);
+  //    Serial.println(s_cmd);
+  //    sendMessage(s_cmd);
+  //    //serializeJsonPretty(doc_cmd, Serial);
+  //
+  //  }
+  //
+  //
+  //
+  //  if (obj["oled"].as<bool>())
+  //  {
+  //    //Heltec.display->clear();
+  //    //Heltec.display->display();
+  //    //    Heltec.display->setTextAlignment(TEXT_ALIGN_LEFT);
+  //    //
+  //    //
+  //    //    Heltec.display->drawString(0, 0, "Enviado");
+  //    //
+  //    //    Heltec.display->drawString(0, 10, s_cmd);
+  //    //    Heltec.display->display();
+  //  }
 
 
 }
@@ -501,7 +511,13 @@ void SendData()
     //nodeName = String(millis());;
     // Set data with timestamp
     //Serial.printf("%s\n", Firebase.RTDB.updateNode(&fbdo, "/panels/01/actual", &json) ? /*fbdo.to<FirebaseJson>().raw()*/"" : fbdo.errorReason().c_str());
-    if (Firebase.RTDB.updateNode(&fbdo, "/panels/01/actual", &json) == false)
+
+    String route = "/panels/" + obj["id"].as<String>() + "/actual";
+    //Serial.println(route);
+
+    //(String route = "/panels/40:91:51:93:45:B8/actual";
+
+    if (Firebase.RTDB.updateNode(&fbdo, route, &json) == false)
     {
       Serial.printf("%s\n", fbdo.errorReason().c_str());
     }
@@ -729,35 +745,35 @@ void neoConfig()
 {
 
   //if (wifi_config == false) // Si aun no se inicia la config
-  if (!WiFi.smartConfigDone() && (wifi_config == false))
+  if (!WiFi.smartConfigDone() && (smart_config == false))
   {
-    if (obj["wifi"]["sta"]["count"] > 0)
-    {
-      obj["wifi"]["sta"]["count"] = 0;
-      Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_wifi_count\":true}" : "{\"file_saved\":false}");
-    }
+    //if (obj["wifi"]["sta"]["count"] > 0)
+    //{
+    //  obj["wifi"]["sta"]["count"] = 0;
+    //  Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_wifi_count\":true}" : "{\"file_saved\":false}");
+    //}
 
     WiFi.disconnect(true);
-    WiFi.beginSmartConfig(SC_TYPE_ESPTOUCH_V2);
+
     //WiFi.mode(WIFI_STA);
 
-    if (obj["neodisplay"]["enable"].as<bool>())
-    {
-      //display1.updatePoint(obj["neodisplay"]["status"], white); //no funciona
-      //display1.updatePoint(obj["neodisplay"]["status"], 255, 255, 255); //no funciona, la libreria es u_int
+    //if (obj["neodisplay"]["enable"].as<bool>())
+    //{
+    //display1.updatePoint(obj["neodisplay"]["status"], white); //no funciona
+    //display1.updatePoint(obj["neodisplay"]["status"], 255, 255, 255); //no funciona, la libreria es u_int
 
-      //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 255, 255);
-      //display1.show();
+    //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 255, 255);
+    //display1.show();
 
-      color_status[0] = 255;
-      color_status[1] = 255;
-      color_status[2] = 255;
-    }
+    //color_status[0] = 255;
+    //color_status[1] = 255;
+    //color_status[2] = 255;
+    //}
 
-    wifi_config = true;
+    smart_config = WiFi.beginSmartConfig(SC_TYPE_ESPTOUCH_V2);
 
     Serial.print("{\"SmartConfig\":");
-    Serial.print("true");
+    Serial.print(smart_config);
     Serial.println("}");
 
     //while (!WiFi.smartConfigDone());
@@ -780,7 +796,7 @@ void neoConfig()
 // --------------------------------------------------------------------------------------- PrintOut
 void PrintOut()
 {
-  if (millis() - printRefresh > printTime)
+  //if (millis() - printRefresh > printTime)
   {
     if (obj["oled"].as<bool>())
     {
@@ -866,21 +882,25 @@ void PrintOut()
                      (obj["sensors"]["ppm"]["colMin"].as<uint32_t>()) : (obj["sensors"]["ppm"]["colDef"].as<uint32_t>()));
 
 
+      // ------------------------------------- Status BLink
       if (WiFi.status() == WL_CONNECTED)
       {
         if (blk == true)
         {
           display1.updatePoint(obj["neodisplay"]["status"].as<int>(), obj["sensors"]["ppm"]["colDef"].as<uint32_t>());
           blk = false;
+          color_status[0] = color_status[1] = color_status[2] = 1;
           //display1.show();
         }
         else
         {
           display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 0, 0);
           blk = true;
+          color_status[0] = color_status[1] = color_status[2] = 0;
           //display1.show();
         }
       }
+      // ------------------------------------- Status WiFiEvent
       else
       {
         display1.updatePoint(obj["neodisplay"]["status"].as<int>(), color_status[0], color_status[1], color_status[2]);
@@ -997,19 +1017,22 @@ void ReadSensors()
 
 
       // ----------------------------  Lux
-      tsl.getEvent(&event);
-      lux = event.light;
-      //lux = lux * float(sen["sensors"]["lux"]["cal"].as<float>()); // Porceltual adjust
-      //lux = lux * float(1.1);
-      if (lux > 9999)lux = 9999; //oversaturated
+      if (tsl_status == true)
+      {
+        tsl.getEvent(&event);
+        lux = event.light;
+        //lux = lux * float(sen["sensors"]["lux"]["cal"].as<float>()); // Porceltual adjust
+        //lux = lux * float(1.1);
+        if (lux > 9999)lux = 9999; //oversaturated
 
 
+        //if (lux <= 0)
+        //{
+        //Serial.println("Sensor overload");
+        //lux = 40000;
+        //}
+      }
 
-      //if (lux <= 0)
-      //{
-      //Serial.println("Sensor overload");
-      //lux = 40000;
-      //}
 
 
       // ------------------------ Air Sensor
@@ -1283,11 +1306,12 @@ void sensorInit()
 
 
     // --------------------------- Lux Sensor
-    if (!tsl.begin())
+    if (!tsl.begin()) // BH1750 IS NEEDED
     {
       /* There was a problem detecting the TSL2561 ... check your connections */
       //Serial.print("Ooops, no TSL2561 detected ... Check your wiring or I2C ADDR!");
       Serial.println("{\"tsl\":false}");
+      tsl_status = false;
       //while(1);
     }
     else
@@ -1306,6 +1330,7 @@ void sensorInit()
       tsl.getSensor(&sensor);
 
       Serial.println("{\"tsl\":true}");
+      tsl_status = true;
       //tsl.getEvent(&event);
     }
 
@@ -1391,71 +1416,35 @@ void displayInit()
 void loadConfig()
 {
 
-  count  = obj["wifi"]["sta"]["count"];  // retrys and reboots
-
-  // --------------------------- OLED
-  if (obj["oled"].as<bool>())
-  {
-    //    Heltec.display->clear();
-    //    Heltec.display->drawString(0, 0, obj["name"]);
-    //      Heltec.display->display();
-    //Heltec.display->flipScreenVertically();
-  }
-
-  // ------------------------- NeoDisplay
-  if (obj["neodisplay"]["enable"].as<bool>())
-  {
-    // Display Init
-    if (neo_digits_status == false)
-      displayInit();
-  }
 
   // ----------------------- WiFi STA
   if (obj["wifi"]["sta"]["enable"].as<bool>() == true /*&& (WiFi.status() != WL_CONNECTED)*/)
   {
+    WiFi.mode(WIFI_STA);
     String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
 
-    // ---- New WiFi or wrong configured
-    if (((obj["wifi"]["sta"]["registered"].as<bool>() == false) && (obj["wifi"]["sta"]["count"] >= 2)) || (auxssid.length() == 0))
-    {
-      // ---  New Wifi
-      wifi_config = false;
-      WiFi.stopSmartConfig();
-
-
-      if (auxssid.length() == 0)
-      {
-        Serial.println("{\"load_new_wifi\":true}");
-      }
-      else
-      {
-        Serial.println("{\"wrong_new_wifi\":true}");
-      }
-      neoConfig();
-    }
 
     // ---- WiFi already Registered or try to connect a new wifi
-    else if ((obj["wifi"]["sta"]["registered"].as<bool>() == true) || (obj["wifi"]["sta"]["count"] < 2))
+    if ((obj["wifi"]["sta"]["registered"].as<bool>() == true) /*|| (obj["wifi"]["sta"]["count"] < 2)*/)
     {
-      //Serial.println("Connecting to WiFi");
-      if (obj["wifi"]["sta"]["registered"].as<bool>() == true)
-      {
-        Serial.println("{\"load_registered_wifi\":true}");
-      }
 
-      else
-      {
-        Serial.printf("{\"try_load_new_wifi\":\"%d\"}", count);
-        Serial.println();
-      }
-
+      Serial.println("{\"load_registered_wifi\":true}");
       WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
       //Serial.print("WiFi connecting: \t");
       Serial.print("{\"wifi\":{\"ssid\":\"");
       Serial.print(obj["wifi"]["sta"]["ssid"].as<const char*>());
       Serial.println("\"}}");
     }
-
+    // ---- New WiFi or wrong configured
+    else //if (((obj["wifi"]["sta"]["registered"].as<bool>() == false) && (obj["wifi"]["sta"]["count"] >= 2)) || (auxssid.length() == 0))
+    {
+      //
+      //      if (auxssid.length() == 0){
+      //        Serial.println("{\"load_new_wifi\":true}");}
+      //      else{
+      //        Serial.println("{\"wrong_new_wifi\":true}");}
+      neoConfig();
+    }
   }
   else
   {
@@ -1464,37 +1453,32 @@ void loadConfig()
     WiFi.mode(WIFI_OFF);
     Serial.println("{\"wifi\":{\"enable\":false}}");
   }
+
+  // --------------------------- OLED
+  //if (obj["oled"].as<bool>())
+  //{
+  //    Heltec.display->clear();
+  //    Heltec.display->drawString(0, 0, obj["name"]);
+  //      Heltec.display->display();
+  //Heltec.display->flipScreenVertically();
   //}
 
-  if (obj["wifi"]["ap"]["enable"].as<bool>())
+  // ------------------------- NeoDisplay
+  if (obj["neodisplay"]["enable"].as<bool>())
   {
-    ap_Init(obj["wifi"]["ap"]["ssid"].as<const char*>(), obj["wifi"]["ap"]["pass"].as<const char*>());
-
-    // WiFi.softAP();
-  }
-  else
-  {
-    WiFi.softAPdisconnect(true);
+    //Display Init
+    if (neo_digits_status == false)
+      displayInit();
   }
 
   //---------------- Sensors Init
   if (obj["sensors"]["enable"].as<bool>())
   {
     sensorInit();
-
-    //tempRefresh = millis();
-    //    tempRefresh = sen["sensors"]["time"].as<unsigned int>() + millis();
-    soundRefresh = millis();
-    airRefresh = millis();
-    timestamp = millis() ;
   }
 
-  //Serial.println(WiFi.macAddress());
-
-  // check for id or mac is the config.json file
-
-
   // ------------- ID and LoRa
+  // check for id or mac is the config.json file
   String s_aux;
   s_aux = obj["id"].as<String>();
   int len = s_aux.length();
@@ -1502,10 +1486,13 @@ void loadConfig()
   char aux_buf[50];
 
 
-  // if ((strcmp(s_aux.c_str(), WiFi.macAddress().c_str()) != 0) && (len == 0))
   if ((len == 0) && (i_aux == 0))
   {
     Serial.println("{\"update_id\":true}");
+    Serial.print("{\"ID\":\"");
+    Serial.print(WiFi.macAddress());
+    Serial.println("\"}");
+
 
     obj["id"].set( WiFi.macAddress());
     // obj["id"] = WiFi.macAddress().c_str());
@@ -1526,44 +1513,17 @@ void loadConfig()
     serializeJson(obj, Serial);
   }
 
-
-  // firebase RTDB
-  {
-    /* Assign the api key (required) */
-    config.api_key = obj["key"].as<String>();
-
-    /* Assign the user sign in credentials */
-    auth.user.email = obj["email"].as<String>();
-    auth.user.password = obj["pass"].as<String>();
-
-    /* Assign the RTDB URL (required) */
-    config.database_url = obj["url"].as<String>();
-    Firebase.begin(&config, &auth);
-
-    Firebase.reconnectWiFi(true);
-
-    // Timeout, prevent to program halt
-    config.timeout.wifiReconnect = 10 * 1000; // 10 Seconds to 2 min
-    config.timeout.socketConnection = 1 * 1000; // 1 sec to 1 min
-    config.timeout.sslHandshake = 1 * 1000; // 1 sec to 1 min
-    config.timeout.rtdbKeepAlive = 45 * 1000;    // 20 sec to 2 min
-    config.timeout.rtdbStreamReconnect = 1 * 1000;  //1 sec to 1 min
-    config.timeout.rtdbStreamError = 3 * 1000;    // 3 sec to 30 sec
-
-  }
-
-
-
-  if (obj["mqtt"]["enable"].as<bool>())
-  {
-    client.setBufferSize(1024);
-    client.setServer(obj["mqtt"]["broker"].as<const char*>(), obj["mqtt"]["port"].as<unsigned int>());
-    //client.setServer(obj["mqtt"]["broker"].as<const char*>(),1883);
-    //client.setServer("inventoteca.com", 1883);
-    client.setCallback(callback);
-    // Serial.println(obj["mqtt"]["port"].as<unsigned int>());
-
-  }
+  //
+  //  if (obj["mqtt"]["enable"].as<bool>())
+  //  {
+  //    client.setBufferSize(1024);
+  //    client.setServer(obj["mqtt"]["broker"].as<const char*>(), obj["mqtt"]["port"].as<unsigned int>());
+  //    //client.setServer(obj["mqtt"]["broker"].as<const char*>(),1883);
+  //    //client.setServer("inventoteca.com", 1883);
+  //    client.setCallback(callback);
+  //    // Serial.println(obj["mqtt"]["port"].as<unsigned int>());
+  //
+  //  }
   //Serial.println("Config Loaded");
   Serial.println("{\"Config\":true}");
 
@@ -1582,109 +1542,68 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
   //Serial.printf("{\"wifi_event\":\"%d\"}", event);
   //Serial.println();
 
-  switch (event) {
+  switch (event)
+  {
 
     case ARDUINO_EVENT_SC_SCAN_DONE:
       {
-        Serial.println("{\"wifi_event\":\"scan\"}");
-        contador = 0;
-        if (obj["neodisplay"]["enable"].as<bool>())
-        {
-          color_status[0] = 255;
-          color_status[1] = 255;
-          color_status[2] = 255;
-          //PrintOut();
-        }
+        //Serial.println("{\"wifi_event\":\"scan\"}");
+        color_status[0] = 255;
+        color_status[1] = 255;
+        color_status[2] = 255;
       }
       break;
 
     case ARDUINO_EVENT_SC_FOUND_CHANNEL:
       {
-        //Serial.println("Found channel");
-        Serial.println("{\"wifi_event\":\"found\"}");
-        //display1.updatePoint(PIX_STATUS, 0, 255, 255);
-        //display1.show();
-
-        if (obj["neodisplay"]["enable"].as<bool>())
-        {
-          //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 0, 255);
-          //display1.show();
-          color_status[0] = 255;
-          color_status[1] = 0;
-          color_status[2] = 255;
-          //PrintOut();
-        }
-        contador = 0;
-
+        //Serial.println("{\"wifi_event\":\"found\"}");
+        color_status[0] = 255;
+        color_status[1] = 0;
+        color_status[2] = 255;
       }
       break;
 
     case ARDUINO_EVENT_SC_GOT_SSID_PSWD:
       {
 
-        Serial.println("{\"wifi_event\":\"config\"}");
+        //Serial.println("{\"wifi_event\":\"config\"}");
+        color_status[0] = 0;
+        color_status[1] = 0;
+        color_status[2] = 255;
 
-        if (info.sc_got_ssid_pswd.type == SC_TYPE_ESPTOUCH_V2) {
-          ESP_ERROR_CHECK( esp_smartconfig_get_rvd_data(rvd_data, sizeof(rvd_data)) );
-          memcpy(email, rvd_data, sizeof(rvd_data));
-
-        }
+        //if (info.sc_got_ssid_pswd.type == SC_TYPE_ESPTOUCH_V2)
+        //{
+        //  ESP_ERROR_CHECK( esp_smartconfig_get_rvd_data(rvd_data, sizeof(rvd_data)) );
+        //  memcpy(email, rvd_data, sizeof(rvd_data));
+        //}
 
         memcpy(pass, info.sc_got_ssid_pswd.password, sizeof(info.sc_got_ssid_pswd.password) + 1);
         memcpy(ssid, info.sc_got_ssid_pswd.ssid, sizeof(info.sc_got_ssid_pswd.ssid) + 1);
 
-        //Serial.println("Got SSID and password");
-        contador = 0;
-
-        Serial.printf("SSID:%s\n", ssid);
-        Serial.printf("PASSWORD:%s\n", pass);
+        //Serial.printf("SSID:%s\n", ssid);
+        //Serial.printf("PASSWORD:%s\n", pass);
 
         // Save config
-        // obj not save complete ssid, better use doc
-        doc["wifi"]["sta"]["ssid"] = ssid;
-        doc["wifi"]["sta"]["pass"] = pass;
-        doc["wifi"]["sta"]["enable"] = true;
-        doc["wifi"]["sta"]["count"] = 0;
-        doc["wifi"]["sta"]["registered"] = false;
+        obj["wifi"]["sta"]["ssid"] = ssid;
+        obj["wifi"]["sta"]["pass"] = pass;
+        //obj["wifi"]["sta"]["enable"] = true;
+        //obj["wifi"]["sta"]["count"] = 0;
+        obj["wifi"]["sta"]["registered"] = false;
 
-        if (sizeof(email) > 0)doc["email"] = email;
-        else obj["email"] = "inventotk@gmail.com";
-        //obj["mq"]
-        //wifi_config = false;
-        correct = false;
-        // COMENTED FOR TEST DEV, UNCOMENT FOR PROD
-        Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
-        if (obj["neodisplay"]["enable"].as<bool>())
-        {
-          //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 0, 255);
-          //display1.show();
-          color_status[0] = 0;
-          color_status[1] = 0;
-          color_status[2] = 255;
-          PrintOut();
-        }
+        WiFi.stopSmartConfig();
+        smart_config = false;
 
       }
       break;
 
     case ARDUINO_EVENT_SC_SEND_ACK_DONE:
       {
-        //Serial.println("SC_EVENT_SEND_ACK_DONE");
-        Serial.println("{\"wifi_event\":\"ack\"}");
-        correct = true;
-        contador = 0;
+        //Serial.println("{\"wifi_event\":\"ack\"}");
+        color_status[0] = 0;
+        color_status[1] = 255;
+        color_status[2] = 0;
         obj["wifi"]["sta"]["registered"] = true;
-        // COMENTED FOR TEST DEV, UNCOMENT FOR PROD
-        Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
-        if (obj["neodisplay"]["enable"].as<bool>())
-        {
-          //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 255, 0);
-          //display1.show();
-          color_status[0] = 0;
-          color_status[1] = 255;
-          color_status[2] = 0;
-          PrintOut();
-        }
+        Serial.println(saveJSonToAFile(&obj, filename) ? "{\"registered_wifi_saved\":true}" : "{\"registered_wifi_saved\":false}" );
       }
       break;
 
@@ -1817,146 +1736,196 @@ void checkServer()
   {
     String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
 
+
     // ------------------ Wifi Connected
     if (WiFi.status() == WL_CONNECTED)
     {
-      //Serial.println("{\"wifi_server\":\"connected\"}");
-      //wifi_config = false;
-
+      Serial.println("{\"wifi\":\"connected\"}");
 
       if (obj["wifi"]["sta"]["registered"] == false)
       {
         obj["wifi"]["sta"]["registered"] = true;
         obj["wifi"]["sta"]["count"] = 0;
-        Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_new_wifi\":true}" : "{\"file_saved\":false}");
 
+        Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_new_wifi\":true}" : "{\"file_saved\":false}");
+        Serial.print("{\"wifi\":{\"ssid\":\"");
+        Serial.print(obj["wifi"]["sta"]["ssid"].as<const char*>());
+        Serial.println("\"}}");
+        if (smart_config)
+        {
+          WiFi.stopSmartConfig();
+          smart_config = false;
+        }
       }
 
       // MQTT Enable
-      if (obj["mqtt"]["enable"].as<bool>())
-      {
-        if (!client.connected())
-        {
-          Serial.println("{\"mqtt_server\":\"reconnect\"}");
-          blk = false;
-          reconnect();
-        }
-        // Blink led status on printOut
-        else
-        {
-          //Serial.println("{\"mqtt_server\":\"connected\"}");
-          //if (obj["neodisplay"]["enable"].as<bool>())
-          //{
-          //  display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 255, 0);
-          //  display1.show();
-          // }
-          blk = !blk;
-        }
-
-      }
+      //      if (obj["mqtt"]["enable"].as<bool>())
+      //      {
+      //        if (!client.connected())
+      //        {
+      //          Serial.println("{\"mqtt_server\":\"reconnect\"}");
+      //          blk = false;
+      //          reconnect();
+      //        }
+      //        // Blink led status on printOut
+      //        else
+      //        {
+      //          //Serial.println("{\"mqtt_server\":\"connected\"}");
+      //          //if (obj["neodisplay"]["enable"].as<bool>())
+      //          //{
+      //          //  display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 255, 0);
+      //          //  display1.show();
+      //          // }
+      //          blk = !blk;
+      //        }
+      //
+      //      }
 
       // Firebase
-      //if (Firebase.ready() && !taskCompleted)
-      //{
-      // taskCompleted = true;
-
-      //Serial.printf("Set timestamp... %s\n", Firebase.RTDB.setTimestamp(&fbdo, "/test/timestamp") ? "ok" : fbdo.errorReason().c_str());
-
-      //if (fbdo.httpCode() == FIREBASE_ERROR_HTTP_CODE_OK)
-      //{
-
-      // In setTimestampAsync, the following timestamp will be 0 because the response payload was ignored for all async functions.
-
-      // Timestamp saved in millisecond, get its seconds from int value
-      //Serial.print("TIMESTAMP (Seconds): ");
-      //Serial.println(fbdo.to<int>());
-
-      // Or print the total milliseconds from double value
-      // Due to bugs in Serial.print in Arduino library, use printf to print double instead.
-      //printf("TIMESTAMP (milliSeconds): %lld\n", fbdo.to<uint64_t>());
-      //}
-
-      //Serial.printf("Get timestamp... %s\n", Firebase.RTDB.getDouble(&fbdo, "/test/timestamp") ? "ok" : fbdo.errorReason().c_str());
-      //if (fbdo.httpCode() == FIREBASE_ERROR_HTTP_CODE_OK)
-      //printf("TIMESTAMP: %lld\n", fbdo.to<uint64_t>());
-
-      // To set and push data with timestamp, requires the JSON data with .sv placeholder
-
-
-
-      // Push data with timestamp
-      //
-
-      // Get previous pushed data
-      // Serial.printf("Get previous pushed data... %s\n", Firebase.RTDB.getJSON(&fbdo, "/test/push/data/" + fbdo.pushName()) ? fbdo.to<FirebaseJson>().raw() : fbdo.errorReason().c_str());
-      //}
-
-
-      //Serial.printf("Push data with timestamp... %s\n", Firebase.RTDB.pushJSON(&fbdo, "/panels/01/data", &json) ? "ok" : fbdo.errorReason().c_str());
-      //delay(1000);
-    }
-
-    // -------------- Wifi configured, enable, and registered but not connected yet,
-    else if ((obj["wifi"]["sta"]["registered"].as<bool>() == true) && (obj["wifi"]["sta"]["enable"].as<bool>() == true))
-    {
-      Serial.println("{\"wifi_event_check_server\":\"reconnect\"}");
-      blk = true;
-      //WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
-
-      if (obj["neodisplay"]["enable"].as<bool>())
+      if (!Firebase.ready()) // Add more filters
       {
-        //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 0, 0);
-        //display1.show();
-        color_status[0] = 255;
-        color_status[1] = 255;
-        color_status[2] = 0;
-        // PrintOut();
+        /* Assign the api key (required) */
+        // s_aux = obj["key"].as<String>();
+        //len = s_aux.length();
+        blk = false;
+        Serial.println("{\"firebase_init\":true}");
+        config.api_key = obj["key"].as<String>();
+
+        /* Assign the user sign in credentials */
+        auth.user.email = obj["email"].as<String>();
+        auth.user.password = obj["pass"].as<String>();
+
+        /* Assign the RTDB URL (required) */
+        config.database_url = obj["url"].as<String>();
+        Firebase.begin(&config, &auth);
+
+        Firebase.reconnectWiFi(true);
+
+        String route_config = "/panels/" + obj["id"].as<String>() + "/config";
+        if (!Firebase.RTDB.beginStream(&stream, "/panels/01/config"))
+          Serial.printf("sream begin error, %s\n\n", stream.errorReason().c_str());
+        Firebase.RTDB.setStreamCallback(&stream, streamCallback, streamTimeoutCallback);
+
+        // Timeout, prevent to program halt
+        //config.timeout.wifiReconnect = 10 * 1000; // 10 Seconds to 2 min
+        //config.timeout.socketConnection = 1 * 1000; // 1 sec to 1 min
+        //config.timeout.sslHandshake = 1 * 1000; // 1 sec to 1 min
+        //config.timeout.rtdbKeepAlive = 45 * 1000;    // 20 sec to 2 min
+        //config.timeout.rtdbStreamReconnect = 1 * 1000;  //1 sec to 1 min
+        //config.timeout.rtdbStreamError = 3 * 1000;    // 3 sec to 30 sec
+
       }
-
-    }
-
-    // ------------  Test new wifi
-    else if (obj["wifi"]["sta"]["registered"].as<bool>() == false && (obj["wifi"]["sta"]["enable"].as<bool>() == true) && (obj["wifi"]["sta"]["count"].as<unsigned int>() < 2) && (auxssid.length() != 0))
-    {
-      Serial.println("{\"wifi_event_check_server\":\"test try\"}");
-      blk = true;
-      wifi_trys++;
-      //WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
-
-      if (obj["neodisplay"]["enable"].as<bool>())
+      else //if (Firebase.ready() /*&& !taskCompleted*/)
       {
-        //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 0, 0);
-        //display1.show();
-        color_status[0] = 255;
-        color_status[1] = 255;
-        color_status[2] = 0;
-        //PrintOut();
+        Serial.println("{\"firebase_connected\":true}");
+        blk = !blk;
+        //
+        //{
+        // Get previous pushed data
+        //String route_config = "/panels/" + obj["id"].as<String>() + "/config";
+        String route_config = "/panels/01/config";
+
+
+
+
+        //if (Firebase.RTDB.getJSON(&fbdo, route_config))
+        //{
+        //Serial.println(fbdo.to<FirebaseJson>().raw());
+        // String s = fbdo.to<String>();
+        //deserializeJson(conf_doc, s);
+        //serializeJsonPretty(conf_doc, Serial);
+
+        //}
+        //else
+        //{
+        //Serial.println(fbdo.errorReason().c_str());
+
+
+        //if (strcmp(fbdo.errorReason().c_str(), "path not exist") == 0)
+        //{
+        //json.set("sensors", obj);
+        //json.set("h", h);
+        //json.set("uv", uv);
+        //json.set("db", db);
+        //json.set("lux", lux);
+        //json.set("ppm", ppm);
+        // now we will set the timestamp value at Ts
+        //json.set("Ts/.sv", "timestamp"); // .sv is the required place holder for sever value which currently supports only string "timestamp" as a value
+        //nodeName = String(millis());;
+        // Set data with timestamp
+        //Serial.printf("%s\n", Firebase.RTDB.updateNode(&fbdo, "/panels/01/actual", &json) ? /*fbdo.to<FirebaseJson>().raw()*/"" : fbdo.errorReason().c_str());
+
+        //String route = "/panels/" + obj["id"].as<String>() + "/config";
+        //if (Firebase.RTDB.updateNode(&fbdo, route, &json) == false)
+        //{
+        //Serial.printf("%s\n", fbdo.errorReason().c_str());
+        //}
+        //else
+        //{
+        //Serial.println("{\"upload_config\":true}");
+        //}
+
+        //}
+
+        //Serial.printf("Push data with timestamp... %s\n", Firebase.RTDB.pushJSON(&fbdo, "/panels/01/data", &json) ? "ok" : fbdo.errorReason().c_str());
+        //delay(1000);
+        //}
+        //}
+
+        //if (dataChanged)
+        //{
+        // dataChanged = false;
+        // When stream data is available, do anything here...
+        //}
+      }
+      
+      //if (!Firebase.RTDB.beginStream(&stream, "/test/data"))
+      //  Serial.printf("sream begin error, %s\n\n", stream.errorReason().c_str());
+
+    }
+    else //wifi not connected
+    {
+      if (smart_config == false)
+      {
+        Serial.println("{\"wifi\":\"disconnected\"}");
+        String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
+        if ((auxssid.length() > 0) /*&& (obj["wifi"]["sta"]["registered"].as<bool>() == true)*/)
+        {
+          Serial.println("{\"wifi\":\"reconnecting\"}");
+          WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
+          Serial.print("{\"wifi\":{\"ssid\":\"");
+          Serial.print(obj["wifi"]["sta"]["ssid"].as<const char*>());
+          Serial.println("\"}}");
+        }
+      }
+      else
+      {
+        Serial.println("{\"SmartConfig\":\"running\"}");
       }
     }
-    //else if(auxssid.length() == 0)
-    //{
-    //  Serial.println("{\"wait_config\":true}");
-    //}
 
     //Serial.println();
-    PrintOut();
+    //PrintOut();
     //Serial.println("{\"server_check\":true}");
+    Serial.printf("{\"status\":%d,%d,%d}", color_status[0], color_status[1], color_status[2]);
+    Serial.println();
     timestamp = millis();
   }
 }
 
 
-// -------------------------------------------------------------------------------------------------------------- ap_init
-void ap_Init(const char *ap_ssidx, const char *ap_passx)
-{
-  Serial.println("Starting AP");
-  IPAddress apIP(192, 168, 0, 1);   //Static IP for wifi gateway
-  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0)); //set Static IP gateway on NodeMCU
-  WiFi.softAP(ap_ssidx, ap_passx); //turn on WIFI
-  Serial.println("AP Ready");
-  Serial.println(ap_ssidx);
-  //websocketInit();
-}
+//
+//// -------------------------------------------------------------------------------------------------------------- ap_init
+//void ap_Init(const char *ap_ssidx, const char *ap_passx)
+//{
+//  Serial.println("Starting AP");
+//  IPAddress apIP(192, 168, 0, 1);   //Static IP for wifi gateway
+//  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0)); //set Static IP gateway on NodeMCU
+//  WiFi.softAP(ap_ssidx, ap_passx); //turn on WIFI
+//  Serial.println("AP Ready");
+//  Serial.println(ap_ssidx);
+//  //websocketInit();
+//}
 
 
 // ----------------------------------------------------------------------------------------------------- websockerInit
@@ -1998,449 +1967,121 @@ static int senderLoRa(const char *frame, int frame_len, void *privdata) {
 }
 
 
-// ------------------------------------------------- senderWS (WS)
-//static int senderWS(const char *frame, int frame_len, void *privdata) {
-//return webSocket.sendTXT(numx, frame);
-//return webSocket.sendTXT(fra, cmd);
-//}
-
-
-//---------------------------------------------------------------------------------------------------- reportState
-static void reportState(struct jsonrpc_request * r) {
-  mjson_printf(sender, NULL,
-               "{\"method\":\"Shadow.Report\",\"params\":{\"on\":%s}}\n",
-               digitalRead(25) ? "true" : "false");
-}
-
-//-------------------------------------------------------------------------------------------------------- count
-static void counter(struct jsonrpc_request * r) {
-  i++;
-  mjson_printf(sender, NULL, "%d", i);
-  //return i;
-}
-
-
-// ----------------------------------------------------------------------------------------------------- resultState
-//static void resultState(void) {
-//  mjson_printf(sender, NULL,
-//               "{\"result\":{\"on\":%s}}\n",
-//               digitalRead(25) ? "true" : "false");
-//}
-
-
-
 // ------------------------------------------------------------------------------------------------------ Cfg_get
-static void Cfg_get(struct jsonrpc_request * r)
+/*static*/ void Cfg_get(/*struct jsonrpc_request * r*/)
 //  {"method":"Config.Get"}
 {
   // open file to load config
 
   obj = getJSonFromFile(&doc, filename);
-  //  sen = getJSonFromFile(&sen_doc, sen_filename);
   dev = getJSonArrayFromFile(&dev_doc, device_list);
 
-  //StaticJsonDocument<2048> doc_cfg;
-  //doc_cfg["result"]["config"] = obj;
-  //doc_cfg["result"]["devices"] = dev;
 
-  //if (rpc_input == NONE)
-  //{
+
   if (obj.isNull())
   {
-    Serial.println("{\"default\":true}");
-    obj = getJSonFromFile(&doc, filedefault);
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
+    Serial.println("{\"config_file\":null}");
+    //obj = getJSonFromFile(&doc, filedefault);
+    //Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
   }
   serializeJson(obj, Serial);
   Serial.println();
   serializeJson(dev, Serial);
   Serial.println();
-  //serializeJson(sen, Serial);
-  Serial.println();
-  //}
-  //else
-  //{
-  //serializeJson(dev, buf);
-  //mjson_printf(sender, NULL, buf);
-  //}
-
 }
 
-// --------------------------------------------------------------------------------------------------------- Cfg_set
-// "device":{"id":"CC:50:E3:99:25:94","type":"ergo","name":"Panel de prueba","network":"lora","local":203}
-// {"method":"Config.Set","params":{"enable":false, "ssid": "SmartPanel", "pass": "12345678", "type":"ap"}}
-static void Cfg_set(struct jsonrpc_request * r) {
 
-  int wifiOn;
-  char ssid[30];
-  char pass[30];
-  char type[10];
-
-  if (mjson_get_string(r->params, r->params_len, "$.type", type, sizeof(type)) <= 0) // Default sta
-  {
-    strcpy("sta", type);
+// ----------------------------------------------------------------------------------------------- factory_reset
+void IRAM_ATTR factory_reset1() {
+  if (factory_press == false) {
+    factory_press = true;
+    factory_time = millis();
   }
-
-  if ((strcmp(type, "sta") == 0) || (strcmp(type, "ap") == 0))
-  {
-    if (mjson_get_bool(r->params, r->params_len, "$.enable", &wifiOn) != 0) // Return 0 if not found, non-0 otherwise.
-    {
-      obj["wifi"][type]["enable"] = wifiOn ? true : false;
-    }
-
-    if (mjson_get_string(r->params, r->params_len, "$.ssid", ssid, sizeof(ssid)) > 0)
-    {
-      obj["wifi"][type]["ssid"] = ssid;
-
-    }
-    //If a string is not found, return -1. If a string is found, return the length of unescaped string
-
-    if ( mjson_get_string(r->params, r->params_len, "$.pass", pass, sizeof(pass)) > 0)
-    {
-      obj["wifi"][type]["pass"] = pass;
-    }
-
-    Serial.println();
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
-    loadConfig();                 // update behivor
-    jsonrpc_return_success(r, "%s", message, r->userdata); // Report success
-    Serial.println();
-    serializeJson(obj, Serial);
-
-  }
-
-
-}
-
-
-
-// --------------------------------------------------------------------------------------------------------- Wifi_set
-// {"method":"WiFi.Set","params":{"enable":false, "ssid": "Inventoteca_2G", "pass": "science_7425", "type":"sta"}}
-// {"method":"WiFi.Set","params":{"enable":false, "ssid": "Inventoteca_2G", "pass": "science_7425"}}
-// {"method":"WiFi.Set","params":{"enable":false, "ssid": "SmartPanel", "pass": "12345678", "type":"ap"}}
-static void Wifi_set(struct jsonrpc_request * r) {
-
-  int wifiOn;
-  char ssid[65];
-  char pass[65];
-  char type[33] = "sta";
-  int registered;
-
-
-  if (mjson_get_string(r->params, r->params_len, "$.type", type, sizeof(type)) > 0); // Default sta
-  else
-  {
-    strcpy("sta", type);
-  }
-
-  if ((strcmp(type, "sta") == 0) || (strcmp(type, "ap") == 0))
-  {
-    if (mjson_get_bool(r->params, r->params_len, "$.registered", &registered) != 0) // Return 0 if not found, non-0 otherwise.
-    {
-      obj["wifi"][type]["registered"] = wifiOn ? true : false;
-    }
-
-    if (mjson_get_bool(r->params, r->params_len, "$.enable", &wifiOn) != 0) // Return 0 if not found, non-0 otherwise.
-    {
-      obj["wifi"][type]["enable"] = wifiOn ? true : false;
-    }
-
-    if (mjson_get_string(r->params, r->params_len, "$.ssid", ssid, sizeof(ssid)) > 0)
-    {
-      obj["wifi"][type]["ssid"] = ssid;
-
-    }
-    //If a string is not found, return -1. If a string is found, return the length of unescaped string
-
-    if ( mjson_get_string(r->params, r->params_len, "$.pass", pass, sizeof(pass)) > 0)
-    {
-      obj["wifi"][type]["pass"] = pass;
-    }
-
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
-    loadConfig();                 // update behivor
-    //jsonrpc_return_success(r, "%s", message, r->userdata); // Report success
-    //serializeJsonPretty(obj, Serial);
-
-  }
-
-
-}
-
-// --------------------------------------------------------------------------------------------------------- server_set
-static void server_set(struct jsonrpc_request * r) {
-  char buf[100];
-  int ser;
-  mjson_get_bool(r->params, r->params_len, "$.enable", &ser);
-  mjson_get_string(r->params, r->params_len, "$.type", buf, sizeof(buf));
-  //digitalWrite(25,ledOn);              // Set LED to the "on" value
-  obj["server"]["enable"] = ser ? true : false;
-  obj["server"]["type"] = buf;
-  //isSaved = ;
-
-  Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
-  //resultState();                    // Let shadow know our new state
-  jsonrpc_return_success(r, NULL);  // Report success
-  //counter(r);
-  loadConfig();
-  serializeJson(obj, Serial);
-  Serial.println();
-}
-
-// --------------------------------------------------------------------------------------------------------- sensors_set
-// {"method":"Sensors.Set", "params":{"enable":true}}
-static void sensors_set(struct jsonrpc_request * r) {
-  //char buf[100];
-  int sensors;
-  mjson_get_bool(r->params, r->params_len, "$.enable", &sensors);
-  //mjson_get_string(r->params, r->params_len, "$.type", buf, sizeof(buf));
-  //digitalWrite(25,ledOn);              // Set LED to the "on" value
-  //  sen["sensors"]["enable"] = sensors ? true : false;
-
-  //Serial.println(saveJSonToAFile(&sen, filename) ? "{\"sensor_file_saved\":true}" : "{\"sensor_file_saved\":false}");
-
-
-  //resultState();                    // Let shadow know our new state
-  jsonrpc_return_success(r, NULL);  // Report success
-  //counter(r);
-  loadConfig();
-  Serial.println();
-  //serializeJson(sen, Serial);
-}
-
-// --------------------------------------------------------------------------------------------------------- sensors_get
-// {"method":"Sensors.Get"}
-static void sensors_get(struct jsonrpc_request * r) {
-  //DynamicJsonDocument msg(1024);
-  //String message;
-
-  //  if (sen["sensors"]["enable"].as<bool>())
-  {
-    sensorInit();
-    ReadSensors();
-  }
-
-  mjson_printf(sender, NULL,
-               "{\"method\":\"Sensors.Report\",\"params\":{\"t\":%d, \"h\":%d, \"u\":%g, \"d\":%d, \"l\":%ld, \"c\":%g}}\n",
-               t, h, uv, db, lux, ppm);
-
-  if (obj["lora"]["enable"].as<bool>())
-    SendData();
-
-  if (obj["oled"].as<bool>() || obj["neodisplay"]["enable"].as<bool>())
-    PrintOut();
-}
-
-
-
-// --------------------------------------------------------------------------------------------------------- display_set
-static void display_set(struct jsonrpc_request * r) {
-  char buf[100];
-  //int ser;
-  //mjson_get_bool(r->params, r->params_len, "$.enable", &ser);
-  mjson_get_string(r->params, r->params_len, "$.msg", buf, sizeof(buf));
-  //digitalWrite(25,ledOn);              // Set LED to the "on" value
-  //obj["server"]["enable"] = ser ? true : false;
-  //obj["display"]["msg"] = buf;
-  //isSaved = ;
-
-  //Serial.println(saveJSonToAFile(&obj, filename) ? "File saved!" : "Error on save File!");
-  //resultState();                    // Let shadow know our new state
-  jsonrpc_return_success(r, NULL);  // Report success
-  //counter(r);
-  //loadConfig();
-  display1.clear();
-  display1.print(buf, White);
-  display1.show();
-}
-
-// --------------------------------------------------------------------------------------------------------- accesory_set
-// {"method":"Accesory.Set","params":{"id":"01","name":"Inventoteca","type":"ergo","network":"lora","local":6}}
-// {"method":"Accesory.Set","params":{"id":"01","name":"Inventoteca","type":"ergo","network":"lora","local":203}}
-static void accesory_set(struct jsonrpc_request * r) {
-
-  bool listed = false;
-  char dev_id[30];
-  char dev_type[30];
-  char dev_net[30];
-  char dev_name[30];
-  double  dev_local;
-
-  mjson_get_string(r->params, r->params_len, "$.id", dev_id, sizeof(dev_id));
-  mjson_get_string(r->params, r->params_len, "$.type", dev_type, sizeof(dev_type));
-  mjson_get_string(r->params, r->params_len, "$.network", dev_net, sizeof(dev_net));
-  mjson_get_string(r->params, r->params_len, "$.name", dev_name, sizeof(dev_name));
-  mjson_get_number(r->params, r->params_len, "$.local", &dev_local);
-
-  StaticJsonDocument<124> docx;
-  JsonObject root = docx.createNestedObject(F(dev_id));
-  dev = getJSonArrayFromFile(&dev_doc, device_list); // Load file
-
-  //Serial.println(dev.size());
-
-
-
-  if (dev.size() == 0) // no device in list, new device
-  {
-    Serial.println("First device added");
-    root["id"] = dev_id;
-    root["type"] = dev_type;
-    root["network"] = dev_net;
-    root["name"] = dev_name;
-    root["local"] = dev_local;
-
-    dev.add(root);
-    Serial.println(saveJSonArrayToAFile(&dev, device_list) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
-    dev = getJSonArrayFromFile(&dev_doc, device_list);
-    serializeJsonPretty(dev_doc, Serial);
-  }
-  else
-  {
-    for (JsonArray::iterator it = dev.begin(); it != dev.end(); ++it)
-    {
-
-      //if ((*it)["id"].as<const char*>() != dev_id) // ID not already set
-      if (strcmp((*it)["id"], dev_id) == 0)
-      {
-        Serial.println("Device already in list");
-        listed = true;
-
-        break;
-      }
-
-    }
-    if (listed == false) //
-    {
-      Serial.println("New device add to list");
-      root["id"] = dev_id;
-      root["type"] = dev_type;
-      root["network"] = dev_net;
-      root["name"] = dev_name;
-      root["local"] = dev_local;
-
-      dev.add(root);
-      Serial.println(saveJSonArrayToAFile(&dev, device_list) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
-      dev = getJSonArrayFromFile(&dev_doc, device_list);
-      serializeJsonPretty(dev_doc, Serial);
-    }
+  else {
+    prev_factory_time = millis();
+    reset_time = true;
   }
 
 }
 
-
-// --------------------------------------------------------------------------------------------------------- accesory_del
-// {"method":"Accesory.Del","params":{"id":"01"}}
-static void accesory_del(struct jsonrpc_request * r) {
-
-  char dev_id[30];
-  mjson_get_string(r->params, r->params_len, "$.id", dev_id, sizeof(dev_id));
-
-  dev = getJSonArrayFromFile(&dev_doc, device_list);
-
-
-  for (JsonArray::iterator it = dev.begin(); it != dev.end(); ++it) {
-    if ((*it)["id"] == dev_id) {
-      dev.remove(it);
-    }
-  }
-
-
-  Serial.println(saveJSonArrayToAFile(&dev, device_list) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
-  serializeJsonPretty(dev_doc, Serial);
-
-
-
-}
-
-
-// ------------------------------------------------------------------------------------------------------ ReadSerial
-// JSON RPC
-void ReadSerial()
+//----------------------------------------------------------------------------------------------------------- reset_config
+void reset_config()
 {
-  if (Serial.available() > 0) {
-    int len = Serial.readBytes(buf, sizeof(buf));
-    //rpc_input = SERIAL;
-    jsonrpc_process(buf, len, sender, NULL, NULL);
-  }
+  WiFi.disconnect();
+  //WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_STA);
+  obj["wifi"]["sta"]["ssid"] = "";
+  obj["wifi"]["sta"]["pass"] = "";
+  obj["wifi"]["sta"]["enable"] = true;
+  obj["wifi"]["sta"]["count"] = 0;
+  obj["wifi"]["sta"]["registered"] = false;
+  Serial.println(saveJSonToAFile(&obj, filename) ? "{\"factory_reset\":true}" : "{\"factory_reset\":false}");
+  neoConfig();
 }
 
+void streamCallback(FirebaseStream data)
+{
+  Serial.printf("sream path, %s\nevent path, %s\ndata type, %s\nevent type, %s\n\n",
+                data.streamPath().c_str(),
+                data.dataPath().c_str(),
+                data.dataType().c_str(),
+                data.eventType().c_str());
+  printResult(data); // see addons/RTDBHelper.h
+  Serial.println();
+
+  // This is the size of stream payload received (current and max value)
+  // Max payload size is the payload size under the stream path since the stream connected
+  // and read once and will not update until stream reconnection takes place.
+  // This max value will be zero as no payload received in case of ESP8266 which
+  // BearSSL reserved Rx buffer size is less than the actual stream payload.
+  Serial.printf("Received stream payload size: %d (Max. %d)\n\n", data.payloadLength(), data.maxPayloadLength());
+
+  // Due to limited of stack memory, do not perform any task that used large memory here especially starting connect to server.
+  // Just set this flag and check it status later.
+  dataChanged = true;
+}
+
+void streamTimeoutCallback(bool timeout)
+{
+  if (timeout)
+    Serial.println("stream timed out, resuming...\n");
+
+  if (!stream.httpConnected())
+    Serial.printf("error code: %d, reason: %s\n\n", stream.httpCode(), stream.errorReason().c_str());
+}
 
 //################################################################----------------------- setup--------------------- #############################
 void setup()
 {
-  //Heltec.begin(false /*DisplayEnable */, false /*LoRa*/, true /*Serial Enable*/);
-
   Serial.begin(115200);
   Wire.begin(); //
+  // Interrupts events
+  //WiFi.onEvent(Wifi_disconnected, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+  WiFi.mode(WIFI_STA);
+  WiFi.onEvent(WiFiEvent);
+  pinMode(FACTORY_BT, INPUT);
+  attachInterrupt(FACTORY_BT, factory_reset1, CHANGE);
 
-  //WiFi.mode(WIFI_AP_STA);
-  //printLocalTime();
+  // WatchDog Timer
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
+  timestamp == millis();
 
-  //Heltec.begin(true, false, true);
-  //
-  //Serial.begin(115200);
-  jsonrpc_init(NULL, NULL);
-  jsonrpc_export("Config.Get", Cfg_get);
-  jsonrpc_export("Config.Set", Cfg_set);
-  jsonrpc_export("WiFi.Set", Wifi_set);
-  //jsonrpc_export("Server.Set", server_set);
-  jsonrpc_export("Sensors.Set", sensors_set);
-  jsonrpc_export("Sensors.Get", sensors_get);
-  jsonrpc_export("Display.Set", display_set);
-  jsonrpc_export("Accesory.Set", accesory_set);
-  jsonrpc_export("Accesory.Del", accesory_del);
-  //jsonrpc_export("LoRa.Send", lora_send);
-  //jsonrpc_export("count", counter);
-  //jsonrpc_export("Update", update_ota);
-  //pinMode(NEO_PIN, OUTPUT);
-  pinMode(FACTORY_BT, INPUT);
+
 
   // SPIFFS Init
-  if (!SPIFFS.begin(true)) {
-    //Serial.println("An Error has occurred while mounting SPIFFS");
+  if (!SPIFFS.begin(true))
+  {
     Serial.println("{\"spiffs\":false}");
     return;
   }
+  else
+  {
+    Serial.println("{\"spiffs\":true}");
+    Cfg_get(/*NULL*/);
+    loadConfig();
+  }
 
-  Serial.println("{\"spiffs\":true}");
-  Cfg_get(NULL);
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_STA);
-
-  loadConfig();
-  //if ()
-  //{
-  //   Heltec.begin(true     /*DisplayEnable*/, obj["lora"]["enable"].as<bool>() /*LoRa */, true /*Serial */, true /*PABOOST */, BAND /* BAND*/);
-  //}
-
-  /*
-    // Assign the api key (required)
-    config.api_key = obj["firebase"]["api_key"].as<String>();
-    // Assign the user sign in credentials
-    auth.user.email = obj["firebase"]["email"].as<String>();
-    auth.user.password = obj["firebase"]["pass"].as<String>();
-    // Assign the callback function for the long running token generation task
-    config.token_status_callback = tokenStatusCallback; // see addons/TokenHelper.h
-
-    // Assign download buffer size in byte
-    // Data to be downloaded will read as multiple chunks with this size, to compromise between speed and memory used for buffering.
-    // The memory from external SRAM/PSRAM will not use in the TCP client internal rx buffer.
-    config.fcs.download_buffer_size = 2048;
-
-    Firebase.begin(&config, &auth);
-
-    Firebase.reconnectWiFi(true);
-  */
-
-  //reportState(NULL);
-
-  //WiFi.disconnect(true);
-
-
-  WiFi.onEvent(WiFiEvent);
-  WiFi.onEvent(Wifi_disconnected, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
 
 }
@@ -2449,45 +2090,28 @@ void setup()
 //#################################--------------------------------------------- loop------------------------###################################
 void loop()
 {
-  ReadSerial();
-
 
   if (obj["wifi"]["sta"]["enable"].as<bool>())
   {
     checkServer();
-    if ((obj["mqtt"]["enable"].as<bool>()) && (client.connected()))
+  }
+
+  if (reset_time)
+  {
+    if ((prev_factory_time - factory_time) > 5000)
     {
-      client.loop();
+      reset_config();
     }
+    factory_press = false;
+    reset_time = false;
   }
 
 
-  if (obj["lora"]["enable"].as<bool>())
-  {
-    //onReceive(LoRa.parsePacket());
-  }
+  //  if (obj["lora"]["enable"].as<bool>())
+  //  {
+  //    //onReceive(LoRa.parsePacket());
+  //  }
 
-  if (digitalRead(FACTORY_BT) == LOW)
-  {
-    bt_count++;
-    //Serial.println(bt_count);
-  }
-  else bt_count = 0;
-  if (bt_count > 10000)
-  {
-    Serial.println("{\"factory_reset\":true}");
-    // Save config
-    // obj not save complete ssid, better use doc
-    obj["wifi"]["sta"]["ssid"] = "";
-    obj["wifi"]["sta"]["pass"] = "";
-    obj["wifi"]["sta"]["enable"] = true;
-    obj["wifi"]["sta"]["count"] = 0;
-    obj["wifi"]["sta"]["registered"] = false;
-    obj["email"] = "inventotk@gmail.com";
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
-    WiFi.disconnect(true);
-    ESP.restart();
-  }
 
   if (obj["sensors"]["enable"].as<bool>()) // Sensor Panel normal
   {
