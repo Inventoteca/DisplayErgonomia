@@ -1,5 +1,5 @@
 {
-  "id": "",
+  "id": "01",
   "type": "ergo",
   "name": "Neoclock 1",
   "oled": false,
@@ -10,10 +10,10 @@
   "url": "smart-industry-panels-default-rtdb.firebaseio.com",
   "wifi": {
     "sta": {
-      "ssid": "",
-      "pass": "",
+      "ssid": "Inventoteca_2G",
+      "pass": "science_7425",
       "enable": true,
-      "registered": false,
+      "registered": true,
       "count": 0
     }
   },
@@ -23,54 +23,40 @@
     "port": 1883,
     "registered": false
   },
-  "sensors": {
-    "enable": true,
-    "time": 1000,
-    "t": {
-      "max": 25,
-      "min": 20,
-      "cal": 0,
-      "colMax": 4294901760,
-      "colMin": 4278190335,
-      "colDef": 4294967040
-    },
-    "h": {
-      "max": 45,
-      "min": 35,
-      "colMax": 4278255360,
-      "colMin": 4294901760,
-      "colDef": 4294967040
-    },
-    "uv": {
-      "max": 4,
-      "min": 0,
-      "colMax": 4294901760,
-      "colMin": 4294967040,
-      "colDef": 4294967040
-    },
-    "db": {
-      "max": 65,
-      "min": 0,
-      "colMax": 4294901760,
-      "colMin": 4294967040,
-      "colDef": 4294967040
-    },
-    "lux": {
-      "max": 220,
-      "min": 50,
-      "colMax": 4294901760,
-      "colMin": 4294901760,
-      "colDef": 4294967040
-    },
-    "ppm": {
-      "max": 450,
-      "min": 0,
-      "cal": 400,
-      "colMax": 4294901760,
-      "colMin": 4294967040,
-      "colDef": 4294967040
-    }
-  },
+  "sensors_enable": true,
+  "sensors_time": 1000,
+  "t_cal": 0,
+  "t_max": 25,
+  "t_min": 20,
+  "t_colMax": 4294901760,
+  "t_colMin": 4278190335,
+  "t_colDef": 4294967040,
+  "h_max": 45,
+  "h_min": 35,
+  "h_colMax": 4278255360,
+  "h_colMin": 4294901760,
+  "h_colDef": 4294967040,
+  "uv_max": 4,
+  "uv_min": 0,
+  "uv_colMax": 4294901760,
+  "uv_colMin": 4294967040,
+  "uv_colDef": 4294967040,
+  "db_max": 65,
+  "db_min": 0,
+  "db_colMax": 4294901760,
+  "db_colMin": 4294967040,
+  "db_colDef": 4294967040,
+  "lux_max": 220,
+  "lux_min": 50,
+  "lux_colMax": 4294901760,
+  "lux_colMin": 4294901760,
+  "lux_colDef": 4294967040,
+  "ppm_max": 450,
+  "ppm_min": 0,
+  "ppm_cal": 400,
+  "ppm_colMax": 4294901760,
+  "ppm_colMin": 4294967040,
+  "ppm_colDef": 4294967040,
   "neodisplay": {
     "enable": true,
     "digits": 17,

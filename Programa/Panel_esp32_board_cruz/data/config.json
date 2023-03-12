@@ -1,0 +1,29 @@
+{
+  "id": "02",
+  "type": "cruz",
+  "name": "Cruz 1",
+  "oled": false,
+  "registered": false,
+  "email": "info@inventoteca.com",
+  "pass": "Homerosim",
+  "key": "AIzaSyAOfGOjdpVQZtnhwTjmNRy8mApY993zHfc",
+  "url": "smart-industry-panels-default-rtdb.firebaseio.com",
+  "wifi": {
+    "sta": {
+      "ssid": "Inventoteca_2G",
+      "pass": "science_7425",
+      "enable": true,
+      "registered": true,
+      "count": 0
+    }
+  },
+  "last_ac":1678557274611,
+  "d_colDef":4294967295,
+  "lora": {
+    "enable": false,
+    "local": 0,
+    "remote": 0,
+    "band": 915000000,
+    "registered": false
+  }
+}

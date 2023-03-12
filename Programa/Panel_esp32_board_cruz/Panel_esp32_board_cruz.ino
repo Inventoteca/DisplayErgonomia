@@ -34,6 +34,7 @@
 #include <addons/TokenHelper.h>         // Provide the token generation process info.
 #include <addons/RTDBHelper.h>          // Provide the RTDB payload printing info and other helper functions.
 #include <esp_task_wdt.h>
+#include "RTClib.h"
 
 
 
@@ -126,6 +127,9 @@ volatile bool nullData = false;
 volatile bool saveConfig = false;
 FirebaseData stream;
 
+RTC_DS1307 rtc;
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
 //WebSocketsServer webSocket = WebSocketsServer(81); //websocket init with port 81
 //void webSocketEvent(uint8_t num, WStype_t w_type, uint8_t * payload, size_t length);
 //WiFiMulti wifiMulti;
@@ -195,7 +199,7 @@ bool factory_press = false;
 bool reset_time = false;
 int contador;
 const uint32_t connectTimeoutMs = 10000;
-unsigned long  timestamp;
+unsigned long  s_timestamp;
 //static int ledOn = 0;  // Current LED status
 int i;
 unsigned int count;
@@ -219,6 +223,10 @@ String message;
 
 // ----------------- MQTT vars
 unsigned long lastMsg = 0;
+
+//------------------ Calendar
+DateTime now;
+DateTime last_ac;
 
 
 
@@ -488,33 +496,45 @@ void SendData()
 {
   DynamicJsonDocument msg(1024);
   String message;
-  //message = "HeLoRa World!";   // send a message
-  //msg["method"] =
-  msg["sensors"]["t"] = t;
-  msg["sensors"]["h"] = h;
-  msg["sensors"]["uv"] = int(uv * 10); // avoid float
-  msg["sensors"]["db"] = db;
-  msg["sensors"]["lux"] = lux;
-  msg["sensors"]["ppm"] = ppm;
-  last_db = 0;
-  serializeJson(msg, message);
-  Serial.println(message);
-  if (obj["lora"]["enable"].as<bool>())
+  if (obj["type"].as<String>() == "ergo")
   {
-    sendMessage(message);
-  }
 
-  if (Firebase.ready() && (WiFi.status() == WL_CONNECTED))
-  {
+    //message = "HeLoRa World!";   // send a message
+    //msg["method"] =
+    msg["sensors"]["t"] = t;
+    msg["sensors"]["h"] = h;
+    msg["sensors"]["uv"] = int(uv * 10); // avoid float
+    msg["sensors"]["db"] = db;
+    msg["sensors"]["lux"] = lux;
+    msg["sensors"]["ppm"] = ppm;
+    last_db = 0;
     json.set("t", t);
     json.set("h", h);
     json.set("uv", uv);
     json.set("db", db);
     json.set("lux", lux);
     json.set("ppm", ppm);
+    serializeJson(msg, message);
+    Serial.println(message);
+
+  }
+
+  else if (obj["type"].as<String>() == "cruz")
+  {
+    json.set("days", int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L)));
+  }
+
+
+  if (Firebase.ready() && (WiFi.status() == WL_CONNECTED))
+  {
+
     // now we will set the timestamp value at Ts
     json.set("Ts/.sv", "timestamp"); // .sv is the required place holder for sever value which currently supports only string "timestamp" as a value
-    nodeName = String(millis());;
+    //nodeName = String(millis());
+
+    DateTime now = rtc.now();
+    nodeName = String(now.unixtime());
+
     // Set data with timestamp
     //Serial.printf("%s\n", Firebase.RTDB.updateNode(&fbdo, "/panels/01/actual", &json) ? /*fbdo.to<FirebaseJson>().raw()*/"" : fbdo.errorReason().c_str());
 
@@ -533,6 +553,10 @@ void SendData()
     Serial.println("{\"firebase\":false}");
   }
 
+  if (obj["lora"]["enable"].as<bool>())
+  {
+    sendMessage(message);
+  }
 
 }
 
@@ -802,7 +826,7 @@ void neoConfig()
 // --------------------------------------------------------------------------------------- PrintOut
 void PrintOut()
 {
-  //if (millis() - printRefresh > printTime)
+  // if (millis() - printRefresh > printTime)
   {
     if (obj["oled"].as<bool>())
     {
@@ -833,59 +857,63 @@ void PrintOut()
       //      Heltec.display->display();
     }
 
-
-    if (obj["neodisplay"]["enable"].as<bool>())
+    if (obj["type"].as<String>() == "ergo")
     {
-      display1.setCursor(0);
-      if (t < 10)
-        display1.print(" ");
-      display1.print(t, (t >= (obj["t_max"].as<int>())) ?
-                     (obj["t_colMax"].as<uint32_t>()) : (t <= (obj["t_min"].as<int>())) ?
-                     (obj["t_colMin"].as<uint32_t>()) : (obj["t_colDef"].as<uint32_t>()));
-      display1.setCursor(2);
-      if (h < 10)
-        display1.print(" ");
-      display1.print(h, (h >= (obj["h_max"].as<int>())) ?
-                     (obj["h_colMax"].as<uint32_t>()) : (h <= (obj["h_min"].as<int>())) ?
-                     (obj["h_colMin"].as<uint32_t>()) : (obj["h_colDef"].as<uint32_t>()));
-      display1.setCursor(4);
-      if (uv == 0)
-        display1.print("0.0", (uv >= (obj["uv_max"].as<int>())) ?
-                       (obj["uv_colMax"].as<uint32_t>()) : (uv <= (obj["uv_min"].as<int>())) ?
-                       (obj["uv_colMin"].as<uint32_t>()) : (obj["uv_colDef"].as<uint32_t>()));
-      else
-        display1.print(String(uv, 1), (uv >= (obj["uv_max"].as<int>())) ?
-                       (obj["uv_colMax"].as<uint32_t>()) : (uv <= (obj["uv_min"].as<int>())) ?
-                       (obj["uv_colMin"].as<uint32_t>()) : (obj["uv_colDef"].as<uint32_t>()));
-      display1.setCursor(6);
-      if (db < 10)
-        display1.print("  ");
-      else if (db < 100)
-        display1.print(" ");
-      display1.print(db, (db >= (obj["db_max"].as<int>())) ?
-                     (obj["db_colMax"].as<uint32_t>()) : (db <= (obj["db_min"].as<int>())) ?
-                     (obj["db_colMin"].as<uint32_t>()) : (obj["db_colDef"].as<uint32_t>()));
-      display1.setCursor(9);
-      if (lux < 10)
-        display1.print("   ");
-      else if (lux < 100)
-        display1.print("  ");
-      else if (lux < 1000)
-        display1.print(" ");
-      display1.print(lux, (lux >= (obj["lux_max"].as<int>())) ?
-                     (obj["lux_colMax"].as<uint32_t>()) : (lux <= (obj["lux_min"].as<int>())) ?
-                     (obj["lux_colMin"].as<uint32_t>()) : (obj["lux_colDef"].as<uint32_t>()));
-      display1.setCursor(13);
-      if (ppm < 10)
-        display1.print("   ");
-      else if (ppm < 100)
-        display1.print("  ");
-      else if (ppm < 1000)
-        display1.print(" ");
-      else if (ppm > 9999)ppm = 9999;
-      display1.print(ppm, (ppm >= (obj["ppm_max"].as<int>())) ?
-                     (obj["ppm_colMax"].as<uint32_t>()) : (ppm <= (obj["ppm_min"].as<int>())) ?
-                     (obj["ppm_colMin"].as<uint32_t>()) : (obj["ppm_colDef"].as<uint32_t>()));
+
+
+      if (obj["neodisplay"]["enable"].as<bool>())
+      {
+        display1.setCursor(0);
+        if (t < 10)
+          display1.print(" ");
+        display1.print(t, (t >= (obj["t_max"].as<int>())) ?
+                       (obj["t_colMax"].as<uint32_t>()) : (t <= (obj["t_min"].as<int>())) ?
+                       (obj["t_colMin"].as<uint32_t>()) : (obj["t_colDef"].as<uint32_t>()));
+        display1.setCursor(2);
+        if (h < 10)
+          display1.print(" ");
+        display1.print(h, (h >= (obj["h_max"].as<int>())) ?
+                       (obj["h_colMax"].as<uint32_t>()) : (h <= (obj["h_min"].as<int>())) ?
+                       (obj["h_colMin"].as<uint32_t>()) : (obj["h_colDef"].as<uint32_t>()));
+        display1.setCursor(4);
+        if (uv == 0)
+          display1.print("0.0", (uv >= (obj["uv_max"].as<int>())) ?
+                         (obj["uv_colMax"].as<uint32_t>()) : (uv <= (obj["uv_min"].as<int>())) ?
+                         (obj["uv_colMin"].as<uint32_t>()) : (obj["uv_colDef"].as<uint32_t>()));
+        else
+          display1.print(String(uv, 1), (uv >= (obj["uv_max"].as<int>())) ?
+                         (obj["uv_colMax"].as<uint32_t>()) : (uv <= (obj["uv_min"].as<int>())) ?
+                         (obj["uv_colMin"].as<uint32_t>()) : (obj["uv_colDef"].as<uint32_t>()));
+        display1.setCursor(6);
+        if (db < 10)
+          display1.print("  ");
+        else if (db < 100)
+          display1.print(" ");
+        display1.print(db, (db >= (obj["db_max"].as<int>())) ?
+                       (obj["db_colMax"].as<uint32_t>()) : (db <= (obj["db_min"].as<int>())) ?
+                       (obj["db_colMin"].as<uint32_t>()) : (obj["db_colDef"].as<uint32_t>()));
+        display1.setCursor(9);
+        if (lux < 10)
+          display1.print("   ");
+        else if (lux < 100)
+          display1.print("  ");
+        else if (lux < 1000)
+          display1.print(" ");
+        display1.print(lux, (lux >= (obj["lux_max"].as<int>())) ?
+                       (obj["lux_colMax"].as<uint32_t>()) : (lux <= (obj["lux_min"].as<int>())) ?
+                       (obj["lux_colMin"].as<uint32_t>()) : (obj["lux_colDef"].as<uint32_t>()));
+        display1.setCursor(13);
+        if (ppm < 10)
+          display1.print("   ");
+        else if (ppm < 100)
+          display1.print("  ");
+        else if (ppm < 1000)
+          display1.print(" ");
+        else if (ppm > 9999)ppm = 9999;
+        display1.print(ppm, (ppm >= (obj["ppm_max"].as<int>())) ?
+                       (obj["ppm_colMax"].as<uint32_t>()) : (ppm <= (obj["ppm_min"].as<int>())) ?
+                       (obj["ppm_colMin"].as<uint32_t>()) : (obj["ppm_colDef"].as<uint32_t>()));
+      }
 
 
       // ------------------------------------- Status BLink
@@ -919,7 +947,7 @@ void PrintOut()
 
     // Prepare for LoRa
     //SendData();
-    printRefresh = millis();
+    //printRefresh = millis();
 
   }
 
@@ -1070,7 +1098,6 @@ void ReadSensors()
 
       PrintOut();
       SendData();
-
 
     }
   }
@@ -1485,9 +1512,12 @@ void loadConfig()
   }
 
   //---------------- Sensors Init
-  if (obj["sensors_enable"].as<bool>())
+  if (obj["type"].as<String>() == "ergo")
   {
-    sensorInit();
+    if (obj["sensors_enable"].as<bool>())
+    {
+      sensorInit();
+    }
   }
 
   // ------------- ID and LoRa
@@ -1538,7 +1568,15 @@ void loadConfig()
   //
   //  }
   //Serial.println("Config Loaded");
-  Serial.println("{\"Config\":true}");
+  if (! rtc.begin()) {
+    Serial.println("{\"rtc\":false}");
+    Serial.flush();
+    //while (1) delay(10);
+  }
+  else
+    Serial.println("{\"rtc\":true}");
+
+  Serial.println("{\"config\":true}");
 
 }
 
@@ -1643,7 +1681,7 @@ void Wifi_disconnected(WiFiEvent_t event, WiFiEventInfo_t info)
 void checkServer()
 {
 
-  if ((millis() - timestamp) >= connectTimeoutMs) // check to an interval of time
+  if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time
   {
     String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
 
@@ -1788,7 +1826,7 @@ void checkServer()
     //Serial.println("{\"server_check\":true}");
     Serial.printf("{\"status\":%d,%d,%d}", color_status[0], color_status[1], color_status[2]);
     Serial.println();
-    timestamp = millis();
+    s_timestamp = millis();
   }
 }
 
@@ -1903,12 +1941,17 @@ void reset_config()
 void streamCallback(FirebaseStream data)
 {
   // Add config from spiff file
-  if (strcmp(data.dataType().c_str(), "null") == 0) {
-    nullData = true;
 
-  }
-  else if (strcmp(data.eventType().c_str(), "patch") != 0)  // Not an update
+  saveConfig = false;
+  if (strcmp(data.eventType().c_str(), "patch") != 0)  // Not an update
   {
+
+    Serial.printf("sream path, %s\nevent path, %s\ndata type, %s\nevent type, %s\n\n",
+                  data.streamPath().c_str(),
+                  data.dataPath().c_str(),
+                  data.dataType().c_str(),
+                  data.eventType().c_str());
+
     data_json.setJsonData(data.payload());
     String jsonStr;
     data_json.toString(jsonStr, false);
@@ -1986,23 +2029,33 @@ void streamCallback(FirebaseStream data)
       if (strcmp(data.dataPath().c_str(), "/ppm_colDef") == 0)
         obj["ppm_colDef"] = strtoul(data.payload().c_str(), NULL, 10);
 
-      saveConfigData();
+      if (strcmp(data.dataPath().c_str(), "/d_colDef") == 0)
+        obj["d_colDef"] = strtoul(data.payload().c_str(), NULL, 10);
+      if (strcmp(data.dataPath().c_str(), "/last_ac") == 0)
+        obj["last_ac"] = strtoul(data.payload().c_str(), NULL, 10);
+
+      if (strcmp(data.dataPath().c_str(), "/events") >= 0)//(key == ("events"))
+      {
+        DynamicJsonDocument event(512);
+        deserializeJson(event, data.payload());
+        String eventID = data.dataPath().substring(8);
+        if (strcmp(data.dataType().c_str(), "null") == 0)
+          obj["events"].remove(eventID);
+        //obj["events"][eventID] = 0;
+        else
+          obj["events"][eventID] = event;
+
+      }
+
+      //saveConfigData();
 
     }
 
-    if ((strcmp(data.eventType().c_str(), "put") == 0) &&  (strcmp(data.dataType().c_str(), "json") == 0))
+    if ((strcmp(data.eventType().c_str(), "put") == 0) &&  (strcmp(data.dataType().c_str(), "json") == 0) && (strcmp(data.dataType().c_str(), "null") != 0))
     {
-
       saveConfig = true;
       //    Serial.println(jsonStr);
       //deserializeJson(conf_doc,jsonStr);
-
-      Serial.printf("sream path, %s\nevent path, %s\ndata type, %s\nevent type, %s\n\n",
-                    data.streamPath().c_str(),
-                    data.dataPath().c_str(),
-                    data.dataType().c_str(),
-                    data.eventType().c_str());
-
       //printResult(data); // see addons/RTDBHelper.h
       FirebaseJson &json = data.jsonObject();
       String jsonStr;
@@ -2091,9 +2144,59 @@ void streamCallback(FirebaseStream data)
           obj[key] = strtoul(value.c_str(), NULL, 10);
         if (key == ("ppm_colMin"))
           obj[key] = strtoul(value.c_str(), NULL, 10);
+
+        if (key == ("d_colDef"))
+          obj[key] = strtoul(value.c_str(), NULL, 10);
+        if (key == ("last_ac"))
+          obj[key] = strtoul(value.c_str(), NULL, 10);
+        if (key == ("events"))
+        {
+          DynamicJsonDocument event(512);
+          deserializeJson(event, value);
+          obj[key] = event;
+        }
       }
       json.iteratorEnd();
-      saveConfigData();
+      //saveConfigData();
+    }
+    else if (strcmp(data.dataType().c_str(), "null") == 0)
+    {
+      nullData = true;
+      // Send spiffs to firebase
+    }
+
+  }
+  else if (strcmp(data.dataPath().c_str(), "/") != 0)
+  {
+    if ((strcmp(data.dataPath().c_str(), "/events") >= 0) && (strcmp(data.dataType().c_str(), "json") == 0))//(key == ("events"))
+    {
+      Serial.printf("sream path, %s\nevent path, %s\ndata type, %s\nevent type, %s\n\n",
+                  data.streamPath().c_str(),
+                  data.dataPath().c_str(),
+                  data.dataType().c_str(),
+                  data.eventType().c_str());
+        
+      FirebaseJson &json = data.jsonObject();
+      String jsonStr;
+      json.toString(jsonStr, true);
+      Serial.println(jsonStr);
+      size_t len = json.iteratorBegin();
+      String key, value = "";
+      int type = 0;
+      for (size_t i = 0; i < len; i++)
+      {
+        json.iteratorGet(i, type, key, value);
+        //if (key == ("events"))
+        //{
+          DynamicJsonDocument event(512);
+          deserializeJson(event, value);
+          obj["events"][key] = event;
+        //}
+      }
+      json.iteratorEnd();
+      saveConfig = true;
+      //saveConfigData();
+
     }
 
   }
@@ -2116,8 +2219,8 @@ void streamCallback(FirebaseStream data)
 // ---------------------------------------------------------------------------------------------------- streamTimeoutCallback
 void streamTimeoutCallback(bool timeout)
 {
-  if (timeout)
-    Serial.println("stream timed out, resuming...\n");
+  // if (timeout)
+  //   Serial.println("stream timed out, resuming...\n");
 
   if (!stream.httpConnected())
     Serial.printf("error code: %d, reason: %s\n\n", stream.httpCode(), stream.errorReason().c_str());
@@ -2127,41 +2230,50 @@ void streamTimeoutCallback(bool timeout)
 // ------------------------------------------------------------------------------------------------------- prepareData
 void prepareData()
 {
-  json.set("t_max", obj["t_max"].as<int>());
-  json.set("t_min", obj["t_min"].as<int>());
-  json.set("t_colMax", obj["t_colMax"].as<uint32_t>());
-  json.set("t_colMin", obj["t_colMin"].as<uint32_t>());
-  json.set("t_colDef", obj["t_colDef"].as<uint32_t>());
 
-  json.set("h_max", obj["h_max"].as<int>());
-  json.set("h_min", obj["h_min"].as<int>());
-  json.set("h_colMax", obj["h_colMax"].as<uint32_t>());
-  json.set("h_colMin", obj["h_colMin"].as<uint32_t>());
-  json.set("h_colDef", obj["h_colDef"].as<uint32_t>());
+  if (obj["type"].as<String>() == "ergo")
+  {
+    json.set("t_max", obj["t_max"].as<int>());
+    json.set("t_min", obj["t_min"].as<int>());
+    json.set("t_colMax", obj["t_colMax"].as<uint32_t>());
+    json.set("t_colMin", obj["t_colMin"].as<uint32_t>());
+    json.set("t_colDef", obj["t_colDef"].as<uint32_t>());
 
-  json.set("uv_max", obj["uv_max"].as<int>());
-  json.set("uv_min", obj["uv_min"].as<int>());
-  json.set("uv_colMax", obj["uv_colMax"].as<uint32_t>());
-  json.set("uv_colMin", obj["uv_colMin"].as<uint32_t>());
-  json.set("uv_colDef", obj["uv_colDef"].as<uint32_t>());
+    json.set("h_max", obj["h_max"].as<int>());
+    json.set("h_min", obj["h_min"].as<int>());
+    json.set("h_colMax", obj["h_colMax"].as<uint32_t>());
+    json.set("h_colMin", obj["h_colMin"].as<uint32_t>());
+    json.set("h_colDef", obj["h_colDef"].as<uint32_t>());
 
-  json.set("db_max", obj["db_max"].as<int>());
-  json.set("db_min", obj["db_min"].as<int>());
-  json.set("db_colMax", obj["db_colMax"].as<uint32_t>());
-  json.set("db_colMin", obj["db_colMin"].as<uint32_t>());
-  json.set("db_colDef", obj["db_colDef"].as<uint32_t>());
+    json.set("uv_max", obj["uv_max"].as<int>());
+    json.set("uv_min", obj["uv_min"].as<int>());
+    json.set("uv_colMax", obj["uv_colMax"].as<uint32_t>());
+    json.set("uv_colMin", obj["uv_colMin"].as<uint32_t>());
+    json.set("uv_colDef", obj["uv_colDef"].as<uint32_t>());
 
-  json.set("lux_max", obj["lux_max"].as<int>());
-  json.set("lux_min", obj["lux_min"].as<int>());
-  json.set("lux_colMax", obj["lux_colMax"].as<uint32_t>());
-  json.set("lux_colMin", obj["lux_colMin"].as<uint32_t>());
-  json.set("lux_colDef", obj["lux_colDef"].as<uint32_t>());
+    json.set("db_max", obj["db_max"].as<int>());
+    json.set("db_min", obj["db_min"].as<int>());
+    json.set("db_colMax", obj["db_colMax"].as<uint32_t>());
+    json.set("db_colMin", obj["db_colMin"].as<uint32_t>());
+    json.set("db_colDef", obj["db_colDef"].as<uint32_t>());
 
-  json.set("ppm_max", obj["ppm_max"].as<int>());
-  json.set("ppm_min", obj["ppm_min"].as<int>());
-  json.set("ppm_colMax", obj["ppm_colMax"].as<uint32_t>());
-  json.set("ppm_colMin", obj["ppm_colMin"].as<uint32_t>());
-  json.set("ppm_colDef", obj["ppm_colDef"].as<uint32_t>());
+    json.set("lux_max", obj["lux_max"].as<int>());
+    json.set("lux_min", obj["lux_min"].as<int>());
+    json.set("lux_colMax", obj["lux_colMax"].as<uint32_t>());
+    json.set("lux_colMin", obj["lux_colMin"].as<uint32_t>());
+    json.set("lux_colDef", obj["lux_colDef"].as<uint32_t>());
+
+    json.set("ppm_max", obj["ppm_max"].as<int>());
+    json.set("ppm_min", obj["ppm_min"].as<int>());
+    json.set("ppm_colMax", obj["ppm_colMax"].as<uint32_t>());
+    json.set("ppm_colMin", obj["ppm_colMin"].as<uint32_t>());
+    json.set("ppm_colDef", obj["ppm_colDef"].as<uint32_t>());
+  }
+  else if (obj["type"].as<String>() == "cruz")
+  {
+    json.set("last_ac", obj["last_ac"].as<uint32_t>());
+    json.set("d_colDef", obj["d_colDef"].as<uint32_t>());
+  }
 
   //json.set("sensors", obj["sensors"]);
   //json.set("h", h);
@@ -2200,7 +2312,7 @@ void setup()
   // WatchDog Timer
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
-  timestamp == millis();
+  s_timestamp = millis();
 
 
 
@@ -2249,10 +2361,70 @@ void loop()
   //  }
 
 
-  if (obj["sensors_enable"].as<bool>()) // Sensor Panel normal
+
+  if (obj["type"].as<String>() == "ergo")
   {
-    ReadSensors();
+    if (obj["sensors_enable"].as<bool>()) // Sensor Panel normal
+    {
+      ReadSensors();
+    }
   }
+  else if (obj["type"].as<String>() == "cruz")
+  {
+    if (millis() - printRefresh > printTime)
+    {
+      now = rtc.now();
+
+
+      Serial.print(now.year(), DEC);
+      Serial.print('/');
+      Serial.print(now.month(), DEC);
+      Serial.print('/');
+      Serial.print(now.day(), DEC);
+      Serial.print(" (");
+      Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+      Serial.print(") ");
+      Serial.print(now.hour(), DEC);
+      Serial.print(':');
+      Serial.print(now.minute(), DEC);
+      Serial.print(':');
+      Serial.print(now.second(), DEC);
+      Serial.println();
+
+      //Serial.print(" since midnight 1/1/1970 = ");
+      //Serial.print(now.unixtime());
+      //Serial.print("s = ");
+      //Serial.print(now.unixtime() / 86400L);
+      //Serial.println("d");
+
+      //DateTime last_ac(now - TimeSpan(1678557274611));
+      last_ac = DateTime(obj["last_ac"].as<uint32_t>());
+      //DateTime last_ac(1678557274611);
+
+      Serial.print(last_ac.year(), DEC);
+      Serial.print('/');
+      Serial.print(last_ac.month(), DEC);
+      Serial.print('/');
+      Serial.print(last_ac.day(), DEC);
+      Serial.print(" (");
+      Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+      Serial.print(") ");
+      Serial.print(last_ac.hour(), DEC);
+      Serial.print(':');
+      Serial.print(last_ac.minute(), DEC);
+      Serial.print(':');
+      Serial.print(last_ac.second(), DEC);
+      Serial.println();
+
+      Serial.print(" Days w/o accidents = ");
+      Serial.print(int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L)));
+      Serial.println(" d");
+      SendData();
+      printRefresh = millis();
+    }
+
+  }
+
 
   //if (saveConfig) // Data change
   //{
