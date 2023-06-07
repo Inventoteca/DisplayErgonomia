@@ -8,6 +8,7 @@
   "pass": "Homerosim",
   "key": "AIzaSyAOfGOjdpVQZtnhwTjmNRy8mApY993zHfc",
   "url": "smart-industry-panels-default-rtdb.firebaseio.com",
+  "storage_id": "smart-industry-panels.appspot.com",
   "wifi": {
     "sta": {
       "ssid": "Inventoteca_2G",
@@ -18,7 +19,14 @@
     }
   },
   "last_ac":1678557274611,
-  "d_colDef":4294967295,
+  "update":false,
+  "neodisplay": {
+    "enable": true,
+    "digits": 4,
+    "pixels": 3,
+    "status": 4,
+    "pin": 25
+  },
   "lora": {
     "enable": false,
     "local": 0,
