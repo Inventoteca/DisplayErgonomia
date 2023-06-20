@@ -1,3 +1,6 @@
+// ----------------- MQTT vars
+//unsigned long lastMsg = 0;
+
 //#include <PubSubClient.h>
 
 //--------------- MQTT

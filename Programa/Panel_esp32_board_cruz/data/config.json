@@ -1,5 +1,5 @@
 {
-  "id": "02",
+  "id": "",
   "type": "cruz",
   "name": "Cruz 1",
   "oled": false,
@@ -9,6 +9,8 @@
   "key": "AIzaSyAOfGOjdpVQZtnhwTjmNRy8mApY993zHfc",
   "url": "smart-industry-panels-default-rtdb.firebaseio.com",
   "storage_id": "smart-industry-panels.appspot.com",
+  "gmtOff": -18000,
+  "dayOff": 0,
   "wifi": {
     "sta": {
       "ssid": "Inventoteca_2G",
@@ -19,6 +21,7 @@
     }
   },
   "last_ac":1678557274611,
+  "days_ac":19529,
   "update":false,
   "neodisplay": {
     "enable": true,
