@@ -4,6 +4,20 @@
 #define SERIAL    1
 #define LORA      2
 
+//------------------- LoRa Variables
+//unsigned int counter = 0;
+String rssi = "RSSI --";
+String packSize = "--";
+String packet ;
+String outgoing;              // outgoing message
+byte msgCount = 0;            // count of outgoing messages
+
+byte destination = 6;      // destination to send to
+long lastSendTime = 0;        // last send time
+int interval = 2000;          // interval between sends
+String message;
+//char c_msg[30];
+
 
 // -------------------------------------------------------------------------------------- lora_send
 // {"method":"LoRa.Send","params":{"method":"Config.Get"}

@@ -1,3 +1,19 @@
+#include "firebasedb.h"
+
+// Define Firebase Data object
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
+FirebaseJson json;
+FirebaseJson json_events;
+FirebaseJson conf;
+FirebaseJson data_json;
+String nodeName;
+volatile bool dataChanged = false;
+volatile bool nullData = false;
+volatile bool saveConfig = false;
+FirebaseData stream;
+
 // ----------------------------------- OTA The Firebase Storage download callback function
 void fcsDownloadCallback(FCS_DownloadStatusInfo info)
 {
@@ -48,6 +64,8 @@ void fcsDownloadCallback(FCS_DownloadStatusInfo info)
 // -------------------------------------------------------------------------------------- SendData
 void SendData()
 {
+  prepareData();
+
   DynamicJsonDocument msg(1024);
   String message;
   if (obj["type"].as<String>() == "ergo")
@@ -76,7 +94,7 @@ void SendData()
   else if (obj["type"].as<String>() == "cruz")
   {
     json.set("days", int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L)));
-    json.set("last_ac", last_ac.unixtime());
+    //json.set("last_ac", last_ac.unixtime());
 
     //DynamicJsonDocument event(512);
     //deserializeJson(event, value);
@@ -125,7 +143,7 @@ void SendData()
 
   if (obj["lora"]["enable"].as<bool>())
   {
-    sendMessage(message);
+    //sendMessage(message);
   }
 
 }
@@ -153,6 +171,17 @@ void streamCallback(FirebaseStream data)
     if ((strcmp(data.eventType().c_str(), "put") == 0) &&  (strcmp(data.dataType().c_str(), "json") != 0))
     {
       saveConfig = true;
+
+      // ------------------------------------------------- all
+      if (strcmp(data.dataPath().c_str(), "/update") == 0)
+      {
+        bool valueBool = strToBool(data.payload().c_str());
+        obj["update"] = valueBool;
+        taskCompleted = valueBool;
+        //obj["update"] = strtoul(data.payload().c_str(), NULL, 10);
+      }
+
+      // ------------------------------------------------- ergo
       if (strcmp(data.dataPath().c_str(), "/t_max") == 0)
         obj["t_max"] = jsonStr.toInt();
       if (strcmp(data.dataPath().c_str(), "/t_min") == 0)
@@ -223,16 +252,12 @@ void streamCallback(FirebaseStream data)
       if (strcmp(data.dataPath().c_str(), "/ppm_colDef") == 0)
         obj["ppm_colDef"] = strtoul(data.payload().c_str(), NULL, 10);
 
-      if (strcmp(data.dataPath().c_str(), "/update") == 0)
-      {
-        bool valueBool = strToBool(data.payload().c_str());
-        obj["update"] = valueBool;
-        taskCompleted = valueBool;
-        //obj["update"] = strtoul(data.payload().c_str(), NULL, 10);
-      }
 
+      // ------------------------------------------------- cruz
       if (strcmp(data.dataPath().c_str(), "/last_ac") == 0)
         obj["last_ac"] = strtoul(data.payload().c_str(), NULL, 10);
+      if (strcmp(data.dataPath().c_str(), "/days_ac") == 0)
+        obj["days_ac"] = strtoul(data.payload().c_str(), NULL, 10);
 
       if (strcmp(data.dataPath().c_str(), "/events") >= 0)//(key == ("events"))
       {
@@ -246,6 +271,12 @@ void streamCallback(FirebaseStream data)
           obj["events"][eventID] = event;
 
       }
+
+      if (strcmp(data.dataPath().c_str(), "/gmtOff") == 0)
+        obj["gmtOff"] = strtol(data.payload().c_str(), NULL, 10);
+
+      if (strcmp(data.dataPath().c_str(), "/dayOff") == 0)
+        obj["dayOff"] = strtol(data.payload().c_str(), NULL, 10);
 
       //saveConfigData();
 
@@ -279,6 +310,15 @@ void streamCallback(FirebaseStream data)
         //Serial.print(", Value: ");
         //Serial.println(value);
 
+        // -------------------------- all
+        if (key == ("update"))
+        {
+          bool valueBool = strToBool(value);
+          obj[key] = valueBool;
+          taskCompleted = valueBool;
+        }
+
+        // ---------------------------- ergo
         if (key == ("t_max"))
           obj[key] = value.toInt();
         if (key == ("t_min"))
@@ -345,13 +385,11 @@ void streamCallback(FirebaseStream data)
         if (key == ("ppm_colMin"))
           obj[key] = strtoul(value.c_str(), NULL, 10);
 
-        if (key == ("update"))
-        {
-          bool valueBool = strToBool(value);
-          obj[key] = valueBool;
-          taskCompleted = valueBool;
-        }
+
+        // ---------------------------- cruz
         if (key == ("last_ac"))
+          obj[key] = strtoul(value.c_str(), NULL, 10);
+        if (key == ("days_ac"))
           obj[key] = strtoul(value.c_str(), NULL, 10);
         if (key == ("events"))
         {
@@ -359,6 +397,10 @@ void streamCallback(FirebaseStream data)
           deserializeJson(event, value);
           obj[key] = event;
         }
+        if (key == ("gmtOff"))
+          obj[key] = strtol(value.c_str(), NULL, 10);
+        if (key == ("dayOff"))
+          obj[key] = strtol(value.c_str(), NULL, 10);
       }
       json.iteratorEnd();
       //saveConfigData();
@@ -417,6 +459,76 @@ void streamCallback(FirebaseStream data)
   // Due to limited of stack memory, do not perform any task that used large memory here especially starting connect to server.
   // Just set this flag and check it status later.
   dataChanged = true;
+}
+
+// ------------------------------------------------------------------------------------------------------- prepareData
+void prepareData()
+{
+  // ------------------------------------------ all
+  json.set("update", obj["update"].as<bool>());
+
+  // ------------------------------------------ ergo
+  if (obj["type"].as<String>() == "ergo")
+  {
+    json.set("t_max", obj["t_max"].as<int>());
+    json.set("t_min", obj["t_min"].as<int>());
+    json.set("t_colMax", obj["t_colMax"].as<uint32_t>());
+    json.set("t_colMin", obj["t_colMin"].as<uint32_t>());
+    json.set("t_colDef", obj["t_colDef"].as<uint32_t>());
+
+    json.set("h_max", obj["h_max"].as<int>());
+    json.set("h_min", obj["h_min"].as<int>());
+    json.set("h_colMax", obj["h_colMax"].as<uint32_t>());
+    json.set("h_colMin", obj["h_colMin"].as<uint32_t>());
+    json.set("h_colDef", obj["h_colDef"].as<uint32_t>());
+
+    json.set("uv_max", obj["uv_max"].as<int>());
+    json.set("uv_min", obj["uv_min"].as<int>());
+    json.set("uv_colMax", obj["uv_colMax"].as<uint32_t>());
+    json.set("uv_colMin", obj["uv_colMin"].as<uint32_t>());
+    json.set("uv_colDef", obj["uv_colDef"].as<uint32_t>());
+
+    json.set("db_max", obj["db_max"].as<int>());
+    json.set("db_min", obj["db_min"].as<int>());
+    json.set("db_colMax", obj["db_colMax"].as<uint32_t>());
+    json.set("db_colMin", obj["db_colMin"].as<uint32_t>());
+    json.set("db_colDef", obj["db_colDef"].as<uint32_t>());
+
+    json.set("lux_max", obj["lux_max"].as<int>());
+    json.set("lux_min", obj["lux_min"].as<int>());
+    json.set("lux_colMax", obj["lux_colMax"].as<uint32_t>());
+    json.set("lux_colMin", obj["lux_colMin"].as<uint32_t>());
+    json.set("lux_colDef", obj["lux_colDef"].as<uint32_t>());
+
+    json.set("ppm_max", obj["ppm_max"].as<int>());
+    json.set("ppm_min", obj["ppm_min"].as<int>());
+    json.set("ppm_colMax", obj["ppm_colMax"].as<uint32_t>());
+    json.set("ppm_colMin", obj["ppm_colMin"].as<uint32_t>());
+    json.set("ppm_colDef", obj["ppm_colDef"].as<uint32_t>());
+  }
+
+  // ------------------------------------------ cruz
+  else if (obj["type"].as<String>() == "cruz")
+  {
+    json.set("last_ac", obj["last_ac"].as<uint32_t>());
+    json.set("days_ac", obj["days_ac"].as<uint32_t>());
+    json.set("gmtOff", obj["gmtOff"].as<long>());
+    json.set("dayOff", obj["dayOff"].as<int>());
+  }
+
+  //json.set("sensors", obj["sensors"]);
+  //json.set("h", h);
+  //json.set("uv", uv);
+  //json.set("db", db);
+  //json.set("lux", lux);
+  //json.set("ppm", ppm);
+
+  //json.set("sensors", t);
+  // now we will set the timestamp value at Ts
+  //json.set("Ts/.sv", "timestamp"); // .sv is the required place holder for sever value which currently supports only string "timestamp" as a value
+  //nodeName = String(millis());;
+  // Set data with timestamp
+  //Serial.printf("%s\n", Firebase.RTDB.updateNode(&fbdo, "/panels/01/actual", &json) ? /*fbdo.to<FirebaseJson>().raw()*/"" : fbdo.errorReason().c_str());
 }
 
 

@@ -15,6 +15,8 @@ extern StaticJsonDocument<1736> conf_doc;
 
 extern const char *device_list;
 extern const char *filename;
+extern const char *filedefault;
+extern const char *sen_filename;
 
 extern File file;
 //bool forceCleanONJsonError = true;

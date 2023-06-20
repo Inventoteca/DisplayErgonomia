@@ -10,6 +10,7 @@
 #define Sound_RX    16    // gpio 16 es OLED_Reset (13)
 #define Sound_TX    17    // gpio 17 es neopixels (12
 #define FACTORY_BT  0     // gpio 2 as factory reset button
+#define NEO_PIN     25    // Pin where the display will be attached 
 //LUX sensor pins are esp32 heltec lora v2 oled,
 //      SCL =       15
 //      SDA =       4

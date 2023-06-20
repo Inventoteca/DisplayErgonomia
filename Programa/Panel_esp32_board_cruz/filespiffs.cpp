@@ -7,6 +7,8 @@ StaticJsonDocument<512> dev_doc;
 
 const char* device_list = "/devices.json";
 const char* filename = "/config.json";
+const char *filedefault = "/default.json";
+const char *sen_filename = "/sensors.json";
 
 File file;
 
@@ -24,13 +26,18 @@ File file;
   if (obj.isNull())
   {
     Serial.println("{\"config_file\":null}");
+    return;
     //obj = getJSonFromFile(&doc, filedefault);
     //Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
   }
-  serializeJson(obj, Serial);
-  Serial.println();
-  serializeJson(dev, Serial);
-  Serial.println();
+  else
+  {
+    serializeJson(obj, Serial);
+    Serial.println();
+    serializeJson(dev, Serial);
+    Serial.println();
+  }
+
 }
 
 
@@ -68,7 +75,7 @@ bool saveJSonToAFile(JsonObject * doc, String filename) {
 
 // ------------------------------------------------------------------------------------------------ getJsonFromFile
 
-JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1736> *doc, String filename,bool forceCleanONJsonError)
+JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1736> *doc, String filename, bool forceCleanONJsonError)
 {
   // open the file for reading:
   file = SPIFFS.open(filename);;

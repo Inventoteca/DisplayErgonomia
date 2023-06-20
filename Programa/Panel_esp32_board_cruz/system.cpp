@@ -1,5 +1,5 @@
 #include "system.h"
-#include "display.h"
+
 
 bool factory_press = false;
 unsigned long factory_time = 0;
@@ -7,16 +7,28 @@ unsigned long prev_factory_time = 0;
 bool reset_time = false;
 bool smart_config = false;
 bool taskCompleted = false;
-byte localAddress;  
+byte localAddress;
+
+const int sampleWindow = 50;                              // Sample window width in mS (50 mS = 20Hz)
+int sample;
+const int tempSample = 60000;                              // Sample interval for sensors
+
+const int soundSample = 1500;                             // Sample window width in mS (50 mS = 20Hz)
+unsigned long soundRefresh = 0;
+const int airSample = 1000;                              // Sample window width in mS (50 mS = 20Hz)
+unsigned long airRefresh = 0;
+unsigned long startMillis = 0;
 
 // ----------------------------------------------------------------------------------------------- factory_reset
-void IRAM_ATTR factory_reset1() 
+void IRAM_ATTR factory_reset1()
 {
-  if (factory_press == false) {
+  if (factory_press == false)
+  {
     factory_press = true;
     factory_time = millis();
   }
-  else {
+  else
+  {
     prev_factory_time = millis();
     reset_time = true;
   }
@@ -38,57 +50,6 @@ void reset_config()
   neoConfig();
 }
 
-// ----------------------------------------------------------------------------------------- neoConfig
-void neoConfig()
-{
-
-  //if (wifi_config == false) // Si aun no se inicia la config
-  if (!WiFi.smartConfigDone() && (smart_config == false))
-  {
-    //if (obj["wifi"]["sta"]["count"] > 0)
-    //{
-    //  obj["wifi"]["sta"]["count"] = 0;
-    //  Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_wifi_count\":true}" : "{\"file_saved\":false}");
-    //}
-
-    WiFi.disconnect(true);
-
-    //WiFi.mode(WIFI_STA);
-
-    //if (obj["neodisplay"]["enable"].as<bool>())
-    //{
-    //display1.updatePoint(obj["neodisplay"]["status"], white); //no funciona
-    //display1.updatePoint(obj["neodisplay"]["status"], 255, 255, 255); //no funciona, la libreria es u_int
-
-    //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 255, 255);
-    //display1.show();
-
-    //color_status[0] = 255;
-    //color_status[1] = 255;
-    //color_status[2] = 255;
-    //}
-
-    smart_config = WiFi.beginSmartConfig(SC_TYPE_ESPTOUCH_V2);
-
-    Serial.print("{\"SmartConfig\":");
-    Serial.print(smart_config);
-    Serial.println("}");
-
-    //while (!WiFi.smartConfigDone());
-    //if (!wifi_config) ESP.restart();
-  }
-  //else // Configuracion iniciada
-  //{
-  //Serial.print("Wait conection response");
-  //if (WiFi.smartConfigDone()) // Configuracion correcta
-  //{
-  //WiFi.stopSmartConfig();
-  // wifi_config = false;
-  // wifi_trys = 0;
-  //Serial.print("SmartConfig Started Done");
-  //}
-
-}
 
 // ------------------------------------------- strtoBool
 bool strToBool(String str)
@@ -115,10 +76,11 @@ void loadConfig()
   {
     WiFi.mode(WIFI_STA);
     String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
+    String auxpass = obj["wifi"]["sta"]["pass"].as<String>();
 
 
-    // ---- WiFi already Registered or try to connect a new wifi
-    if ((obj["wifi"]["sta"]["registered"].as<bool>() == true) /*|| (obj["wifi"]["sta"]["count"] < 2)*/)
+    // ---- WiFi already Registered and ssid pass is not empty or (try to connect a new wifi)
+    if ((obj["wifi"]["sta"]["registered"].as<bool>() == true) && (auxssid.length() > 0) && (auxpass.length() > 0) /*|| (obj["wifi"]["sta"]["count"] < 2)*/)
     {
 
       Serial.println("{\"load_registered_wifi\":true}");
@@ -170,7 +132,7 @@ void loadConfig()
   {
     if (obj["sensors_enable"].as<bool>())
     {
-     // sensorInit();
+      // sensorInit();
     }
   }
 
@@ -185,6 +147,47 @@ void loadConfig()
     strip.setBrightness(255);
     last_ac = DateTime(obj["last_ac"].as<uint32_t>());
   }
+
+  //----------------- RTC
+  if (! rtc.begin())
+  {
+    Serial.println("{\"rtc\":false}");
+    //Serial.flush();
+    //while (1) delay(10);
+  }
+  else
+  {
+    Serial.println("{\"rtc\":true}");
+
+    now = rtc.now();
+    Serial.print("{\"time\":\"");
+    Serial.print(now.year(), DEC);
+    Serial.print('/');
+    Serial.print(now.month(), DEC);
+    Serial.print('/');
+    Serial.print(now.day(), DEC);
+    Serial.print(' ');
+    Serial.print(now.hour(), DEC);
+    Serial.print(':');
+    Serial.print(now.minute(), DEC);
+    Serial.print(':');
+    Serial.print(now.second(), DEC);
+    Serial.println("\"}");
+
+    gmtOffset_sec = obj["gmtOff"].as<long>();
+    daylightOffset_sec = obj["dayOff"].as<int>();
+
+    Serial.print("{\"gmtOff\":");
+    Serial.print(gmtOffset_sec);
+    Serial.println("}");
+
+    Serial.print("{\"dayOff\":");
+    Serial.print(daylightOffset_sec);
+    Serial.println("}");
+
+    // timeClient.setTimeOffset(gmtOffset_sec, daylightOffset_sec);
+  }
+
 
 
   // ------------- ID and LoRa
@@ -235,13 +238,7 @@ void loadConfig()
   //
   //  }
   //Serial.println("Config Loaded");
-  if (! rtc.begin()) {
-    Serial.println("{\"rtc\":false}");
-    Serial.flush();
-    //while (1) delay(10);
-  }
-  else
-    Serial.println("{\"rtc\":true}");
+
 
   Serial.println("{\"config\":true}");
 

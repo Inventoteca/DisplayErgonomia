@@ -3,6 +3,8 @@
 bool neo_digits_status = false;
 bool blk = false;
 short color_status[3] = {0, 0, 0};
+unsigned long printRefresh = 0;
+unsigned long printTime = 1000;
 
 NeoDigito display1 = NeoDigito(DIGITS, PIXPERSEG, NEO_PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip(238, -1, NEO_GRB + NEO_KHZ800);
@@ -84,8 +86,9 @@ void displayInit()
 // --------------------------------------------------------------------------------------- PrintOut
 void PrintOut()
 {
-  // if (millis() - printRefresh > printTime)
+  if (millis() - printRefresh > printTime)
   {
+    //Serial.println("printout");
     if (obj["oled"].as<bool>())
     {
       //      Heltec.display->clear();
@@ -115,11 +118,10 @@ void PrintOut()
       //      Heltec.display->display();
     }
 
-    if (obj["type"].as<String>() == "ergo")
+    if (obj["neodisplay"]["enable"].as<bool>())
     {
-
-
-      if (obj["neodisplay"]["enable"].as<bool>())
+      Serial.println("neodisplay");
+      if (obj["type"].as<String>() == "ergo")
       {
         /*   display1.setCursor(0);
            if (t < 10)
@@ -354,12 +356,9 @@ void PrintOut()
       {
         display1.updatePoint(obj["neodisplay"]["status"].as<int>(), color_status[0], color_status[1], color_status[2]);
       }
-
-      // Prepare for LoRa
-      //SendData();
-      //printRefresh = millis();
-
     }
-
+    
+    SendData();                     // Prepare for firebase and lora
+    printRefresh = millis();
   }
 }

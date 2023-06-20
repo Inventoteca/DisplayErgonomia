@@ -2,9 +2,19 @@
 #define SYSTEM_H
 
 #include <Arduino.h>
-#include <WiFi.h> //import for wifi functionality
+#include <ArduinoJson.h>
 #include "pines.h"
 #include "filespiffs.h"
+#include <Arduino.h>
+#include <esp_task_wdt.h>
+#include "display.h"
+#include "firebasedb.h"
+#include "wifiservice.h"
+//#include "clock.h"
+
+//15 seconds WDT
+#define WDT_TIMEOUT 15
+
 
 extern bool factory_press;
 extern unsigned long factory_time;
@@ -16,9 +26,10 @@ extern byte localAddress;     // address of this device
 
 void IRAM_ATTR factory_reset1();
 void reset_config();
-void neoConfig();
+//void neoConfig();
 bool strToBool(String str);
 float mapfloat(float x, float in_min, float in_max, float out_min, float out_max);
 void loadConfig();
+//void prepareData();
 
 #endif

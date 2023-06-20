@@ -34,6 +34,7 @@ void sensorInit()
   if (sensors_init == false)
   {
     // --------------------------- temperature & humidity
+     Wire.begin(); 
     dht.begin();
     Serial.println("{\"dht\":true}");
 
