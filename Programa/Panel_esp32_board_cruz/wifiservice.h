@@ -6,8 +6,8 @@
 #include "display.h"
 #include "system.h"
 
-extern const uint32_t connectTimeoutMs;
-extern unsigned long  s_timestamp;
+//extern const uint32_t connectTimeoutMs;
+//extern unsigned long  s_timestamp;
 extern bool correct;
 extern int wifi_trys;
 extern boolean isSaved;

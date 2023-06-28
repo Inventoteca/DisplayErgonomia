@@ -6,7 +6,7 @@ unsigned long factory_time = 0;
 unsigned long prev_factory_time = 0;
 bool reset_time = false;
 bool smart_config = false;
-bool taskCompleted = false;
+//bool taskCompleted = false;
 byte localAddress;
 
 const int sampleWindow = 50;                              // Sample window width in mS (50 mS = 20Hz)
@@ -19,20 +19,45 @@ const int airSample = 1000;                              // Sample window width 
 unsigned long airRefresh = 0;
 unsigned long startMillis = 0;
 
+unsigned long mainRefresh = 0;
+unsigned long mainTime = 1000;
+
+const uint32_t connectTimeoutMs = 10000;
+unsigned long  s_timestamp;
+
 // ----------------------------------------------------------------------------------------------- factory_reset
 void IRAM_ATTR factory_reset1()
 {
   if (factory_press == false)
   {
+    Serial.println("{\"reset_button\":\"pressed\"}");
     factory_press = true;
     factory_time = millis();
+
   }
   else
   {
     prev_factory_time = millis();
     reset_time = true;
+    Serial.println("{\"reset_button\":\"released\"}");
   }
 
+}
+
+// --------------------------------------------------------------------------------------------- check_reset
+void check_reset()
+{
+  if (reset_time)
+  {
+    if ((prev_factory_time - factory_time) > 5000)
+    {
+      reset_config();
+    }
+    else
+      Serial.println("{\"reset\":\"fail\"}");
+    factory_press = false;
+    reset_time = false;
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------- reset_config
@@ -47,7 +72,9 @@ void reset_config()
   obj["wifi"]["sta"]["count"] = 0;
   obj["wifi"]["sta"]["registered"] = false;
   Serial.println(saveJSonToAFile(&obj, filename) ? "{\"factory_reset\":true}" : "{\"factory_reset\":false}");
-  neoConfig();
+  delay(2000);
+  ESP.restart();
+
 }
 
 
@@ -69,7 +96,7 @@ bool strToBool(String str)
 void loadConfig()
 {
 
-  taskCompleted = obj["update"].as<bool>();
+  updated = obj["updated"].as<bool>();
 
   // ----------------------- WiFi STA
   if (obj["wifi"]["sta"]["enable"].as<bool>() == true /*&& (WiFi.status() != WL_CONNECTED)*/)
@@ -139,13 +166,10 @@ void loadConfig()
   //---------------- cruz
   if (obj["type"].as<String>() == "cruz")
   {
-
-    strip.setPin(obj["neodisplay"]["pin"].as<int>());
-    strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-    strip.clear();
-    strip.show();            // Turn OFF all pixels ASAP
-    strip.setBrightness(255);
-    last_ac = DateTime(obj["last_ac"].as<uint32_t>());
+    //last_ac = obj["last_ac"].as<DateTime>();
+    Serial.print("{\"last_ac\":\"");
+    //Serial.print(last_ac.toString("yyyy/MM/dd HH:mm:ss"));
+    Serial.println("\"}");
   }
 
   //----------------- RTC

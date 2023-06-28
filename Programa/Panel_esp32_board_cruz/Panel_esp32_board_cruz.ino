@@ -15,8 +15,7 @@
 
 
 //################################################################----------------------- setup--------------------- #############################
-void setup()
-{
+void setup() {
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
   WiFi.onEvent(WiFiEvent);
@@ -24,22 +23,18 @@ void setup()
   attachInterrupt(FACTORY_BT, factory_reset1, CHANGE);
 
   // WatchDog Timer
-  esp_task_wdt_init(WDT_TIMEOUT, true);   //enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL);                 //add current thread to WDT watch
+  esp_task_wdt_init(WDT_TIMEOUT, true);  //enable panic so ESP32 restarts
+  esp_task_wdt_add(NULL);                //add current thread to WDT watch
 
   // SPIFFS Init
-  if (!SPIFFS.begin(true))
-  {
+  if (!SPIFFS.begin(true)) {
     Serial.println("{\"spiffs\":false}");
     return;
-  }
-  else
-  {
+  } else {
     Serial.println("{\"spiffs\":true}");
-    Cfg_get(/*NULL*/);                    // Load File from spiffs
-    loadConfig();                         // Load and update behaivor of system
+    Cfg_get(/*NULL*/);  // Load File from spiffs
+    loadConfig();       // Load and update behaivor of system
   }
-
 }
 
 
@@ -52,50 +47,50 @@ void loop()
   //    //onReceive(LoRa.parsePacket());
   //  }
 
-  // ------------------------------------------- ergo
-  if (obj["type"].as<String>() == "ergo")
+  if (millis() - mainRefresh > mainTime)
   {
-    if (obj["sensors_enable"].as<bool>()) // Sensor Panel normal
+    // ------------------------------------------- ergo
+    if (obj["type"].as<String>() == "ergo")
     {
-      ReadSensors();
+      if (obj["sensors_enable"].as<bool>())  // Sensor Panel normal
+      {
+        ReadSensors();
+        //PrintOut();
+        //SendData();
+      }
     }
-  }
-  // ------------------------------------------- cruz
-  else if (obj["type"].as<String>() == "cruz")
-  {
+    // ------------------------------------------- cruz
+    else if (obj["type"].as<String>() == "cruz")
     {
-      now = rtc.now();
+      read_clock();
       PrintOut();
+      SendData();
     }
-
+    mainRefresh = millis();
   }
+
+  if (obj["wifi"]["sta"]["enable"].as<bool>())
+  {
+    // ----------------------------------------- check internet
+    if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time
+    {
+      checkServer();
+      s_timestamp = millis();
+    }
+  }
+
 
   // ----------------------------------------- save new data
-  if (saveConfig) // Data change
+  if (saveConfig)  // Data change
   {
     Serial.println("{\"upload_config\":true}");
     saveConfigData();
     saveConfig = false;
   }
 
-  // ----------------------------------------- check internet
-  if (obj["wifi"]["sta"]["enable"].as<bool>())
-  {
-    checkServer();
-  }
 
-  // ----------------------------------------- reset wifi data
-  if (reset_time)                         // Press and hold reset button
-  {
-    if ((prev_factory_time - factory_time) > 5000)
-    {
-      reset_config();
-    }
-    factory_press = false;
-    reset_time = false;
-  }
 
   // ---------------------------------------- wdt reset
+  check_reset();
   esp_task_wdt_reset();
-
 }

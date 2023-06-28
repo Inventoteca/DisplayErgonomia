@@ -1,7 +1,7 @@
 #include "wifiservice.h"
 
-const uint32_t connectTimeoutMs = 10000;
-unsigned long  s_timestamp;
+//const uint32_t connectTimeoutMs = 10000;
+//unsigned long  s_timestamp;
 bool correct = false;
 int wifi_trys;
 boolean isSaved = false;
@@ -108,7 +108,7 @@ void Wifi_disconnected(WiFiEvent_t event, WiFiEventInfo_t info)
 void checkServer()
 {
 
-  if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time
+  //if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time
   {
     String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
 
@@ -160,94 +160,9 @@ void checkServer()
       //
       //      }
 
-      // Firebase
-      //esp_task_wdt_reset();
-      if (!Firebase.ready()) // Add more filters
-      {
-        /* Assign the api key (required) */
-        // s_aux = obj["key"].as<String>();
-        //len = s_aux.length();
-        blk = false;
-        Serial.println("{\"firebase_init\":true}");
-        config.api_key = obj["key"].as<String>();
-
-        /* Assign the user sign in credentials */
-        auth.user.email = obj["email"].as<String>();
-        auth.user.password = obj["pass"].as<String>();
-
-        /* Assign the RTDB URL (required) */
-        config.database_url = obj["url"].as<String>();
-        Firebase.begin(&config, &auth);
-        esp_task_wdt_reset();
-
-        Firebase.reconnectWiFi(true);
-
-        String route_config = "/panels/" + obj["id"].as<String>() + "/actual";
-        if (!Firebase.RTDB.beginStream(&stream, route_config))
-          Serial.printf("sream begin error, %s\n\n", stream.errorReason().c_str());
-
-        Firebase.RTDB.setStreamCallback(&stream, streamCallback, streamTimeoutCallback);
-
-        // Timeout, prevent to program halt
-        config.timeout.wifiReconnect = 10 * 1000; // 10 Seconds to 2 min (10 * 1000)
-        config.timeout.socketConnection = 1 * 1000; // 1 sec to 1 min (30 * 1000)
-        config.timeout.sslHandshake = 1 * 1000; // 1 sec to 2 min (2 * 60 * 1000)
-        config.timeout.rtdbKeepAlive = 20 * 1000;    // 20 sec to 2 min (45 * 1000)
-        config.timeout.rtdbStreamReconnect = 1 * 1000;  //1 sec to 1 min (1 * 1000)
-        config.timeout.rtdbStreamError = 3 * 1000;    // 3 sec to 30 sec (3 * 1000)
-        config.timeout.serverResponse = 10 * 1000;    //Server response read timeout in ms 1 sec - 1 min ( 10 * 1000).
-
-
-
-
-      }
-      else //if (Firebase.ready() /*&& !taskCompleted*/)
-      {
-        Serial.println("{\"firebase_connected\":true}");
-        blk = !blk;
-
-        if (dataChanged)
-        {
-          dataChanged = false;
-
-          if (Firebase.ready() && (WiFi.status() == WL_CONNECTED))
-          {
-            if (nullData)
-            {
-              nullData = false;
-              Serial.println("{\"upload_config\":true}");
-              prepareData();
-              String route_config = "/panels/" + obj["id"].as<String>() + "/actual";
-
-              if (Firebase.RTDB.updateNode(&fbdo, route_config, &json) == false)
-              {
-                Serial.printf("%s\n", fbdo.errorReason().c_str());
-              }
-            }
-
-          }
-
-        }
-
-        // Firebase.ready() should be called repeatedly to handle authentication tasks.
-
-        if (!taskCompleted)
-        {
-          taskCompleted = true;
-          String storage_id = obj["storage_id"].as<String>();
-
-          // If you want to get download url to use with your own OTA update process using core update library,
-          // see Metadata.ino example
-
-          Serial.println("\nDownload firmware file...\n");
-
-          // In ESP8266, this function will allocate 16k+ memory for internal SSL client.
-          if (!Firebase.Storage.downloadOTA(&fbdo, storage_id/* Firebase Storage bucket id */, "firmware.bin" /* path of firmware file stored in the bucket */, fcsDownloadCallback /* callback function */))
-            Serial.println(fbdo.errorReason());
-        }
-      }
-
+      connectFirebase();
     }
+
     else //wifi not connected
     {
       if (smart_config == false)
@@ -274,7 +189,7 @@ void checkServer()
     //Serial.println("{\"server_check\":true}");
     Serial.printf("{\"status\":%d,%d,%d}", color_status[0], color_status[1], color_status[2]);
     Serial.println();
-    s_timestamp = millis();
+    //s_timestamp = millis();
   }
 }
 

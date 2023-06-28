@@ -3,8 +3,8 @@
 bool neo_digits_status = false;
 bool blk = false;
 short color_status[3] = {0, 0, 0};
-unsigned long printRefresh = 0;
-unsigned long printTime = 1000;
+//unsigned long printRefresh = 0;
+//unsigned long printTime = 1000;
 
 NeoDigito display1 = NeoDigito(DIGITS, PIXPERSEG, NEO_PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip(238, -1, NEO_GRB + NEO_KHZ800);
@@ -15,14 +15,27 @@ int pixelCruz[] = {0, 2, 7, 12, 16, 21, 27, 30, 37, 43, 51, 55, 62, 69, 75, 82, 
 void displayInit()
 {
 
-  display1.setPin(obj["neodisplay"]["pin"].as<int>());
-  //display1.setPin(25);
-  display1.updateDigitType(obj["neodisplay"]["digits"].as<int>(), obj["neodisplay"]["pixels"].as<int>());
-  //display1.updateDigitType(17,2);
+  if (obj["type"].as<String>() == "ergo")
+  {
+    display1.setPin(obj["neodisplay"]["pin"].as<int>());
+    //display1.setPin(25);
+    display1.updateDigitType(obj["neodisplay"]["digits"].as<int>(), obj["neodisplay"]["pixels"].as<int>());
+    //display1.updateDigitType(17,2);
 
-  display1.begin();             // This fuction calls Adafruit_NeoPixel.begin() to configure.
-  //display1.clear();
-  //display1.show();
+    display1.begin();             // This fuction calls Adafruit_NeoPixel.begin() to configure.
+    //display1.clear();
+    //display1.show();
+
+  }
+  else if (obj["type"].as<String>() == "cruz")
+  {
+    strip.setPin(obj["neodisplay"]["pin"].as<int>());
+    strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+    strip.clear();
+    strip.show();            // Turn OFF all pixels ASAP
+    strip.setBrightness(255);
+    Serial.println("{\"strip_croix\":true}");
+  }
 
   // Testing display
   /*
@@ -86,7 +99,7 @@ void displayInit()
 // --------------------------------------------------------------------------------------- PrintOut
 void PrintOut()
 {
-  if (millis() - printRefresh > printTime)
+  //if (millis() - printRefresh > printTime)
   {
     //Serial.println("printout");
     if (obj["oled"].as<bool>())
@@ -120,7 +133,7 @@ void PrintOut()
 
     if (obj["neodisplay"]["enable"].as<bool>())
     {
-      Serial.println("neodisplay");
+      //Serial.println("neodisplay");
       if (obj["type"].as<String>() == "ergo")
       {
         /*   display1.setCursor(0);
@@ -216,7 +229,8 @@ void PrintOut()
 
 
         Serial.print("{\"days\":");
-        Serial.print(int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L)));
+        //Serial.print(int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L)));
+        Serial.print(dias);
         Serial.println("}");
 
         // if (now.second() % 2 == 0)
@@ -295,10 +309,6 @@ void PrintOut()
           display1.begin();
           display1.clear();
 
-          int dias = int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L));
-          int mes = now.month();
-          int anio = now.year();
-
           if (dias < 1000)
             display1.print(" ");
           if (dias < 100)
@@ -357,8 +367,8 @@ void PrintOut()
         display1.updatePoint(obj["neodisplay"]["status"].as<int>(), color_status[0], color_status[1], color_status[2]);
       }
     }
-    
-    SendData();                     // Prepare for firebase and lora
-    printRefresh = millis();
+
+    //SendData();                     // Prepare for firebase and lora
+    //printRefresh = millis();
   }
 }

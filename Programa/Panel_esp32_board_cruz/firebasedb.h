@@ -16,10 +16,12 @@ extern FirebaseJson json_events;
 extern FirebaseJson conf;
 extern FirebaseJson data_json;
 extern String nodeName;
+extern volatile bool updated;
 extern volatile bool dataChanged;
 extern volatile bool nullData;
 extern volatile bool saveConfig;
 extern FirebaseData stream;
+extern String route;
 
 
 void fcsDownloadCallback(FCS_DownloadStatusInfo info);
@@ -27,5 +29,8 @@ void SendData();
 void streamCallback(FirebaseStream data);
 void prepareData();
 void streamTimeoutCallback(bool timeout);
+void connectFirebase();
+void copyJsonObject(FirebaseJson& firebaseJson, JsonObject& jsonObject);
+//void merge(JsonVariant dst, JsonVariantConst src);
 
 #endif  // FIREBASEDB_H
