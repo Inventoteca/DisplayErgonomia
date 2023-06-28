@@ -19,13 +19,18 @@
 extern bool factory_press;
 extern unsigned long factory_time;
 extern unsigned long prev_factory_time;
-extern bool reset_time;
+//extern bool reset_time;
 extern bool smart_config;
 extern bool taskCompleted;
 extern byte localAddress;     // address of this device
+extern unsigned long mainRefresh;
+extern unsigned long mainTime;
+extern const uint32_t connectTimeoutMs;
+extern unsigned long  s_timestamp;
 
 void IRAM_ATTR factory_reset1();
 void reset_config();
+void check_reset();
 //void neoConfig();
 bool strToBool(String str);
 float mapfloat(float x, float in_min, float in_max, float out_min, float out_max);

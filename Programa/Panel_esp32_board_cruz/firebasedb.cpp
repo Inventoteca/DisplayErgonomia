@@ -9,9 +9,11 @@ FirebaseJson json_events;
 FirebaseJson conf;
 FirebaseJson data_json;
 String nodeName;
+volatile bool updated = true;
 volatile bool dataChanged = false;
 volatile bool nullData = false;
 volatile bool saveConfig = false;
+String route = "/panels/" + obj["id"].as<String>();// + "/actual";
 FirebaseData stream;
 
 // ----------------------------------- OTA The Firebase Storage download callback function
@@ -32,9 +34,9 @@ void fcsDownloadCallback(FCS_DownloadStatusInfo info)
     Serial.println();
     Serial.println("Restarting...\n\n");
 
-    obj["update"] = true;
+    obj["updated"] = true;
     saveConfigData();
-    json.set("update", true);
+    json.set("updated", true);
     SendData();
 
 
@@ -64,81 +66,47 @@ void fcsDownloadCallback(FCS_DownloadStatusInfo info)
 // -------------------------------------------------------------------------------------- SendData
 void SendData()
 {
-  prepareData();
-
-  DynamicJsonDocument msg(1024);
-  String message;
-  if (obj["type"].as<String>() == "ergo")
-  {
-
-    //message = "HeLoRa World!";   // send a message
-    //msg["method"] =
-    msg["sensors"]["t"] = t;
-    msg["sensors"]["h"] = h;
-    msg["sensors"]["uv"] = int(uv * 10); // avoid float
-    msg["sensors"]["db"] = db;
-    msg["sensors"]["lux"] = lux;
-    msg["sensors"]["ppm"] = ppm;
-    last_db = 0;
-    json.set("t", t);
-    json.set("h", h);
-    json.set("uv", uv);
-    json.set("db", db);
-    json.set("lux", lux);
-    json.set("ppm", ppm);
-    serializeJson(msg, message);
-    Serial.println(message);
-
-  }
-
-  else if (obj["type"].as<String>() == "cruz")
-  {
-    json.set("days", int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L)));
-    //json.set("last_ac", last_ac.unixtime());
-
-    //DynamicJsonDocument event(512);
-    //deserializeJson(event, value);
-    //obj[key] = event;
-
-    //json.set("events",obj["events"]);
-    // json.set("update", true);
-  }
-
-
   if (Firebase.ready() && (WiFi.status() == WL_CONNECTED))
   {
-
-    // now we will set the timestamp value at Ts
-    json.set("Ts/.sv", "timestamp"); // .sv is the required place holder for sever value which currently supports only string "timestamp" as a value
-    //nodeName = String(millis());
-    json.set("time", now.unixtime());
-
-    DateTime now = rtc.now();
-    nodeName = String(now.unixtime());
-
-    // Set data with timestamp
-    //Serial.printf("%s\n", Firebase.RTDB.updateNode(&fbdo, "/panels/01/actual", &json) ? /*fbdo.to<FirebaseJson>().raw()*/"" : fbdo.errorReason().c_str());
-
-    String route = "/panels/" + obj["id"].as<String>() + "/actual";
-    //Serial.println(route);
-
-    //(String route = "/panels/40:91:51:93:45:B8/actual";
-
-    if (Firebase.RTDB.updateNode(&fbdo, route, &json) == false)
+    //json.set("updatedBySelf", true);
+    prepareData();
+    // ------------------------------------- ergo
+    if (obj["type"].as<String>() == "ergo")
     {
-      Serial.printf("%s\n", fbdo.errorReason().c_str());
+
+    }
+    // ------------------------------------- cruz
+    else if (obj["type"].as<String>() == "cruz")
+    {
+      //json.set("days", int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L)));
+      //json.set("last_ac", last_ac.unixtime());
+
+      //DynamicJsonDocument event(512);
+      //deserializeJson(event, value);
+      //obj[key] = event;
+
+      //json.set("events",obj["events"]);
+      // json.set("update", true);
+
+      // Log file for reports Cruz
+      // Actual readings file for reports Cruz
+      if (Firebase.RTDB.updateNode(&fbdo, route + "/actual", &json) == false)
+      {
+        Serial.printf("%s\n", fbdo.errorReason().c_str());
+      }
+
+      //json.set("events", obj["events"]);
+      if (Firebase.RTDB.updateNode(&fbdo, route + "/data/" + String(now.year()) + "_" + String(now.month()), &json) == false)
+      {
+        Serial.printf("%s\n", fbdo.errorReason().c_str());
+      }
     }
 
-    route = "/panels/" + obj["id"].as<String>() + "/data/" + String(now.year()) + "_" + String(now.month());
-
-    if (Firebase.RTDB.updateNode(&fbdo, route, &json) == false)
-    {
-      Serial.printf("%s\n", fbdo.errorReason().c_str());
-    }
   }
-  else
+  else if ((obj["wifi"]["sta"]["enable"].as<bool>() == true) && (WiFi.status() == WL_CONNECTED))
   {
-    Serial.println("{\"firebase\":false}");
+    //
+    connectFirebase();
   }
 
   if (obj["lora"]["enable"].as<bool>())
@@ -154,322 +122,103 @@ void streamCallback(FirebaseStream data)
 {
   // Add config from spiff file
 
-  saveConfig = false;
-  if (strcmp(data.eventType().c_str(), "patch") != 0)  // Not an update
+  //data_json.setJsonData(data.payload());
+  //String jsonStr;
+  //data_json.toString(jsonStr, false);
+
+  FirebaseJson &json = data.jsonObject();
+  size_t len = json.iteratorBegin();
+  String key, value = "";
+  int type = 0;
+
+  //Serial.println(jsonStr);
+  Serial.printf("sream path: %s\nevent path: %s\ndata type: %s\nevent type: %s\ndata:  %s\n\n",
+                data.streamPath().c_str(),
+                data.dataPath().c_str(),
+                data.dataType().c_str(),
+                data.eventType().c_str(),
+                data.payload().c_str());
+
+  for (size_t i = 0; i < len; i++)
   {
+    json.iteratorGet(i, type, key, value);
 
-    Serial.printf("sream path, %s\nevent path, %s\ndata type, %s\nevent type, %s\n\n",
-                  data.streamPath().c_str(),
-                  data.dataPath().c_str(),
-                  data.dataType().c_str(),
-                  data.eventType().c_str());
+    //if ((key == "updatedBySelf") && (value.equalsIgnoreCase("true")))
+    //{
+    //  Serial.println("Myself");
+    //continue;
+    //}
 
-    data_json.setJsonData(data.payload());
-    String jsonStr;
-    data_json.toString(jsonStr, false);
-
-    if ((strcmp(data.eventType().c_str(), "put") == 0) &&  (strcmp(data.dataType().c_str(), "json") != 0))
+    //else
     {
-      saveConfig = true;
 
-      // ------------------------------------------------- all
-      if (strcmp(data.dataPath().c_str(), "/update") == 0)
+
+      if (type == FirebaseJson::JSON_OBJECT)
       {
-        bool valueBool = strToBool(data.payload().c_str());
-        obj["update"] = valueBool;
-        taskCompleted = valueBool;
-        //obj["update"] = strtoul(data.payload().c_str(), NULL, 10);
-      }
-
-      // ------------------------------------------------- ergo
-      if (strcmp(data.dataPath().c_str(), "/t_max") == 0)
-        obj["t_max"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/t_min") == 0)
-        obj["t_min"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/t_colMax") == 0)
-        obj["t_colMax"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/t_colMin") == 0)
-        obj["t_colMin"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/t_colDef") == 0)
-        obj["t_colDef"] = strtoul(data.payload().c_str(), NULL, 10);
-
-
-      if (strcmp(data.dataPath().c_str(), "/h_max") == 0)
-        obj["h_max"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/h_min") == 0)
-        obj["h_min"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/h_colMax") == 0)
-        obj["h_colMax"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/h_colMin") == 0)
-        obj["h_colMin"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/h_colDef") == 0)
-        obj["h_colDef"] = strtoul(data.payload().c_str(), NULL, 10);
-
-
-      if (strcmp(data.dataPath().c_str(), "/uv_max") == 0)
-        obj["uv_max"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/uv_min") == 0)
-        obj["uv_min"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/uv_colMax") == 0)
-        obj["uv_colMax"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/uv_colMin") == 0)
-        obj["uv_colMin"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/uv_colDef") == 0)
-        obj["uv_colDef"] = strtoul(data.payload().c_str(), NULL, 10);
-
-
-      if (strcmp(data.dataPath().c_str(), "/db_max") == 0)
-        obj["db_max"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/db_min") == 0)
-        obj["db_min"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/db_colMax") == 0)
-        obj["db_colMax"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/db_colMin") == 0)
-        obj["db_colMin"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/db_colDef") == 0)
-        obj["db_colDef"] = strtoul(data.payload().c_str(), NULL, 10);
-
-
-      if (strcmp(data.dataPath().c_str(), "/lux_max") == 0)
-        obj["lux_max"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/lux_min") == 0)
-        obj["lux_min"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/lux_colMax") == 0)
-        obj["lux_colMax"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/lux_colMin") == 0)
-        obj["lux_colMin"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/lux_colDef") == 0)
-        obj["lux_colDef"] = strtoul(data.payload().c_str(), NULL, 10);
-
-      if (strcmp(data.dataPath().c_str(), "/ppm_max") == 0)
-        obj["ppm_max"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/ppm_min") == 0)
-        obj["pmm_min"] = jsonStr.toInt();
-      if (strcmp(data.dataPath().c_str(), "/ppm_colMax") == 0)
-        obj["ppm_colMax"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/ppm_colMin") == 0)
-        obj["ppm_colMin"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/ppm_colDef") == 0)
-        obj["ppm_colDef"] = strtoul(data.payload().c_str(), NULL, 10);
-
-
-      // ------------------------------------------------- cruz
-      if (strcmp(data.dataPath().c_str(), "/last_ac") == 0)
-        obj["last_ac"] = strtoul(data.payload().c_str(), NULL, 10);
-      if (strcmp(data.dataPath().c_str(), "/days_ac") == 0)
-        obj["days_ac"] = strtoul(data.payload().c_str(), NULL, 10);
-
-      if (strcmp(data.dataPath().c_str(), "/events") >= 0)//(key == ("events"))
-      {
-        DynamicJsonDocument event(512);
-        deserializeJson(event, data.payload());
-        String eventID = data.dataPath().substring(8);
-        if (strcmp(data.dataType().c_str(), "null") == 0)
-          obj["events"].remove(eventID);
-        //obj["events"][eventID] = 0;
-        else
-          obj["events"][eventID] = event;
-
-      }
-
-      if (strcmp(data.dataPath().c_str(), "/gmtOff") == 0)
-        obj["gmtOff"] = strtol(data.payload().c_str(), NULL, 10);
-
-      if (strcmp(data.dataPath().c_str(), "/dayOff") == 0)
-        obj["dayOff"] = strtol(data.payload().c_str(), NULL, 10);
-
-      //saveConfigData();
-
-    }
-
-    if ((strcmp(data.eventType().c_str(), "put") == 0) &&  (strcmp(data.dataType().c_str(), "json") == 0) && (strcmp(data.dataType().c_str(), "null") != 0))
-    {
-      saveConfig = true;
-      //    Serial.println(jsonStr);
-      //deserializeJson(conf_doc,jsonStr);
-      //printResult(data); // see addons/RTDBHelper.h
-      FirebaseJson &json = data.jsonObject();
-      String jsonStr;
-      json.toString(jsonStr, true);
-      Serial.println(jsonStr);
-      size_t len = json.iteratorBegin();
-      String key, value = "";
-      int type = 0;
-      for (size_t i = 0; i < len; i++)
-      {
-        json.iteratorGet(i, type, key, value);
-        //Serial.print(i);
-        //Serial.print(", ");
-        //Serial.print("Type: ");
-        //Serial.print(type);
-        ////if (type == JSON_OBJECT)
-        //{
-        //  Serial.print(", Key: ");
-        //  Serial.print(key);
-        //}
-        //Serial.print(", Value: ");
-        //Serial.println(value);
-
-        // -------------------------- all
-        if (key == ("update"))
-        {
-          bool valueBool = strToBool(value);
-          obj[key] = valueBool;
-          taskCompleted = valueBool;
-        }
-
-        // ---------------------------- ergo
-        if (key == ("t_max"))
-          obj[key] = value.toInt();
-        if (key == ("t_min"))
-          obj[key] = value.toInt();
-        if (key == ("t_colDef"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("t_colMax"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("t_colMin"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-
-        if (key == ("h_max"))
-          obj[key] = value.toInt();
-        if (key == ("h_min"))
-          obj[key] = value.toInt();
-        if (key == ("h_colDef"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("h_colMax"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("h_colMin"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-
-        if (key == ("uv_max"))
-          obj[key] = value.toInt();
-        if (key == ("uv_min"))
-          obj[key] = value.toInt();
-        if (key == ("uv_colDef"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("uv_colMax"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("uv_colMin"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-
-        if (key == ("db_max"))
-          obj[key] = value.toInt();
-        if (key == ("db_min"))
-          obj[key] = value.toInt();
-        if (key == ("db_colDef"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("db_colMax"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("db_colMin"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-
-        if (key == ("lux_max"))
-          obj[key] = value.toInt();
-        if (key == ("lux_min"))
-          obj[key] = value.toInt();
-        if (key == ("lux_colDef"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("lux_colMax"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("lux_colMin"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-
-        if (key == ("ppm_max"))
-          obj[key] = value.toInt();
-        if (key == ("ppm_min"))
-          obj[key] = value.toInt();
-        if (key == ("ppm_colDef"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("ppm_colMax"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("ppm_colMin"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-
-
-        // ---------------------------- cruz
-        if (key == ("last_ac"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("days_ac"))
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        if (key == ("events"))
-        {
-          DynamicJsonDocument event(512);
-          deserializeJson(event, value);
-          obj[key] = event;
-        }
-        if (key == ("gmtOff"))
-          obj[key] = strtol(value.c_str(), NULL, 10);
-        if (key == ("dayOff"))
-          obj[key] = strtol(value.c_str(), NULL, 10);
-      }
-      json.iteratorEnd();
-      //saveConfigData();
-    }
-    else if (strcmp(data.dataType().c_str(), "null") == 0)
-    {
-      nullData = true;
-      // Send spiffs to firebase
-    }
-
-  }
-  else if (strcmp(data.dataPath().c_str(), "/") != 0)
-  {
-    if ((strcmp(data.dataPath().c_str(), "/events") >= 0) && (strcmp(data.dataType().c_str(), "json") == 0))//(key == ("events"))
-    {
-      Serial.printf("sream path, %s\nevent path, %s\ndata type, %s\nevent type, %s\n\n",
-                    data.streamPath().c_str(),
-                    data.dataPath().c_str(),
-                    data.dataType().c_str(),
-                    data.eventType().c_str());
-
-      FirebaseJson &json = data.jsonObject();
-      String jsonStr;
-      json.toString(jsonStr, true);
-      Serial.println(jsonStr);
-      size_t len = json.iteratorBegin();
-      String key, value = "";
-      int type = 0;
-      for (size_t i = 0; i < len; i++)
-      {
-        json.iteratorGet(i, type, key, value);
-        //if (key == ("events"))
-        //{
         DynamicJsonDocument event(512);
         deserializeJson(event, value);
-        obj["events"][key] = event;
-        //}
+        obj[key] = event;
       }
-      json.iteratorEnd();
-      saveConfig = true;
-      //saveConfigData();
+      else if (type == FirebaseJson::JSON_INT)
+      {
+        obj[key] = strtoul(value.c_str(), NULL, 10);
+      }
+      else if (type == FirebaseJson::JSON_FLOAT)
+      {
+        obj[key] = value.toFloat();
+      }
+      else if (type == FirebaseJson::JSON_BOOL)
+      {
+        obj[key] = value.equalsIgnoreCase("true");
+      }
+      else // consider it as string or any other type
+      {
+        obj[key] = value;
+      }
 
     }
-
   }
-
-  //Serial.println();
-
-  // This is the size of stream payload received (current and max value)
-  // Max payload size is the payload size under the stream path since the stream connected
-  // and read once and will not update until stream reconnection takes place.
-  // This max value will be zero as no payload received in case of ESP8266 which
-  // BearSSL reserved Rx buffer size is less than the actual stream payload.
-  //Serial.printf("Received stream payload size: %d (Max. %d)\n\n", data.payloadLength(), data.maxPayloadLength());
-
-  // Due to limited of stack memory, do not perform any task that used large memory here especially starting connect to server.
-  // Just set this flag and check it status later.
-  dataChanged = true;
+  saveConfig = true;
 }
 
 // ------------------------------------------------------------------------------------------------------- prepareData
 void prepareData()
 {
   // ------------------------------------------ all
-  json.set("update", obj["update"].as<bool>());
+  json.clear();
+  //json.set("updatedBySelf", true);
+  route = "/panels/" + obj["id"].as<String>() ; //+ "/data/" + String(now.year()) + "_" + String(now.month());
+  json.set("updated", obj["updated"].as<bool>());
+  json.set("Ts/.sv", "timestamp"); // .sv is the required place holder for sever value which currently supports only string "timestamp" as a value
 
   // ------------------------------------------ ergo
   if (obj["type"].as<String>() == "ergo")
   {
+    // aqui debe ir para cada nodeNAme
+    nodeName = String(now.unixtime());
+
+
+    DynamicJsonDocument msg(1024);
+    String message;
+    //message = "HeLoRa World!";   // send a message
+    //msg["method"] =
+    msg["sensors"]["t"] = t;
+    msg["sensors"]["h"] = h;
+    msg["sensors"]["uv"] = int(uv * 10); // avoid float
+    msg["sensors"]["db"] = db;
+    msg["sensors"]["lux"] = lux;
+    msg["sensors"]["ppm"] = ppm;
+    last_db = 0;
+
+    json.set("t", t);
+    json.set("h", h);
+    json.set("uv", uv);
+    json.set("db", db);
+    json.set("lux", lux);
+    json.set("ppm", ppm);
+    serializeJson(msg, message);
+    Serial.println(message);
+
     json.set("t_max", obj["t_max"].as<int>());
     json.set("t_min", obj["t_min"].as<int>());
     json.set("t_colMax", obj["t_colMax"].as<uint32_t>());
@@ -510,10 +259,16 @@ void prepareData()
   // ------------------------------------------ cruz
   else if (obj["type"].as<String>() == "cruz")
   {
+    //route = "/panels/" + obj["id"].as<String>() + "/data/" + String(now.year()) + "_" + String(now.month());
+    json.set("time", now.unixtime());
     json.set("last_ac", obj["last_ac"].as<uint32_t>());
     json.set("days_ac", obj["days_ac"].as<uint32_t>());
     json.set("gmtOff", obj["gmtOff"].as<long>());
     json.set("dayOff", obj["dayOff"].as<int>());
+    //json.set("ping",true);
+    //JsonVariant eventsData = obj["events"];
+    //json.set("events", eventsData);
+
   }
 
   //json.set("sensors", obj["sensors"]);
@@ -532,6 +287,114 @@ void prepareData()
 }
 
 
+void connectFirebase()
+{
+  // Firebase
+  //esp_task_wdt_reset();
+  if (!Firebase.ready()) // Add more filters
+  {
+    /* Assign the api key (required) */
+    // s_aux = obj["key"].as<String>();
+    //len = s_aux.length();
+    blk = false;
+    Serial.println("{\"firebase_init\":true}");
+    config.api_key = obj["key"].as<String>();
+
+    /* Assign the user sign in credentials */
+    auth.user.email = obj["email"].as<String>();
+    auth.user.password = obj["pass"].as<String>();
+
+    /* Assign the RTDB URL (required) */
+    config.database_url = obj["url"].as<String>();
+    //esp_task_wdt_init(WDT_TIMEOUT*3, true);  //enable panic so ESP32 restarts
+
+    Firebase.begin(&config, &auth);
+    esp_task_wdt_reset();
+    Firebase.reconnectWiFi(true);
+
+    Serial.println("{\"upload_config\":true}");
+    copyJsonObject(json, obj);
+    //prepareData();
+    //json.set(obj);
+    String route_config = "/panels/" + obj["id"].as<String>() + "/config";
+
+    if (Firebase.RTDB.updateNode(&fbdo, route_config, &json) == false)
+    {
+      Serial.printf("%s\n", fbdo.errorReason().c_str());
+    }
+
+    //String route_config = "/panels/" + obj["id"].as<String>() + "/config";
+    if (!Firebase.RTDB.beginStream(&stream, route_config))
+      Serial.printf("sream begin error, %s\n\n", stream.errorReason().c_str());
+
+    Firebase.RTDB.setStreamCallback(&stream, streamCallback, streamTimeoutCallback);
+
+    // Timeout, prevent to program halt
+    config.timeout.wifiReconnect = 10 * 1000; // 10 Seconds to 2 min (10 * 1000)
+    config.timeout.socketConnection = 1 * 1000; // 1 sec to 1 min (30 * 1000)
+    config.timeout.sslHandshake = 1 * 1000; // 1 sec to 2 min (2 * 60 * 1000)
+    config.timeout.rtdbKeepAlive = 20 * 1000;    // 20 sec to 2 min (45 * 1000)
+    config.timeout.rtdbStreamReconnect = 1 * 1000;  //1 sec to 1 min (1 * 1000)
+    config.timeout.rtdbStreamError = 3 * 1000;    // 3 sec to 30 sec (3 * 1000)
+    config.timeout.serverResponse = 10 * 1000;    //Server response read timeout in ms 1 sec - 1 min ( 10 * 1000).
+
+
+
+
+  }
+  //else
+  //{
+  //Serial.println("{\"firebase\":\"fail\"}");
+  //SendData();
+  //}
+  //else //if (Firebase.ready() /*&& !taskCompleted*/)
+  //{
+  //  Serial.println("{\"firebase_first_connection\":true}");
+  //  blk = !blk;
+
+  //  if (dataChanged)
+  //  {
+  //    dataChanged = false;
+
+  //    if (Firebase.ready() && (WiFi.status() == WL_CONNECTED))
+  //    {
+  //      if (nullData)
+  //      {
+  //       nullData = false;
+  //        Serial.println("{\"upload_config\":true}");
+  //        prepareData();
+  //        String route_config = "/panels/" + obj["id"].as<String>() + "/actual";
+
+  //          if (Firebase.RTDB.updateNode(&fbdo, route_config, &json) == false)
+  //         {
+  //           Serial.printf("%s\n", fbdo.errorReason().c_str());
+  //         }
+  //       }
+  //
+  //     }
+
+  //}
+
+  // Firebase.ready() should be called repeatedly to handle authentication tasks.
+
+  //if (!updated)
+  //{
+  // updated = true;
+  //String storage_id = obj["storage_id"].as<String>();
+
+  // If you want to get download url to use with your own OTA update process using core update library,
+  // see Metadata.ino example
+
+  //Serial.println("\nDownload firmware file...\n");
+
+  // In ESP8266, this function will allocate 16k+ memory for internal SSL client.
+  //if (!Firebase.Storage.downloadOTA(&fbdo, storage_id/* Firebase Storage bucket id */, "firmware.bin" /* path of firmware file stored in the bucket */, fcsDownloadCallback /* callback function */))
+  //  Serial.println(fbdo.errorReason());
+  //}
+  //}
+}
+
+
 // ---------------------------------------------------------------------------------------------------- streamTimeoutCallback
 void streamTimeoutCallback(bool timeout)
 {
@@ -540,4 +403,25 @@ void streamTimeoutCallback(bool timeout)
 
   if (!stream.httpConnected())
     Serial.printf("error code: %d, reason: %s\n\n", stream.httpCode(), stream.errorReason().c_str());
+}
+
+
+// ----------------------------------------------------------------------------------------------------- copyJsonObject
+void copyJsonObject(FirebaseJson& firebaseJson, JsonObject& jsonObject)
+{
+  for (JsonObject::iterator it = jsonObject.begin(); it != jsonObject.end(); ++it) {
+    if (it->value().is<JsonObject>()) {
+      FirebaseJson nestedFirebaseJson;
+      JsonObject nestedJsonObject = it->value().as<JsonObject>();
+      copyJsonObject(nestedFirebaseJson, nestedJsonObject);
+      firebaseJson.set(it->key().c_str(), nestedFirebaseJson);
+    }
+    else if (it->value().is<String>()) {
+      firebaseJson.set(it->key().c_str(), it->value().as<String>());
+    }
+    else if (it->value().is<int>()) {
+      firebaseJson.set(it->key().c_str(), it->value().as<int>());
+    }
+    //... y así sucesivamente para cada tipo de datos que manejas
+  }
 }

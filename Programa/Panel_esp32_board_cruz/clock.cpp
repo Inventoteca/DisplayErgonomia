@@ -6,6 +6,10 @@ char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursd
 DateTime now;
 DateTime last_ac;
 
+int dias;
+int mes;
+int anio;
+
 const char* ntpServer = "pool.ntp.org";
 //long  gmtOffset_sec = obj["gmtOff"].as<long>();               // Central Mexico (-5 UTC, -18000): Pacifico (-7 UTC, -25200) :  Noroeste (-8 UTC, -28800)
 //int   daylightOffset_sec = obj["dayOff"].as<int>();               // Horario de verano, disabled
@@ -18,7 +22,7 @@ bool rtcUpdated = false;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, ntpServer, gmtOffset_sec, daylightOffset_sec);
 
-
+// -------------------------------- update_clock
 void update_clock()
 {
   // Inicializa el cliente NTP
@@ -80,4 +84,13 @@ void update_clock()
     Serial.println("\"}");
   }
 
+}
+
+// -------------------------------- read_clock
+void read_clock()
+{
+  now = rtc.now();
+  dias = int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L));
+  mes = now.month();
+  anio = now.year();
 }

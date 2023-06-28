@@ -18,8 +18,8 @@
 extern bool neo_digits_status;
 extern bool blk;
 extern short color_status[3];
-extern unsigned long printRefresh;
-extern unsigned long printTime;
+//extern unsigned long printRefresh;
+//extern unsigned long printTime;
 
 extern NeoDigito display1; // For more info abaut the last argumets check Adafruit_Neopixel documentation.
 extern Adafruit_NeoPixel strip;

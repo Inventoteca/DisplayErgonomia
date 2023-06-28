@@ -279,7 +279,7 @@ void ReadSensors()
       if (ppm > 9999) ppm = 9999;
       //double percentage = ppm / 10000; //Convert to percentage
 
-      PrintOut();
+      //PrintOut();
       //SendData();
 
     }
