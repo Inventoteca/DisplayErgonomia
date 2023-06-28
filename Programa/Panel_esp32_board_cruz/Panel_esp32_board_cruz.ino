@@ -69,7 +69,7 @@ void loop()
     mainRefresh = millis();
   }
 
-  if (obj["wifi"]["sta"]["enable"].as<bool>())
+  if (obj["enable_wifi"].as<bool>())
   {
     // ----------------------------------------- check internet
     if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time

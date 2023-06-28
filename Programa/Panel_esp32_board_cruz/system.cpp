@@ -66,11 +66,11 @@ void reset_config()
   WiFi.disconnect();
   //WiFi.mode(WIFI_OFF);
   WiFi.mode(WIFI_STA);
-  obj["wifi"]["sta"]["ssid"] = "";
-  obj["wifi"]["sta"]["pass"] = "";
-  obj["wifi"]["sta"]["enable"] = true;
-  obj["wifi"]["sta"]["count"] = 0;
-  obj["wifi"]["sta"]["registered"] = false;
+  obj["ssid"] = "";
+  obj["pass"] = "";
+  obj["enable_wifi"] = true;
+  obj["count_wifi"] = 0;
+  obj["registered_wifi"] = false;
   Serial.println(saveJSonToAFile(&obj, filename) ? "{\"factory_reset\":true}" : "{\"factory_reset\":false}");
   delay(2000);
   ESP.restart();
@@ -99,22 +99,22 @@ void loadConfig()
   updated = obj["updated"].as<bool>();
 
   // ----------------------- WiFi STA
-  if (obj["wifi"]["sta"]["enable"].as<bool>() == true /*&& (WiFi.status() != WL_CONNECTED)*/)
+  if (obj["enable_wifi"].as<bool>() == true /*&& (WiFi.status() != WL_CONNECTED)*/)
   {
     WiFi.mode(WIFI_STA);
-    String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
-    String auxpass = obj["wifi"]["sta"]["pass"].as<String>();
+    String auxssid = obj["ssid"].as<String>();
+    String auxpass = obj["pass"].as<String>();
 
 
     // ---- WiFi already Registered and ssid pass is not empty or (try to connect a new wifi)
-    if ((obj["wifi"]["sta"]["registered"].as<bool>() == true) && (auxssid.length() > 0) && (auxpass.length() > 0) /*|| (obj["wifi"]["sta"]["count"] < 2)*/)
+    if ((obj["registered_wifi"].as<bool>() == true) && (auxssid.length() > 0) && (auxpass.length() > 0) /*|| (obj["wifi"]["sta"]["count"] < 2)*/)
     {
 
       Serial.println("{\"load_registered_wifi\":true}");
-      WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
+      WiFi.begin(obj["ssid"].as<const char*>(), obj["pass"].as<const char*>());
       //Serial.print("WiFi connecting: \t");
       Serial.print("{\"wifi\":{\"ssid\":\"");
-      Serial.print(obj["wifi"]["sta"]["ssid"].as<const char*>());
+      Serial.print(obj["ssid"].as<const char*>());
       Serial.println("\"}}");
     }
     // ---- New WiFi or wrong configured
@@ -146,7 +146,7 @@ void loadConfig()
   //}
 
   // ------------------------- NeoDisplay
-  if (obj["neodisplay"]["enable"].as<bool>())
+  if (obj["enable_neo"].as<bool>())
   {
     //Display Init
     if (neo_digits_status == false)
@@ -167,8 +167,9 @@ void loadConfig()
   if (obj["type"].as<String>() == "cruz")
   {
     //last_ac = obj["last_ac"].as<DateTime>();
+    last_ac = obj["last_ac"].as<uint32_t>();
     Serial.print("{\"last_ac\":\"");
-    //Serial.print(last_ac.toString("yyyy/MM/dd HH:mm:ss"));
+    Serial.print(last_ac.unixtime());
     Serial.println("\"}");
   }
 
@@ -219,7 +220,7 @@ void loadConfig()
   String s_aux;
   s_aux = obj["id"].as<String>();
   int len = s_aux.length();
-  int i_aux  = obj["lora"]["local"].as<int>();
+  int i_aux  = obj["lora_local"].as<int>();
   char aux_buf[50];
 
 
@@ -242,7 +243,7 @@ void loadConfig()
       localAddress += aux_buf[i];
 
     if ((localAddress == 0) || (localAddress == 255))localAddress = random(1, 254);
-    obj["lora"]["local"].set(localAddress);
+    obj["lora_local"].set(localAddress);
     //Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
 
     //Serial.println( localAddress, HEX);

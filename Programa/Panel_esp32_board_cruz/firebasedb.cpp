@@ -103,13 +103,13 @@ void SendData()
     }
 
   }
-  else if ((obj["wifi"]["sta"]["enable"].as<bool>() == true) && (WiFi.status() == WL_CONNECTED))
+  else if ((obj["enable_wifi"].as<bool>() == true) && (WiFi.status() == WL_CONNECTED))
   {
     //
     connectFirebase();
   }
 
-  if (obj["lora"]["enable"].as<bool>())
+  if (obj["enable_lora"].as<bool>())
   {
     //sendMessage(message);
   }
@@ -302,7 +302,7 @@ void connectFirebase()
 
     /* Assign the user sign in credentials */
     auth.user.email = obj["email"].as<String>();
-    auth.user.password = obj["pass"].as<String>();
+    auth.user.password = obj["firepass"].as<String>();
 
     /* Assign the RTDB URL (required) */
     config.database_url = obj["url"].as<String>();

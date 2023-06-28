@@ -2,39 +2,31 @@
   "id": "",
   "type": "cruz",
   "name": "Cruz 1",
-  "oled": false,
+  "enable_oled": false,
   "registered": false,
   "email": "info@inventoteca.com",
-  "pass": "Homerosim",
+  "firepass": "Homerosim",
   "key": "AIzaSyAOfGOjdpVQZtnhwTjmNRy8mApY993zHfc",
   "url": "smart-industry-panels-default-rtdb.firebaseio.com",
   "storage_id": "smart-industry-panels.appspot.com",
   "gmtOff": -18000,
   "dayOff": 0,
-  "wifi": {
-    "sta": {
-      "ssid": "Inventoteca_2G",
-      "pass": "science_7425",
-      "enable": true,
-      "registered": true,
-      "count": 0
-    }
-  },
+  "ssid": "Inventoteca_2G",
+  "pass": "science_7425",
+  "enable_wifi": true,
+  "registered_wifi": true,
+  "count_wifi": 0,
   "last_ac":1678557274611,
   "days_ac":19529,
-  "updated":true,
-  "neodisplay": {
-    "enable": true,
-    "digits": 4,
-    "pixels": 3,
-    "status": 4,
-    "pin": 25
-  },
-  "lora": {
-    "enable": false,
-    "local": 0,
-    "remote": 0,
-    "band": 915000000,
-    "registered": false
-  }
+  "updated":true,  
+  "enable_neo": true,
+  "digits": 4,
+  "pixels": 3,
+  "status_pix": 4,
+  "neo_pin": 25,
+  "enable_lora": false,
+  "lora_local": 0,
+  "lora_remote": 0,
+  "lora_band": 915000000,
+  "lora_registered": false
 }
