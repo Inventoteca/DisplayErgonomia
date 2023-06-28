@@ -62,11 +62,11 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         //Serial.printf("PASSWORD:%s\n", pass);
 
         // Save config
-        obj["wifi"]["sta"]["ssid"] = ssid;
-        obj["wifi"]["sta"]["pass"] = pass;
-        //obj["wifi"]["sta"]["enable"] = true;
-        //obj["wifi"]["sta"]["count"] = 0;
-        obj["wifi"]["sta"]["registered"] = false;
+        obj["ssid"] = ssid;
+        obj["pass"] = pass;
+        //obj["enable_wifi"] = true;
+        //obj["count_wifi"] = 0;
+        obj["registered_wifi"] = false;
 
         WiFi.stopSmartConfig();
         smart_config = false;
@@ -80,7 +80,7 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         color_status[0] = 0;
         color_status[1] = 255;
         color_status[2] = 0;
-        obj["wifi"]["sta"]["registered"] = true;
+        obj["registered_wifi"] = true;
         Serial.println(saveJSonToAFile(&obj, filename) ? "{\"registered_wifi_saved\":true}" : "{\"registered_wifi_saved\":false}" );
       }
       break;
@@ -93,11 +93,11 @@ void Wifi_disconnected(WiFiEvent_t event, WiFiEventInfo_t info)
   //Serial.println("Disconnected from WIFI access point");
   //Serial.print("WiFi lost connection. Reason: ");
   //Serial.println(info.disconnected.reason);
-  String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
+  String auxssid = obj["ssid"].as<String>();
   if (auxssid.length() == 0)
   {
     Serial.println("Reconnecting...");
-    WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
+    WiFi.begin(obj["ssid"].as<const char*>(), obj["pass"].as<const char*>());
   }
 
 }
@@ -110,7 +110,7 @@ void checkServer()
 
   //if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time
   {
-    String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
+    String auxssid = obj["ssid"].as<String>();
 
 
     // ------------------ Wifi Connected
@@ -126,14 +126,14 @@ void checkServer()
         Serial.println("{\"smart_config\":\"stop\"}");
       }
 
-      if (obj["wifi"]["sta"]["registered"] == false)
+      if (obj["registered_wifi"] == false)
       {
-        obj["wifi"]["sta"]["registered"] = true;
-        obj["wifi"]["sta"]["count"] = 0;
+        obj["registered_wifi"] = true;
+        obj["count_wifi"] = 0;
 
         Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_new_wifi\":true}" : "{\"file_saved\":false}");
         Serial.print("{\"wifi\":{\"ssid\":\"");
-        Serial.print(obj["wifi"]["sta"]["ssid"].as<const char*>());
+        Serial.print(obj["ssid"].as<const char*>());
         Serial.println("\"}}");
       }
 
@@ -168,13 +168,13 @@ void checkServer()
       if (smart_config == false)
       {
         Serial.println("{\"wifi\":\"disconnected\"}");
-        String auxssid = obj["wifi"]["sta"]["ssid"].as<String>();
+        String auxssid = obj["ssid"].as<String>();
         if ((auxssid.length() > 0) /*&& (obj["wifi"]["sta"]["registered"].as<bool>() == true)*/)
         {
           Serial.println("{\"wifi\":\"reconnecting\"}");
-          WiFi.begin(obj["wifi"]["sta"]["ssid"].as<const char*>(), obj["wifi"]["sta"]["pass"].as<const char*>());
+          WiFi.begin(obj["ssid"].as<const char*>(), obj["pass"].as<const char*>());
           Serial.print("{\"wifi\":{\"ssid\":\"");
-          Serial.print(obj["wifi"]["sta"]["ssid"].as<const char*>());
+          Serial.print(obj["ssid"].as<const char*>());
           Serial.println("\"}}");
         }
       }

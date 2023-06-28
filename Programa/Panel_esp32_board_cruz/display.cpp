@@ -17,9 +17,9 @@ void displayInit()
 
   if (obj["type"].as<String>() == "ergo")
   {
-    display1.setPin(obj["neodisplay"]["pin"].as<int>());
+    display1.setPin(obj["neo_pin"].as<int>());
     //display1.setPin(25);
-    display1.updateDigitType(obj["neodisplay"]["digits"].as<int>(), obj["neodisplay"]["pixels"].as<int>());
+    display1.updateDigitType(obj["digits"].as<int>(), obj["pixels"].as<int>());
     //display1.updateDigitType(17,2);
 
     display1.begin();             // This fuction calls Adafruit_NeoPixel.begin() to configure.
@@ -29,7 +29,7 @@ void displayInit()
   }
   else if (obj["type"].as<String>() == "cruz")
   {
-    strip.setPin(obj["neodisplay"]["pin"].as<int>());
+    strip.setPin(obj["neo_pin"].as<int>());
     strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
     strip.clear();
     strip.show();            // Turn OFF all pixels ASAP
@@ -102,7 +102,7 @@ void PrintOut()
   //if (millis() - printRefresh > printTime)
   {
     //Serial.println("printout");
-    if (obj["oled"].as<bool>())
+    if (obj["enable_oled"].as<bool>())
     {
       //      Heltec.display->clear();
       //      Heltec.display->display();
@@ -131,7 +131,7 @@ void PrintOut()
       //      Heltec.display->display();
     }
 
-    if (obj["neodisplay"]["enable"].as<bool>())
+    if (obj["enable_neo"].as<bool>())
     {
       //Serial.println("neodisplay");
       if (obj["type"].as<String>() == "ergo")
@@ -302,10 +302,10 @@ void PrintOut()
         }
         strip.show();
 
-        if (obj["neodisplay"]["enable"].as<bool>())
+        if (obj["enable_neo"].as<bool>())
         {
           display1.setPin(DHTPIN);
-          display1.updateDigitType(obj["neodisplay"]["digits"].as<int>(), obj["neodisplay"]["pixels"].as<int>());
+          display1.updateDigitType(obj["digits"].as<int>(), obj["pixels"].as<int>());
           display1.begin();
           display1.clear();
 
@@ -345,7 +345,7 @@ void PrintOut()
         if (blk == true)
         {
           if (obj["type"].as<String>() == "ergo")
-            display1.updatePoint(obj["neodisplay"]["status"].as<int>(), obj["ppm_colDef"].as<uint32_t>());
+            display1.updatePoint(obj["status_pix"].as<int>(), obj["ppm_colDef"].as<uint32_t>());
 
           blk = false;
           color_status[0] = color_status[1] = color_status[2] = 1;
@@ -354,7 +354,7 @@ void PrintOut()
         else
         {
           if (obj["type"].as<String>() == "ergo")
-            display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 0, 0);
+            display1.updatePoint(obj["status_pix"].as<int>(), 0, 0, 0);
 
           blk = true;
           color_status[0] = color_status[1] = color_status[2] = 0;
@@ -364,7 +364,7 @@ void PrintOut()
       // ------------------------------------- Status WiFiEvent
       else
       {
-        display1.updatePoint(obj["neodisplay"]["status"].as<int>(), color_status[0], color_status[1], color_status[2]);
+        display1.updatePoint(obj["status_pix"].as<int>(), color_status[0], color_status[1], color_status[2]);
       }
     }
 
