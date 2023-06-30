@@ -19,7 +19,7 @@ const int airSample = 1000;                              // Sample window width 
 unsigned long airRefresh = 0;
 unsigned long startMillis = 0;
 
-unsigned long mainRefresh = 0;
+unsigned long mainRefresh = obj["mainTime"].as<uint32_t>();
 unsigned long mainTime = 1000;
 
 const uint32_t connectTimeoutMs = 10000;
@@ -99,7 +99,7 @@ void loadConfig()
   updated = obj["updated"].as<bool>();
 
   // ----------------------- WiFi STA
-  if (obj["enable_wifi"].as<bool>() == true /*&& (WiFi.status() != WL_CONNECTED)*/)
+  if (obj["enable_wifi"].as<bool>() == true && (WiFi.status() != WL_CONNECTED))
   {
     WiFi.mode(WIFI_STA);
     String auxssid = obj["ssid"].as<String>();
@@ -128,7 +128,7 @@ void loadConfig()
       neoConfig();
     }
   }
-  else
+  else if(obj["enable_wifi"].as<bool>() == false)
   {
     //
     WiFi.disconnect(true);
@@ -263,6 +263,22 @@ void loadConfig()
   //
   //  }
   //Serial.println("Config Loaded");
+
+  JsonVariant objTime = obj["mainTime"];
+
+  if(objTime.isNull())
+  {
+    Serial.println("{\"mainTime\":NULL}");
+  }
+  else
+  {
+    mainTime = obj["mainTime"].as<uint32_t>();
+    Serial.print("{\"mainTime\":");
+    Serial.print(mainTime);
+    Serial.println("}");
+
+    mainRefresh = mainTime + 1;
+  }
 
 
   Serial.println("{\"config\":true}");

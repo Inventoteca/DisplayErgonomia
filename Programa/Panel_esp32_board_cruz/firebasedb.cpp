@@ -5,7 +5,7 @@ FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 FirebaseJson json;
-FirebaseJson json_events;
+//FirebaseJson events_json;
 FirebaseJson conf;
 FirebaseJson data_json;
 String nodeName;
@@ -13,6 +13,7 @@ volatile bool updated = true;
 volatile bool dataChanged = false;
 volatile bool nullData = false;
 volatile bool saveConfig = false;
+volatile bool fire_stream = false;
 String route = "/panels/" + obj["id"].as<String>();// + "/actual";
 FirebaseData stream;
 
@@ -70,6 +71,7 @@ void SendData()
   {
     //json.set("updatedBySelf", true);
     prepareData();
+
     // ------------------------------------- ergo
     if (obj["type"].as<String>() == "ergo")
     {
@@ -78,24 +80,22 @@ void SendData()
     // ------------------------------------- cruz
     else if (obj["type"].as<String>() == "cruz")
     {
-      //json.set("days", int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L)));
-      //json.set("last_ac", last_ac.unixtime());
-
-      //DynamicJsonDocument event(512);
-      //deserializeJson(event, value);
-      //obj[key] = event;
-
-      //json.set("events",obj["events"]);
-      // json.set("update", true);
-
       // Log file for reports Cruz
       // Actual readings file for reports Cruz
-      if (Firebase.RTDB.updateNode(&fbdo, route + "/actual", &json) == false)
-      {
-        Serial.printf("%s\n", fbdo.errorReason().c_str());
-      }
+      //copyJsonObject(events_json, events_obj);
+      //json.clear();
+      //if (Firebase.RTDB.updateNode(&fbdo, route + "/events", &events_json) == false)
+      //   Serial.printf("%s\n", fbdo.errorReason().c_str());
 
-      //json.set("events", obj["events"]);
+      //json.set("events", events_json);
+
+      if (Firebase.RTDB.updateNode(&fbdo, route + "/actual", &json) == false)
+        Serial.printf("%s\n", fbdo.errorReason().c_str());
+
+
+
+      json.remove("Ts/.sv");
+      json.remove("time");
       if (Firebase.RTDB.updateNode(&fbdo, route + "/data/" + String(now.year()) + "_" + String(now.month()), &json) == false)
       {
         Serial.printf("%s\n", fbdo.errorReason().c_str());
@@ -105,7 +105,6 @@ void SendData()
   }
   else if ((obj["enable_wifi"].as<bool>() == true) && (WiFi.status() == WL_CONNECTED))
   {
-    //
     connectFirebase();
   }
 
@@ -122,64 +121,101 @@ void streamCallback(FirebaseStream data)
 {
   // Add config from spiff file
 
-  //data_json.setJsonData(data.payload());
-  //String jsonStr;
-  //data_json.toString(jsonStr, false);
+  Serial.println("{\"stream\":true}");
 
-  FirebaseJson &json = data.jsonObject();
-  size_t len = json.iteratorBegin();
-  String key, value = "";
-  int type = 0;
-
-  //Serial.println(jsonStr);
-  Serial.printf("sream path: %s\nevent path: %s\ndata type: %s\nevent type: %s\ndata:  %s\n\n",
+  //Serial.println("{\"stream\":true}");
+  Serial.printf("stream path: %s\nevent path: %s\ndata type: %s\nevent type: %s\ndata:  %s\n\n",
                 data.streamPath().c_str(),
                 data.dataPath().c_str(),
                 data.dataType().c_str(),
                 data.eventType().c_str(),
                 data.payload().c_str());
 
-  for (size_t i = 0; i < len; i++)
+  if ((strcmp(data.dataPath().c_str(), "/") == 0) && (strcmp(data.eventType().c_str(), "patch") != 0))
   {
-    json.iteratorGet(i, type, key, value);
+    Serial.println("All obj");
+    //DynamicJsonDocument doc(1024);
 
-    //if ((key == "updatedBySelf") && (value.equalsIgnoreCase("true")))
-    //{
-    //  Serial.println("Myself");
-    //continue;
-    //}
+    // Llamar a deserializeJson() para decodificar la respuesta
+    DeserializationError error = deserializeJson(doc, data.payload().c_str());
+    //obj = doc.as<JsonObject>();
 
-    //else
-    {
-
-
-      if (type == FirebaseJson::JSON_OBJECT)
-      {
-        DynamicJsonDocument event(512);
-        deserializeJson(event, value);
-        obj[key] = event;
-      }
-      else if (type == FirebaseJson::JSON_INT)
-      {
-        obj[key] = strtoul(value.c_str(), NULL, 10);
-      }
-      else if (type == FirebaseJson::JSON_FLOAT)
-      {
-        obj[key] = value.toFloat();
-      }
-      else if (type == FirebaseJson::JSON_BOOL)
-      {
-        obj[key] = value.equalsIgnoreCase("true");
-      }
-      else // consider it as string or any other type
-      {
-        obj[key] = value;
-      }
-
-    }
+    //deserializeJson(obj, data.payload().c_str());
+    serializeJson(obj, Serial);
+    saveConfigData();
+    loadConfig();
   }
-  saveConfig = true;
+  /*else
+  {
+    if (strcmp(data.dataType().c_str(), "json") == 0)
+    {
+      FirebaseJson &json = data.jsonObject();
+      size_t len = json.iteratorBegin();
+      String key, value = "";
+      int type = 0;
+
+      for (size_t i = 0; i < len; i++)
+      {
+        json.iteratorGet(i, type, key, value);
+
+        Serial.printf("i: %i\n", i);
+        Serial.printf("key: %s\n", key.c_str());
+        Serial.printf("value: %s\n", value.c_str());
+        Serial.printf("type: %i\n", type);
+
+
+        if (type == FirebaseJson::JSON_OBJECT)
+        {
+          DynamicJsonDocument event(512);
+          deserializeJson(event, value);
+          obj[key] = event;
+
+        }
+        else if (type == FirebaseJson::JSON_INT)
+        {
+          obj[key] = strtoul(value.c_str(), NULL, 10);
+        }
+        else if (type == FirebaseJson::JSON_FLOAT)
+        {
+          obj[key] = value.toFloat();
+        }
+        else if (type == FirebaseJson::JSON_BOOL)
+        {
+          obj[key] = value.equalsIgnoreCase("true");
+        }
+        else if (type == FirebaseJson::JSON_STRING)
+        {
+          obj[key] = value;
+        }
+        else if (type == FirebaseJson::JSON_DOUBLE)
+        {
+          obj[key] = value.toDouble();
+        }
+        //else if (type == FirebaseJson::JSON_LONG)
+        //{
+        //  obj[key] = value.toLong();
+        //}
+        else
+        {
+          Serial.printf("Unsupported data type for key: %s\n", key.c_str());
+          obj[key] = value;
+        }
+
+        // }
+      }
+
+      json.iteratorEnd();
+    }
+    //else if(strcmp(data.dataType().c_str(), "string") == 0)
+    //{
+    //      obj[]
+    //}
+  }*/
+
+
+  //saveConfig = true;
 }
+
 
 // ------------------------------------------------------------------------------------------------------- prepareData
 void prepareData()
@@ -263,12 +299,15 @@ void prepareData()
     json.set("time", now.unixtime());
     json.set("last_ac", obj["last_ac"].as<uint32_t>());
     json.set("days_ac", obj["days_ac"].as<uint32_t>());
-    json.set("gmtOff", obj["gmtOff"].as<long>());
-    json.set("dayOff", obj["dayOff"].as<int>());
+    //json.set("gmtOff", obj["gmtOff"].as<long>());
+    //json.set("dayOff", obj["dayOff"].as<int>());
     //json.set("ping",true);
     //JsonVariant eventsData = obj["events"];
-    //json.set("events", eventsData);
-
+    String jsonString;
+    serializeJson(obj["events"], jsonString);
+    FirebaseJson firebaseJson;
+    firebaseJson.setJsonData(jsonString);
+    json.set("events", firebaseJson);
   }
 
   //json.set("sensors", obj["sensors"]);
@@ -296,6 +335,7 @@ void connectFirebase()
     /* Assign the api key (required) */
     // s_aux = obj["key"].as<String>();
     //len = s_aux.length();
+
     blk = false;
     Serial.println("{\"firebase_init\":true}");
     config.api_key = obj["key"].as<String>();
@@ -308,90 +348,74 @@ void connectFirebase()
     config.database_url = obj["url"].as<String>();
     //esp_task_wdt_init(WDT_TIMEOUT*3, true);  //enable panic so ESP32 restarts
 
+    Serial.println("{\"connecting_firebase\":true}");
     Firebase.begin(&config, &auth);
     esp_task_wdt_reset();
     Firebase.reconnectWiFi(true);
 
-    Serial.println("{\"upload_config\":true}");
-    copyJsonObject(json, obj);
-    //prepareData();
-    //json.set(obj);
-    String route_config = "/panels/" + obj["id"].as<String>() + "/config";
+    while (!Firebase.ready());
 
-    if (Firebase.RTDB.updateNode(&fbdo, route_config, &json) == false)
+    route = "/panels/" + obj["id"].as<String>();
+    copyJsonObject(json, obj);
+
+
+    if (!Firebase.RTDB.get(&fbdo, route + "/config")) {
+      Serial.println("{\"config_file\":false}");
+      // El nodo no existe, actualizamos.
+      if (!Firebase.RTDB.updateNode(&fbdo, route + "/config", &json)) {
+        Serial.printf("%s\n", fbdo.errorReason().c_str());
+      } else {
+        Serial.println("{\"upload_config\":true}");
+      }
+    }
+    else
     {
-      Serial.printf("%s\n", fbdo.errorReason().c_str());
+      Serial.println("{\"get_config_file\":true}");
     }
 
-    //String route_config = "/panels/" + obj["id"].as<String>() + "/config";
-    if (!Firebase.RTDB.beginStream(&stream, route_config))
-      Serial.printf("sream begin error, %s\n\n", stream.errorReason().c_str());
-
-    Firebase.RTDB.setStreamCallback(&stream, streamCallback, streamTimeoutCallback);
 
     // Timeout, prevent to program halt
-    config.timeout.wifiReconnect = 10 * 1000; // 10 Seconds to 2 min (10 * 1000)
-    config.timeout.socketConnection = 1 * 1000; // 1 sec to 1 min (30 * 1000)
-    config.timeout.sslHandshake = 1 * 1000; // 1 sec to 2 min (2 * 60 * 1000)
+    config.timeout.wifiReconnect = 5 * 1000; // 10 Seconds to 2 min (10 * 1000)
+    config.timeout.socketConnection = 30 * 1000; // 1 sec to 1 min (30 * 1000)
+    config.timeout.sslHandshake = 2 * 60 * 1000; // 1 sec to 2 min (2 * 60 * 1000)
     config.timeout.rtdbKeepAlive = 20 * 1000;    // 20 sec to 2 min (45 * 1000)
     config.timeout.rtdbStreamReconnect = 1 * 1000;  //1 sec to 1 min (1 * 1000)
     config.timeout.rtdbStreamError = 3 * 1000;    // 3 sec to 30 sec (3 * 1000)
-    config.timeout.serverResponse = 10 * 1000;    //Server response read timeout in ms 1 sec - 1 min ( 10 * 1000).
-
-
-
+    config.timeout.serverResponse = 1 * 1000;    //Server response read timeout in ms 1 sec - 1 min ( 10 * 1000).
 
   }
-  //else
-  //{
-  //Serial.println("{\"firebase\":\"fail\"}");
-  //SendData();
-  //}
-  //else //if (Firebase.ready() /*&& !taskCompleted*/)
-  //{
-  //  Serial.println("{\"firebase_first_connection\":true}");
-  //  blk = !blk;
 
-  //  if (dataChanged)
-  //  {
-  //    dataChanged = false;
 
-  //    if (Firebase.ready() && (WiFi.status() == WL_CONNECTED))
-  //    {
-  //      if (nullData)
-  //      {
-  //       nullData = false;
-  //        Serial.println("{\"upload_config\":true}");
-  //        prepareData();
-  //        String route_config = "/panels/" + obj["id"].as<String>() + "/actual";
 
-  //          if (Firebase.RTDB.updateNode(&fbdo, route_config, &json) == false)
-  //         {
-  //           Serial.printf("%s\n", fbdo.errorReason().c_str());
-  //         }
-  //       }
-  //
-  //     }
+  if ((!fire_stream) /*|| (!fire_events)*/)
+  {
+    if (!Firebase.RTDB.beginStream(&stream, route + "/config"))
+      Serial.printf("config sream begin error, %s\n\n", stream.errorReason().c_str());
+    else
+    {
+      Firebase.RTDB.setStreamCallback(&stream, streamCallback, streamTimeoutCallback);
+      fire_stream = true;
+    }
 
-  //}
+  }
+
 
   // Firebase.ready() should be called repeatedly to handle authentication tasks.
 
-  //if (!updated)
-  //{
-  // updated = true;
-  //String storage_id = obj["storage_id"].as<String>();
+  if (!updated)
+  {
+    updated = true;
+    String storage_id = obj["storage_id"].as<String>();
 
-  // If you want to get download url to use with your own OTA update process using core update library,
-  // see Metadata.ino example
+    // If you want to get download url to use with your own OTA update process using core update library,
+    // see Metadata.ino example
 
-  //Serial.println("\nDownload firmware file...\n");
+    Serial.println("\nDownload firmware file...\n");
 
-  // In ESP8266, this function will allocate 16k+ memory for internal SSL client.
-  //if (!Firebase.Storage.downloadOTA(&fbdo, storage_id/* Firebase Storage bucket id */, "firmware.bin" /* path of firmware file stored in the bucket */, fcsDownloadCallback /* callback function */))
-  //  Serial.println(fbdo.errorReason());
-  //}
-  //}
+    // In ESP8266, this function will allocate 16k+ memory for internal SSL client.
+    if (!Firebase.Storage.downloadOTA(&fbdo, storage_id/* Firebase Storage bucket id */, "Panel_esp32_board_cruz.ino.esp32da.bin" /* path of firmware file stored in the bucket */, fcsDownloadCallback /* callback function */))
+      Serial.println(fbdo.errorReason());
+  }
 }
 
 
@@ -402,12 +426,12 @@ void streamTimeoutCallback(bool timeout)
   //   Serial.println("stream timed out, resuming...\n");
 
   if (!stream.httpConnected())
-    Serial.printf("error code: %d, reason: %s\n\n", stream.httpCode(), stream.errorReason().c_str());
+    Serial.printf("{\"stream_error\":\"%s\"}\n\n", stream.errorReason().c_str());
 }
 
 
 // ----------------------------------------------------------------------------------------------------- copyJsonObject
-void copyJsonObject(FirebaseJson& firebaseJson, JsonObject& jsonObject)
+void copyJsonObject(FirebaseJson & firebaseJson, JsonObject & jsonObject)
 {
   for (JsonObject::iterator it = jsonObject.begin(); it != jsonObject.end(); ++it) {
     if (it->value().is<JsonObject>()) {
@@ -422,6 +446,20 @@ void copyJsonObject(FirebaseJson& firebaseJson, JsonObject& jsonObject)
     else if (it->value().is<int>()) {
       firebaseJson.set(it->key().c_str(), it->value().as<int>());
     }
-    //... y así sucesivamente para cada tipo de datos que manejas
+    else if (it->value().is<float>()) {
+      firebaseJson.set(it->key().c_str(), it->value().as<float>());
+    }
+    else if (it->value().is<bool>()) {
+      firebaseJson.set(it->key().c_str(), it->value().as<bool>());
+    }
+    else if (it->value().is<long>()) {
+      firebaseJson.set(it->key().c_str(), it->value().as<long>());
+    }
+    else if (it->value().is<double>()) {
+      firebaseJson.set(it->key().c_str(), it->value().as<double>());
+    }
+    else {
+      Serial.printf("Unsupported data type for key: %s\n", it->key().c_str());
+    }
   }
 }

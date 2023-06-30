@@ -1,13 +1,12 @@
 #include "filespiffs.h"
 
 JsonObject obj;
-StaticJsonDocument<1736> doc;
+StaticJsonDocument<1500> doc;
 JsonArray dev;
 StaticJsonDocument<512> dev_doc;
 
 const char* device_list = "/devices.json";
 const char* filename = "/config.json";
-const char *filedefault = "/default.json";
 const char *sen_filename = "/sensors.json";
 
 File file;
@@ -38,6 +37,8 @@ File file;
     serializeJson(dev, Serial);
     Serial.println();
   }
+
+
 
 }
 
@@ -76,7 +77,7 @@ bool saveJSonToAFile(JsonObject * doc, String filename) {
 
 // ------------------------------------------------------------------------------------------------ getJsonFromFile
 
-JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1736> *doc, String filename, bool forceCleanONJsonError)
+JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1500> *doc, String filename, bool forceCleanONJsonError)
 {
   // open the file for reading:
   file = SPIFFS.open(filename);;
@@ -87,7 +88,7 @@ JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1736>
     size_t size = file.size();
     //Serial.println(size);
 
-    if (size > 1736)
+    if (size > 1500)
     {
       //Serial.println("Too large file");
 
@@ -135,7 +136,7 @@ JsonArray getJSonArrayFromFile(StaticJsonDocument<512> *dev_doc, String filename
     size_t size = file.size();
     //Serial.println(size);
 
-    if (size > 1024)
+    if (size > 512)
     {
       //Serial.println("Too large file");
       //return false;
@@ -202,10 +203,9 @@ bool saveJSonArrayToAFile(JsonArray * dev_doc, String filename)
   }
 }
 
-
+// --------------------------------------------------------------------------------------------------- saveConfigData
 void saveConfigData()
 {
-  Serial.println(saveJSonToAFile(&obj, filename) ? "{\"rtdb_update_spiffs\":true}" : "{\"rtdb_update_spiffs\":false}");
+  Serial.println(saveJSonToAFile(&obj, filename) ? "{\"config_update_spiffs\":true}" : "{\"conifg_update_spiffs\":false}");
   serializeJson(obj, Serial);
-  //loadConfig();
 }

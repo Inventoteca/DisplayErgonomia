@@ -85,7 +85,9 @@ void loop()
   {
     Serial.println("{\"upload_config\":true}");
     saveConfigData();
+    loadConfig();
     saveConfig = false;
+    //ESP.restart();
   }
 
 

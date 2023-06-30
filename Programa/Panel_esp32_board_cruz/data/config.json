@@ -28,5 +28,7 @@
   "lora_local": 0,
   "lora_remote": 0,
   "lora_band": 915000000,
-  "lora_registered": false
+  "lora_registered": false,
+  "mainTime":10000,
+  "events":{"32":0}
 }

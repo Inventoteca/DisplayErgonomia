@@ -12,7 +12,7 @@ extern FirebaseData fbdo;
 extern FirebaseAuth auth;
 extern FirebaseConfig config;
 extern FirebaseJson json;
-extern FirebaseJson json_events;
+//extern FirebaseJson events_json;
 extern FirebaseJson conf;
 extern FirebaseJson data_json;
 extern String nodeName;
@@ -20,6 +20,7 @@ extern volatile bool updated;
 extern volatile bool dataChanged;
 extern volatile bool nullData;
 extern volatile bool saveConfig;
+extern volatile bool fire_stream;
 extern FirebaseData stream;
 extern String route;
 
