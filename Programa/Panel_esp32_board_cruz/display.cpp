@@ -191,43 +191,6 @@ void PrintOut()
       }
       else if (obj["type"].as<String>() == "cruz")
       {
-        Serial.print("{\"time\":\"");
-        Serial.print(now.year(), DEC);
-        Serial.print('/');
-        Serial.print(now.month(), DEC);
-        Serial.print('/');
-        Serial.print(now.day(), DEC);
-        Serial.print(' ');
-        Serial.print(now.hour(), DEC);
-        Serial.print(':');
-        Serial.print(now.minute(), DEC);
-        Serial.print(':');
-        Serial.print(now.second(), DEC);
-        Serial.println("\"}");
-
-        // Serial.print(last_ac.year(), DEC);
-        // Serial.print('/');
-        //Serial.print(last_ac.month(), DEC);
-        //Serial.print('/');
-        //Serial.print(last_ac.day(), DEC);
-        //Serial.print(" (");
-        //Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-        //Serial.print(") ");
-        //Serial.print(last_ac.hour(), DEC);
-        //Serial.print(':');
-        //Serial.print(last_ac.minute(), DEC);
-        //Serial.print(':');
-        //Serial.print(last_ac.second(), DEC);
-        //Serial.println();
-
-        Serial.print("{\"last_ac\":");
-        Serial.print(last_ac.unixtime());
-        Serial.println("}");
-        Serial.print("{\"t_unix\": ");
-        Serial.print(now.unixtime());
-        Serial.println("}");
-
-
         Serial.print("{\"days\":");
         //Serial.print(int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L)));
         Serial.print(dias);

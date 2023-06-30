@@ -167,8 +167,13 @@ void loadConfig()
   if (obj["type"].as<String>() == "cruz")
   {
     //last_ac = obj["last_ac"].as<DateTime>();
+    //uint32_t last_ac_aux;
     last_ac = obj["last_ac"].as<uint32_t>();
+    //uint32_t last_ac_sec = static_cast<uint32_t>(last_ac_aux /* / 1000 */);
+    //last_ac(last_ac_aux);
+    //last_ac = obj["last_ac"];
     Serial.print("{\"last_ac\":\"");
+    //Serial.print(last_ac);
     Serial.print(last_ac.unixtime());
     Serial.println("\"}");
   }

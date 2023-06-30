@@ -123,7 +123,6 @@ void streamCallback(FirebaseStream data)
 
   Serial.println("{\"stream\":true}");
 
-  //Serial.println("{\"stream\":true}");
   Serial.printf("stream path: %s\nevent path: %s\ndata type: %s\nevent type: %s\ndata:  %s\n\n",
                 data.streamPath().c_str(),
                 data.dataPath().c_str(),
@@ -133,87 +132,15 @@ void streamCallback(FirebaseStream data)
 
   if ((strcmp(data.dataPath().c_str(), "/") == 0) && (strcmp(data.eventType().c_str(), "patch") != 0))
   {
-    Serial.println("All obj");
+    //Serial.println("All obj");
     //DynamicJsonDocument doc(1024);
 
     // Llamar a deserializeJson() para decodificar la respuesta
-    DeserializationError error = deserializeJson(doc, data.payload().c_str());
-    //obj = doc.as<JsonObject>();
-
-    //deserializeJson(obj, data.payload().c_str());
+    deserializeJson(doc, data.payload().c_str());
     serializeJson(obj, Serial);
     saveConfigData();
     loadConfig();
   }
-  /*else
-  {
-    if (strcmp(data.dataType().c_str(), "json") == 0)
-    {
-      FirebaseJson &json = data.jsonObject();
-      size_t len = json.iteratorBegin();
-      String key, value = "";
-      int type = 0;
-
-      for (size_t i = 0; i < len; i++)
-      {
-        json.iteratorGet(i, type, key, value);
-
-        Serial.printf("i: %i\n", i);
-        Serial.printf("key: %s\n", key.c_str());
-        Serial.printf("value: %s\n", value.c_str());
-        Serial.printf("type: %i\n", type);
-
-
-        if (type == FirebaseJson::JSON_OBJECT)
-        {
-          DynamicJsonDocument event(512);
-          deserializeJson(event, value);
-          obj[key] = event;
-
-        }
-        else if (type == FirebaseJson::JSON_INT)
-        {
-          obj[key] = strtoul(value.c_str(), NULL, 10);
-        }
-        else if (type == FirebaseJson::JSON_FLOAT)
-        {
-          obj[key] = value.toFloat();
-        }
-        else if (type == FirebaseJson::JSON_BOOL)
-        {
-          obj[key] = value.equalsIgnoreCase("true");
-        }
-        else if (type == FirebaseJson::JSON_STRING)
-        {
-          obj[key] = value;
-        }
-        else if (type == FirebaseJson::JSON_DOUBLE)
-        {
-          obj[key] = value.toDouble();
-        }
-        //else if (type == FirebaseJson::JSON_LONG)
-        //{
-        //  obj[key] = value.toLong();
-        //}
-        else
-        {
-          Serial.printf("Unsupported data type for key: %s\n", key.c_str());
-          obj[key] = value;
-        }
-
-        // }
-      }
-
-      json.iteratorEnd();
-    }
-    //else if(strcmp(data.dataType().c_str(), "string") == 0)
-    //{
-    //      obj[]
-    //}
-  }*/
-
-
-  //saveConfig = true;
 }
 
 
@@ -297,8 +224,8 @@ void prepareData()
   {
     //route = "/panels/" + obj["id"].as<String>() + "/data/" + String(now.year()) + "_" + String(now.month());
     json.set("time", now.unixtime());
-    json.set("last_ac", obj["last_ac"].as<uint32_t>());
-    json.set("days_ac", obj["days_ac"].as<uint32_t>());
+    json.set("last_ac", last_ac.unixtime());
+    json.set("days_ac", dias);
     //json.set("gmtOff", obj["gmtOff"].as<long>());
     //json.set("dayOff", obj["dayOff"].as<int>());
     //json.set("ping",true);
