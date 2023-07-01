@@ -1,9 +1,13 @@
+#ifndef LORASERVICE_H
+#define LORASERVICE_H
+
 //--------------- LoRa definitios
 #define BAND    915E6  //you can set band here directly,e.g. 868E6,915E6
 #define NONE      0
 #define SERIAL    1
 #define LORA      2
 
+/*
 //------------------- LoRa Variables
 //unsigned int counter = 0;
 String rssi = "RSSI --";
@@ -297,3 +301,6 @@ void sendMessage(String outgoing)
 
 
 }
+*/
+
+#endif  // 
