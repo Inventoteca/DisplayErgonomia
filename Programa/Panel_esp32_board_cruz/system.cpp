@@ -98,6 +98,25 @@ void loadConfig()
 
   updated = obj["updated"].as<bool>();
 
+  // ------------- ID
+  String s_aux = obj["id"].as<String>();
+  int len = s_aux.length();
+  // check for id or mac is the config.json file
+  if ((len == 0))
+  {
+    //(i_aux == 0)
+    Serial.println("{\"update_id\":true}");
+    Serial.print("{\"ID\":\"");
+    Serial.print(WiFi.macAddress());
+    Serial.println("\"}");
+
+    obj["id"].set( WiFi.macAddress());
+    // obj["id"] = WiFi.macAddress().c_str());
+
+    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"id_file_saved\":true}" : "{\"id_file_saved\":false}" );
+    serializeJson(obj, Serial);
+  }
+
   // ----------------------- WiFi STA
   if (obj["enable_wifi"].as<bool>() == true && (WiFi.status() != WL_CONNECTED))
   {
@@ -128,7 +147,7 @@ void loadConfig()
       neoConfig();
     }
   }
-  else if(obj["enable_wifi"].as<bool>() == false)
+  else if (obj["enable_wifi"].as<bool>() == false)
   {
     //
     WiFi.disconnect(true);
@@ -179,82 +198,19 @@ void loadConfig()
   }
 
   //----------------- RTC
-  if (! rtc.begin())
+  if (obj["enable_rtc"].as<bool>())
   {
-    Serial.println("{\"rtc\":false}");
-    //Serial.flush();
-    //while (1) delay(10);
+    init_clock();
   }
-  else
+
+  // ------------- LoRa
+  if (obj["enable_lora"].as<bool>())
   {
-    Serial.println("{\"rtc\":true}");
-
-    now = rtc.now();
-    Serial.print("{\"time\":\"");
-    Serial.print(now.year(), DEC);
-    Serial.print('/');
-    Serial.print(now.month(), DEC);
-    Serial.print('/');
-    Serial.print(now.day(), DEC);
-    Serial.print(' ');
-    Serial.print(now.hour(), DEC);
-    Serial.print(':');
-    Serial.print(now.minute(), DEC);
-    Serial.print(':');
-    Serial.print(now.second(), DEC);
-    Serial.println("\"}");
-
-    gmtOffset_sec = obj["gmtOff"].as<long>();
-    daylightOffset_sec = obj["dayOff"].as<int>();
-
-    Serial.print("{\"gmtOff\":");
-    Serial.print(gmtOffset_sec);
-    Serial.println("}");
-
-    Serial.print("{\"dayOff\":");
-    Serial.print(daylightOffset_sec);
-    Serial.println("}");
-
-    // timeClient.setTimeOffset(gmtOffset_sec, daylightOffset_sec);
+    //init_lora();
   }
 
 
 
-  // ------------- ID and LoRa
-  // check for id or mac is the config.json file
-  String s_aux;
-  s_aux = obj["id"].as<String>();
-  int len = s_aux.length();
-  int i_aux  = obj["lora_local"].as<int>();
-  char aux_buf[50];
-
-
-  if ((len == 0) && (i_aux == 0))
-  {
-    Serial.println("{\"update_id\":true}");
-    Serial.print("{\"ID\":\"");
-    Serial.print(WiFi.macAddress());
-    Serial.println("\"}");
-
-
-    obj["id"].set( WiFi.macAddress());
-    // obj["id"] = WiFi.macAddress().c_str());
-
-    Serial.println("{\"update_lora\":true}");
-    strcpy(aux_buf, s_aux.c_str());
-    localAddress = 0;
-
-    for ( int i = 0; i < len; i++)
-      localAddress += aux_buf[i];
-
-    if ((localAddress == 0) || (localAddress == 255))localAddress = random(1, 254);
-    obj["lora_local"].set(localAddress);
-    //Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}" );
-
-    //Serial.println( localAddress, HEX);
-    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"lora_id_file_saved\":true}" : "{\"lora_id_file_saved\":false}" );
-    serializeJson(obj, Serial);
-  }
 
   //
   //  if (obj["mqtt"]["enable"].as<bool>())
@@ -269,11 +225,14 @@ void loadConfig()
   //  }
   //Serial.println("Config Loaded");
 
-  JsonVariant objTime = obj["mainTime"];
 
-  if(objTime.isNull())
+  // -------------------------------- mainTime
+  // refres time
+  JsonVariant objTime = obj["mainTime"];
+  if (objTime.isNull())
   {
     Serial.println("{\"mainTime\":NULL}");
+    mainTime = 1000;
   }
   else
   {
@@ -281,9 +240,8 @@ void loadConfig()
     Serial.print("{\"mainTime\":");
     Serial.print(mainTime);
     Serial.println("}");
-
-    mainRefresh = mainTime + 1;
   }
+  mainRefresh = mainTime + 1;
 
 
   Serial.println("{\"config\":true}");

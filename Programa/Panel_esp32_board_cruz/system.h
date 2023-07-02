@@ -11,6 +11,7 @@
 #include "firebasedb.h"
 #include "wifiservice.h"
 //#include "clock.h"
+//#include "loraservice.h"
 
 //15 seconds WDT
 #define WDT_TIMEOUT 15

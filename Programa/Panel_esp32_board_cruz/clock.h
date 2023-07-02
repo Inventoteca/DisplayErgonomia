@@ -22,6 +22,7 @@ extern long  gmtOffset_sec;
 extern int   daylightOffset_sec;
 extern bool ntpConnected;
 extern bool rtcUpdated;
+extern bool rtc_ready;
 
 
 extern WiFiUDP ntpUDP;
@@ -29,5 +30,6 @@ extern NTPClient timeClient;
 
 void update_clock();
 void read_clock();
+void init_clock();
 
 #endif

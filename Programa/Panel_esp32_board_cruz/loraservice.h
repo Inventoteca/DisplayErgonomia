@@ -1,11 +1,34 @@
 #ifndef LORASERVICE_H
 #define LORASERVICE_H
 
+#include <RFM69.h>         //get it here: https://www.github.com/lowpowerlab/rfm69
+#include <RFM69_ATC.h>     //get it here: https://www.github.com/lowpowerlab/rfm69
+#include "system.h"
+
 //--------------- LoRa definitios
-#define BAND    915E6  //you can set band here directly,e.g. 868E6,915E6
-#define NONE      0
-#define SERIAL    1
-#define LORA      2
+//#define NODEID        1    //should always be 1 for a Gateway
+//#define NETWORKID     100  //the same on all nodes that talk to each other
+#define FREQUENCY     RF69_915MHZ
+//#define ENCRYPTKEY    "sampleEncryptKey" //exactly the same 16 characters/bytes on all nodes!
+#define IS_RFM69HW_HCW  //uncomment only for RFM69HW/HCW! Leave out if you have RFM69W/CW!
+#define ENABLE_ATC    //comment out this line to disable AUTO TRANSMISSION CONTROL
+
+extern int nodeid;
+extern int networkid;
+//extern char *lora_key;
+
+
+#ifdef ENABLE_ATC
+  RFM69_ATC radio;
+#else
+  RFM69 radio;
+#endif
+
+
+extern bool spy; //set to 'true' to sniff all packets on the same network
+
+void init_lora();
+
 
 /*
 //------------------- LoRa Variables

@@ -99,7 +99,6 @@ void displayInit()
 // --------------------------------------------------------------------------------------- PrintOut
 void PrintOut()
 {
-  //if (millis() - printRefresh > printTime)
   {
     //Serial.println("printout");
     if (obj["enable_oled"].as<bool>())
@@ -330,8 +329,5 @@ void PrintOut()
         display1.updatePoint(obj["status_pix"].as<int>(), color_status[0], color_status[1], color_status[2]);
       }
     }
-
-    //SendData();                     // Prepare for firebase and lora
-    //printRefresh = millis();
   }
 }

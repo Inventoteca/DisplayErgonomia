@@ -24,10 +24,12 @@
   "status_pix": 4,
   "neo_pin": 25,
   "enable_lora": false,
-  "lora_local": 0,
-  "lora_remote": 0,
-  "lora_band": 915000000,
+  "nodeid": 1,
+  "gatewayid": 0,
+  "networkid":100,
+  "lora_key":"sampleEncryptKey",
   "lora_registered": false,
+  "enable_rtc":true,
   "mainTime":10000,
   "events":{"32":0}
 }

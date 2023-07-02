@@ -117,7 +117,8 @@ void checkServer()
     if (WiFi.status() == WL_CONNECTED)
     {
       Serial.println("{\"wifi\":\"connected\"}");
-      update_clock();
+      if (obj["enable_rtc"].as<bool>())
+        update_clock();
 
       if (smart_config)
       {

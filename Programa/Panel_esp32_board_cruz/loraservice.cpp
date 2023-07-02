@@ -1,32 +1,64 @@
 #include "loraservice.h"
 
-/*
-//--------------- LoRa definitios
-#define BAND    915E6  //you can set band here directly,e.g. 868E6,915E6
-#define NONE      0
-#define SERIAL    1
-#define LORA      2
-
-//------------------- LoRa Variables
-//unsigned int counter = 0;
-String rssi = "RSSI --";
-String packSize = "--";
-String packet ;
-String outgoing;              // outgoing message
-byte msgCount = 0;            // count of outgoing messages
-
-byte destination = 6;      // destination to send to
-long lastSendTime = 0;        // last send time
-int interval = 2000;          // interval between sends
-String message;
-//char c_msg[30];
+bool spy = false; //set to 'true' to sniff all packets on the same network
+int nodeid = obj["nodeid"].as<int>();
+int networkid = obj["networkid"].as<int>();
+//char* lora_key = obj["lora_key"].as<char *>();
 
 
-// -------------------------------------------------------------------------------------- lora_send
-// {"method":"LoRa.Send","params":{"method":"Config.Get"}
-// {"method":"LoRa.Send","params":{"method":"Config.Get","params":"\"{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}\""}}
-static void lora_send(struct jsonrpc_request *r)
+// --------------------------------------------------------- init_lora
+void init_lora()
 {
+  nodeid = obj["nodeid"].as<int>();
+  networkid = obj["nodeid"].as<int>();
+  //lora_key = obj["lora_key"].as<char *>(); 
+  
+  
+  radio.initialize(FREQUENCY, nodeid, networkid);
+#ifdef IS_RFM69HW_HCW
+  radio.setHighPower(); //must include this only for RFM69HW/HCW!
+#endif
+  radio.encrypt("sampleEncryptKey");
+  radio.spyMode(spy);
+  //radio.setFrequency(916000000); //set frequency to some custom frequency
+  char buff[50];
+  sprintf(buff, "\nListening at %d Mhz...", FREQUENCY == RF69_433MHZ ? 433 : FREQUENCY == RF69_868MHZ ? 868 : 915);
+  Serial.println(buff);
+  #ifdef ENABLE_ATC
+  Serial.println("RFM69_ATC Enabled (Auto Transmission Control)");
+#endif
+}
+
+
+// ------------------------------------------------------- 
+
+/*
+  //--------------- LoRa definitios
+  #define BAND    915E6  //you can set band here directly,e.g. 868E6,915E6
+  #define NONE      0
+  #define SERIAL    1
+  #define LORA      2
+
+  //------------------- LoRa Variables
+  //unsigned int counter = 0;
+  String rssi = "RSSI --";
+  String packSize = "--";
+  String packet ;
+  String outgoing;              // outgoing message
+  byte msgCount = 0;            // count of outgoing messages
+
+  byte destination = 6;      // destination to send to
+  long lastSendTime = 0;        // last send time
+  int interval = 2000;          // interval between sends
+  String message;
+  //char c_msg[30];
+
+
+  // -------------------------------------------------------------------------------------- lora_send
+  // {"method":"LoRa.Send","params":{"method":"Config.Get"}
+  // {"method":"LoRa.Send","params":{"method":"Config.Get","params":"\"{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}\""}}
+  static void lora_send(struct jsonrpc_request *r)
+  {
 
   //  char cmd[100];
   //  char cmd_params[100];
@@ -88,15 +120,15 @@ static void lora_send(struct jsonrpc_request *r)
   //  }
 
 
-}
+  }
 
 
 
 
 
-// ------------------------------------------------------------------------------------------- onReceive
-void onReceive(int packetSize)
-{
+  // ------------------------------------------------------------------------------------------- onReceive
+  void onReceive(int packetSize)
+  {
   //
   //  if (packetSize == 0) return;          // if there's no packet, return
   //  //Serial.println();
@@ -263,12 +295,12 @@ void onReceive(int packetSize)
   //  }
 
 
-}
+  }
 
 
-//----------------------------------------------------------------------------------------- sendMessage
-void sendMessage(String outgoing)
-{
+  //----------------------------------------------------------------------------------------- sendMessage
+  void sendMessage(String outgoing)
+  {
   //  if (dev.size() >= 0) // list of devices
   //  { //  Serial.println("Sending LoRa...");
   //    for (JsonArray::iterator it = dev.begin(); it != dev.end(); ++it)
@@ -299,5 +331,5 @@ void sendMessage(String outgoing)
 
 
 
-}
+  }
 */

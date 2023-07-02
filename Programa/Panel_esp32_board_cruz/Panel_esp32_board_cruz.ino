@@ -42,10 +42,10 @@ void setup() {
 //#################################--------------------------------------------- loop------------------------###################################
 void loop()
 {
-  //  if (obj["lora"]["enable"].as<bool>())
-  //  {
+    if (obj["lora"]["enable"].as<bool>())
+    {
   //    //onReceive(LoRa.parsePacket());
-  //  }
+    }
 
   if (millis() - mainRefresh > mainTime)
   {
@@ -62,9 +62,12 @@ void loop()
     // ------------------------------------------- cruz
     else if (obj["type"].as<String>() == "cruz")
     {
-      read_clock();
-      PrintOut();
-      SendData();
+      if (obj["enable_rtc"].as<bool>())
+      {
+        read_clock();
+        PrintOut();
+        SendData();
+      }
     }
     mainRefresh = millis();
   }
