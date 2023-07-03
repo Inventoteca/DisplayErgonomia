@@ -160,28 +160,6 @@ void prepareData()
     // aqui debe ir para cada nodeNAme
     nodeName = String(now.unixtime());
 
-
-    DynamicJsonDocument msg(1024);
-    String message;
-    //message = "HeLoRa World!";   // send a message
-    //msg["method"] =
-    msg["sensors"]["t"] = t;
-    msg["sensors"]["h"] = h;
-    msg["sensors"]["uv"] = int(uv * 10); // avoid float
-    msg["sensors"]["db"] = db;
-    msg["sensors"]["lux"] = lux;
-    msg["sensors"]["ppm"] = ppm;
-    last_db = 0;
-
-    json.set("t", t);
-    json.set("h", h);
-    json.set("uv", uv);
-    json.set("db", db);
-    json.set("lux", lux);
-    json.set("ppm", ppm);
-    serializeJson(msg, message);
-    Serial.println(message);
-
     json.set("t_max", obj["t_max"].as<int>());
     json.set("t_min", obj["t_min"].as<int>());
     json.set("t_colMax", obj["t_colMax"].as<uint32_t>());

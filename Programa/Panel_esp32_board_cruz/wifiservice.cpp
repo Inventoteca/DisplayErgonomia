@@ -23,21 +23,21 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
   switch (event)
   {
 
-    case ARDUINO_EVENT_SC_SCAN_DONE:
-      {
+    //case ARDUINO_EVENT_SC_SCAN_DONE:
+      //{
         //Serial.println("{\"wifi_event\":\"scan\"}");
-        color_status[0] = 255;
-        color_status[1] = 255;
-        color_status[2] = 255;
-      }
-      break;
+        //color_status[0] = 255;
+        //color_status[1] = 255;
+        //color_status[2] = 255;
+      //}
+      //break;
 
     case ARDUINO_EVENT_SC_FOUND_CHANNEL:
       {
         //Serial.println("{\"wifi_event\":\"found\"}");
-        color_status[0] = 255;
-        color_status[1] = 0;
-        color_status[2] = 255;
+        //color_status[0] = 255;
+        //color_status[1] = 0;
+        //color_status[2] = 255;
       }
       break;
 
@@ -45,9 +45,9 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
       {
 
         //Serial.println("{\"wifi_event\":\"config\"}");
-        color_status[0] = 0;
-        color_status[1] = 0;
-        color_status[2] = 255;
+        //color_status[0] = 0;
+        //color_status[1] = 0;
+        //color_status[2] = 255;
 
         //if (info.sc_got_ssid_pswd.type == SC_TYPE_ESPTOUCH_V2)
         //{
@@ -77,9 +77,9 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
     case ARDUINO_EVENT_SC_SEND_ACK_DONE:
       {
         //Serial.println("{\"wifi_event\":\"ack\"}");
-        color_status[0] = 0;
-        color_status[1] = 255;
-        color_status[2] = 0;
+        //color_status[0] = 0;
+        //color_status[1] = 255;
+        //color_status[2] = 0;
         obj["registered_wifi"] = true;
         Serial.println(saveJSonToAFile(&obj, filename) ? "{\"registered_wifi_saved\":true}" : "{\"registered_wifi_saved\":false}" );
       }

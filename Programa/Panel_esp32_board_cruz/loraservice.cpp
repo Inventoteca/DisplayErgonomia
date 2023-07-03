@@ -4,6 +4,14 @@ bool spy = false; //set to 'true' to sniff all packets on the same network
 int nodeid = obj["nodeid"].as<int>();
 int networkid = obj["networkid"].as<int>();
 //char* lora_key = obj["lora_key"].as<char *>();
+byte ackCount = 0;
+uint32_t packetCount = 0;
+
+#ifdef ENABLE_ATC
+  RFM69_ATC radio;
+#else
+  RFM69 radio;
+#endif
 
 
 // --------------------------------------------------------- init_lora
@@ -11,9 +19,9 @@ void init_lora()
 {
   nodeid = obj["nodeid"].as<int>();
   networkid = obj["nodeid"].as<int>();
-  //lora_key = obj["lora_key"].as<char *>(); 
-  
-  
+  //lora_key = obj["lora_key"].as<char *>();
+
+
   radio.initialize(FREQUENCY, nodeid, networkid);
 #ifdef IS_RFM69HW_HCW
   radio.setHighPower(); //must include this only for RFM69HW/HCW!
@@ -24,13 +32,79 @@ void init_lora()
   char buff[50];
   sprintf(buff, "\nListening at %d Mhz...", FREQUENCY == RF69_433MHZ ? 433 : FREQUENCY == RF69_868MHZ ? 868 : 915);
   Serial.println(buff);
-  #ifdef ENABLE_ATC
+#ifdef ENABLE_ATC
   Serial.println("RFM69_ATC Enabled (Auto Transmission Control)");
 #endif
 }
 
 
-// ------------------------------------------------------- 
+// -------------------------------------------------------- receive_lora
+void receive_lora()
+{
+  if (radio.receiveDone())
+  {
+    Serial.print("#[");
+    Serial.print(++packetCount);
+    Serial.print(']');
+    Serial.print('['); Serial.print(radio.SENDERID, DEC); Serial.print("] ");
+    if (spy) Serial.print("to ["); Serial.print(radio.TARGETID, DEC); Serial.print("] ");
+    for (byte i = 0; i < radio.DATALEN; i++)
+      Serial.print((char)radio.DATA[i]);
+    Serial.print("   [RX_RSSI:"); Serial.print(radio.RSSI); Serial.print("]");
+
+    if (radio.ACKRequested())
+    {
+      byte theNodeID = radio.SENDERID;
+      radio.sendACK();
+      Serial.print(" - ACK sent.");
+
+      // When a node requests an ACK, respond to the ACK
+      // and also send a packet requesting an ACK (every 3rd one only)
+      // This way both TX/RX NODE functions are tested on 1 end at the GATEWAY
+      if (ackCount++ % 3 == 0)
+      {
+        Serial.print(" Pinging node ");
+        Serial.print(theNodeID);
+        Serial.print(" - ACK...");
+        delay(3); //need this when sending right after reception .. ?
+        if (radio.sendWithRetry(theNodeID, "ACK TEST", 8, 0))  // 0 = only 1 attempt, no retries
+          Serial.print("ok!");
+        else Serial.print("nothing");
+      }
+    }
+    Serial.println();
+    // Blink(LED_BUILTIN,3);
+  }
+}
+
+
+// ------------------------------------------------------ send_lora
+void send_lora()
+{
+  /*DynamicJsonDocument msg(1024);
+    String message;
+    //message = "HeLoRa World!";   // send a message
+    //msg["method"] =
+    msg["sensors"]["t"] = t;
+    msg["sensors"]["h"] = h;
+    msg["sensors"]["uv"] = int(uv * 10); // avoid float
+    msg["sensors"]["db"] = db;
+    msg["sensors"]["lux"] = lux;
+    msg["sensors"]["ppm"] = ppm;
+    last_db = 0;
+
+    json.set("t", t);
+    json.set("h", h);
+    json.set("uv", uv);
+    json.set("db", db);
+    json.set("lux", lux);
+    json.set("ppm", ppm);
+    serializeJson(msg, message);
+    Serial.println(message);
+  */
+}
+
+// -------------------------------------------------------
 
 /*
   //--------------- LoRa definitios

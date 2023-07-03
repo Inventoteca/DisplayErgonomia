@@ -16,18 +16,22 @@
 extern int nodeid;
 extern int networkid;
 //extern char *lora_key;
+extern byte ackCount;
+extern uint32_t packetCount;
 
 
 #ifdef ENABLE_ATC
-  RFM69_ATC radio;
+  extern RFM69_ATC radio;
 #else
-  RFM69 radio;
+  extern RFM69 radio;
 #endif
 
 
 extern bool spy; //set to 'true' to sniff all packets on the same network
 
 void init_lora();
+void receive_lora();
+void send_lora();
 
 
 /*

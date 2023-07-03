@@ -8,10 +8,10 @@
 #include "pines.h"
 #include "system.h"
 #include "clock.h"
-#include "sensors.h"
+//#include "sensors.h"
 #include "firebasedb.h"
 #include "wifiservice.h"
-
+#include  "loraservice.h"
 
 
 //################################################################----------------------- setup--------------------- #############################
@@ -42,10 +42,11 @@ void setup() {
 //#################################--------------------------------------------- loop------------------------###################################
 void loop()
 {
-    if (obj["lora"]["enable"].as<bool>())
-    {
-  //    //onReceive(LoRa.parsePacket());
-    }
+  if (obj["lora"]["enable"].as<bool>())
+  {
+    //    //onReceive(LoRa.parsePacket());
+   receive_lora();
+  }
 
   if (millis() - mainRefresh > mainTime)
   {
@@ -54,7 +55,7 @@ void loop()
     {
       if (obj["sensors_enable"].as<bool>())  // Sensor Panel normal
       {
-        ReadSensors();
+        //ReadSensors();
         //PrintOut();
         //SendData();
       }

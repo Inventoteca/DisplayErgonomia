@@ -5,9 +5,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_TSL2561_U.h>
 #include <MQUnifiedsensor.h>
-#include "filespiffs.h"
 #include "pines.h"
-#include "display.h"
 
 #define DHTTYPE     DHT22   // DHT 22  (AM2302), AM2321
 

@@ -148,7 +148,7 @@ void sensorInit()
 void ReadSensors()
 {
 
- if (obj["sensors_enable"] == true) // Sensors available
+ //if (obj["sensors_enable"] == true) // Sensors available
   {
     if (sensors_init == false)          // Sensors not already init
     {
@@ -192,9 +192,9 @@ void ReadSensors()
     //      last_db = db;
     //    }
 
-    if ((millis() - tempRefresh) >= obj["sensors_time"].as<unsigned int>() /*tempSample*/)
+//    if ((millis() - tempRefresh) >= obj["sensors_time"].as<unsigned int>() /*tempSample*/)
     {
-      tempRefresh = millis();
+      //tempRefresh = millis();
 
 
       // Demo Sound sensor
@@ -275,12 +275,9 @@ void ReadSensors()
 
       double ppm_log = (log10(ratio) - b) / m; //Get ppm value in linear scale according to the the ratio value
       ppm = pow(10, ppm_log); //Convert ppm value to log scale
-      ppm = ppm + (obj["ppm_cal"].as<int>()); // Fresh air
+      //ppm = ppm + (obj["ppm_cal"].as<int>()); // Fresh air
       if (ppm > 9999) ppm = 9999;
       //double percentage = ppm / 10000; //Convert to percentage
-
-      //PrintOut();
-      //SendData();
 
     }
   }
