@@ -18,6 +18,8 @@ extern int networkid;
 //extern char *lora_key;
 extern byte ackCount;
 extern uint32_t packetCount;
+extern char payload[];
+extern byte sendSize;
 
 
 #ifdef ENABLE_ATC

@@ -6,11 +6,13 @@ int networkid = obj["networkid"].as<int>();
 //char* lora_key = obj["lora_key"].as<char *>();
 byte ackCount = 0;
 uint32_t packetCount = 0;
+char payload[] = "123 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+byte sendSize=0;
 
 #ifdef ENABLE_ATC
-  RFM69_ATC radio;
+RFM69_ATC radio;
 #else
-  RFM69 radio;
+RFM69 radio;
 #endif
 
 
@@ -22,7 +24,7 @@ void init_lora()
   //lora_key = obj["lora_key"].as<char *>();
 
 
-  radio.initialize(FREQUENCY, nodeid, networkid);
+  radio.initialize(RF69_915MHZ, 1, 100);
 #ifdef IS_RFM69HW_HCW
   radio.setHighPower(); //must include this only for RFM69HW/HCW!
 #endif
@@ -81,6 +83,10 @@ void receive_lora()
 // ------------------------------------------------------ send_lora
 void send_lora()
 {
+
+  //variable = 0;
+
+
   /*DynamicJsonDocument msg(1024);
     String message;
     //message = "HeLoRa World!";   // send a message
@@ -103,7 +109,18 @@ void send_lora()
     Serial.println(message);
   */
 
-  
+  sprintf(payload, "%d", dias);
+  sendSize = strlen(payload);
+  Serial.print("Sending[");
+  Serial.print(sendSize);
+  Serial.print("]: ");
+  for (byte i = 0; i < sendSize; i++)
+    Serial.print((char)payload[i]);
+
+  if (radio.sendWithRetry(2, payload, sendSize))
+    Serial.print(" ok!");
+  else Serial.print(" nothing...");
+
 }
 
 // -------------------------------------------------------

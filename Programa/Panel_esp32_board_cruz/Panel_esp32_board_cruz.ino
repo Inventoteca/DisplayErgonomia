@@ -42,7 +42,7 @@ void setup() {
 //#################################--------------------------------------------- loop------------------------###################################
 void loop()
 {
-  if (obj["lora"]["enable"].as<bool>())
+  if (obj["enable_lora"].as<bool>())
   {
     //    //onReceive(LoRa.parsePacket());
    receive_lora();
@@ -68,6 +68,7 @@ void loop()
         read_clock();
         PrintOut();
         SendData();
+        send_lora();
       }
     }
     mainRefresh = millis();

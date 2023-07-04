@@ -206,7 +206,7 @@ void loadConfig()
   // ------------- LoRa
   if (obj["enable_lora"].as<bool>())
   {
-    //init_lora();
+    init_lora();
   }
 
 
