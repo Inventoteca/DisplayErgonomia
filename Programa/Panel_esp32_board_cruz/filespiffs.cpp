@@ -22,9 +22,9 @@ File file;
 
 
 
-  if (obj.isNull())
+  if (obj.size() == 0)
   {
-    Serial.println("{\"config_file\":null}");
+    Serial.println("{\"config_file\":\"empty\"}");
     return;
     //obj = getJSonFromFile(&doc, filedefault);
     //Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
@@ -103,6 +103,7 @@ JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1500>
 
       if (forceCleanONJsonError)
       {
+        Serial.println("{\"force_empty_json\": true}");
         return doc->to<JsonObject>();
       }
     }
@@ -117,6 +118,7 @@ JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1500>
     //Serial.println(filename);
 
     //Serial.println(F("Empty json created"));
+    Serial.println("{\"empty_json\": true}");
     return doc->to<JsonObject>();
   }
 
