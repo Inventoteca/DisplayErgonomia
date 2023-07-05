@@ -204,7 +204,8 @@ void PrintOut()
         int days_index;
         int pix_start, pix_end;
         int color = 0x00FF00;
-        for (days_index = 1; days_index <= int(now.day()); days_index++)
+        for (days_index = 1; days_index <= dia_hoy; days_index++)
+        //for (days_index = 1; days_index <= int(now.day()); days_index++)
           //for (days_index = 1; days_index <= 31; days_index++)
         {
           pix_start = pixelCruz[days_index - 1];

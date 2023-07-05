@@ -16,6 +16,7 @@ extern RTC_DS1307 rtc;
 extern int dias;
 extern int mes;
 extern int anio;
+extern int dia_hoy;
 
 extern const char* ntpServer;
 extern long  gmtOffset_sec;

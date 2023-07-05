@@ -9,6 +9,7 @@ DateTime last_ac;
 int dias;
 int mes;
 int anio;
+int dia_hoy;
 
 const char* ntpServer = "pool.ntp.org";
 //long  gmtOffset_sec = obj["gmtOff"].as<long>();               // Central Mexico (-5 UTC, -18000): Pacifico (-7 UTC, -25200) :  Noroeste (-8 UTC, -28800)
@@ -143,6 +144,7 @@ void read_clock()
     dias = int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L));
     mes = now.month();
     anio = now.year();
+    dia_hoy = now.day(); 
 
     Serial.print("{\"time\":\"");
     Serial.print(now.year(), DEC);
