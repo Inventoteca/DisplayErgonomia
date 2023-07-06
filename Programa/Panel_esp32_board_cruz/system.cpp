@@ -8,6 +8,7 @@ bool reset_time = false;
 bool smart_config = false;
 //bool taskCompleted = false;
 byte localAddress;
+int buttonState = 0;         // variable for reading the pushbutton status
 
 const int sampleWindow = 50;                              // Sample window width in mS (50 mS = 20Hz)
 int sample;
@@ -60,12 +61,34 @@ void IRAM_ATTR factory_reset2()
   //}
   //else
   //{
-    prev_factory_time = millis();
-    reset_time = true;
-    Serial.println("{\"reset_button\":\"released\"}");
+  prev_factory_time = millis();
+  reset_time = true;
+  Serial.println("{\"reset_button\":\"released\"}");
   //}
 
 }
+
+// ----------------------------------------------------------------------------------------------- factory_reset3 change
+void IRAM_ATTR factory_reset3()
+{
+  //Serial.println("{\"reset_button\":\"pressed\"}");
+  if (factory_press == false)
+  {
+    Serial.println("{\"reset_button\":\"pressed\"}");
+    factory_press = true;
+    factory_time = millis();
+
+  }
+  else
+  {
+    prev_factory_time = millis();
+    reset_time = true;
+    Serial.println("{\"reset_button\":\"released\"}");
+  }
+
+}
+
+
 // --------------------------------------------------------------------------------------------- check_reset
 void check_reset()
 {
@@ -81,6 +104,23 @@ void check_reset()
     factory_press = false;
     reset_time = false;
   }
+  /*buttonState = digitalRead(FACTORY_BT); 
+  
+  if (buttonState == LOW)
+  {
+    Serial.println("{\"reset_button\":\"pressed\"}");
+    factory_press = true;
+    factory_time = millis();
+
+  }
+  else if (factory_press == true)
+  {
+    prev_factory_time = millis();
+    reset_time = true;
+    factory_press = false;
+    Serial.println("{\"reset_button\":\"released\"}");
+  }*/
+
 }
 
 //----------------------------------------------------------------------------------------------------------- reset_config

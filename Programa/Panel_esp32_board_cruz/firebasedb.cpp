@@ -90,7 +90,8 @@ void SendData()
         //saveConfig = true;
       }
 
-
+      json.remove("updated");
+      
       if (Firebase.RTDB.updateNode(&fbdo, route + "/actual", &json) == false)
         Serial.printf("%s\n", fbdo.errorReason().c_str());
 

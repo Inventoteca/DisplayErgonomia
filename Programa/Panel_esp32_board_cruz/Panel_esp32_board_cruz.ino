@@ -23,7 +23,8 @@ void setup() {
   WiFi.onEvent(WiFiEvent);
   pinMode(FACTORY_BT, INPUT);
   //attachInterrupt(FACTORY_BT, factory_reset1, FALLING);
-  attachInterrupt(FACTORY_BT, factory_reset2, RISING);
+  //attachInterrupt(FACTORY_BT, factory_reset2, CHANGE);
+  attachInterrupt(FACTORY_BT, factory_reset3, CHANGE);
 
   // WatchDog Timer
   esp_task_wdt_init(WDT_TIMEOUT, true);  //enable panic so ESP32 restarts
@@ -35,8 +36,8 @@ void setup() {
     return;
   } else {
     Serial.println("{\"spiffs\":true}");
-    //Cfg_get(/*NULL*/);  // Load File from spiffs
-    //loadConfig();       // Load and update behaivor of system
+    Cfg_get(/*NULL*/);  // Load File from spiffs
+    loadConfig();       // Load and update behaivor of system
   }
 }
 
@@ -45,7 +46,7 @@ void setup() {
 //#################################--------------------------------------------- loop------------------------###################################
 void loop()
 {
-  /*if ((obj["enable_lora"].as<bool>())&& (success))
+  if ((obj["enable_lora"].as<bool>())&& (success))
   {
     //    //onReceive(LoRa.parsePacket());
     receive_lora();
@@ -102,7 +103,7 @@ void loop()
 
 
   // ---------------------------------------- wdt reset
-  check_reset();*/
+  check_reset();
   esp_task_wdt_reset();
-  delay(1000);
+  //delay(1000);
 }

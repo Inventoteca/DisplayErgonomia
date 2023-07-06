@@ -109,6 +109,7 @@ void receive_lora()
       mes = lora_obj["mes"];
       anio = lora_obj["anio"];
       dia_hoy = lora_obj["dia_hoy"];
+      color = lora_obj["color"].as<uint32_t>();
 
     }
     PrintOut();
@@ -177,6 +178,10 @@ void prepare_payload()
     msg["mes"] = mes;
     msg["anio"] = anio;
     msg["dia_hoy"] = dia_hoy;
+    if (color > 0)
+      msg["color"] = color;
+   else
+      msg["color"] = 0x00FF00;
     serializeJson(msg, payload);
 
   }

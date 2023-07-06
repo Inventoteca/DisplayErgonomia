@@ -3,12 +3,12 @@
 bool neo_digits_status = false;
 bool blk = false;
 short color_status[3] = {0, 0, 0};
-int color = 0xFFFFFF;
+uint32_t color = 0xFFFFFF;
 //unsigned long printRefresh = 0;
 //unsigned long printTime = 1000;
 
 NeoDigito display1 = NeoDigito(DIGITS, PIXPERSEG, NEO_PIN, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel strip(238, -1, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(238, NEO_PIN, NEO_GRB + NEO_KHZ800);
 int pixelCruz[] = {0, 2, 7, 12, 16, 21, 27, 30, 37, 43, 51, 55, 62, 69, 75, 82, 90, 95, 104, 112, 123, 130, 140, 150, 159, 169, 180, 188, 200, 211, 222, 232, 239};
 
 
@@ -221,76 +221,6 @@ void PrintOut()
         Serial.print(dias);
         Serial.println("}");
 
-        // if (now.second() % 2 == 0)
-        //   strip.setPixelColor(0, 0xFFFFFF);         //  Set pixel's color (in RAM)
-        // else
-        //    strip.setPixelColor(0, 0);         //  Set pixel's color (in RAM)
-
-        strip.clear();
-        int days_index;
-        int pix_start, pix_end;
-        color = 0x00FF00;
-        for (days_index = 1; days_index <= dia_hoy; days_index++)
-          //for (days_index = 1; days_index <= int(now.day()); days_index++)
-          //for (days_index = 1; days_index <= 31; days_index++)
-        {
-          pix_start = pixelCruz[days_index - 1];
-          pix_end = (pixelCruz[days_index]) - (pixelCruz[days_index - 1]);
-          Serial.print(days_index);
-          Serial.print("\t");
-          serializeJson(obj["events"][String(days_index)], Serial);
-          Serial.print("\t");
-          Serial.print(pix_start);
-          Serial.print("\t");
-          Serial.println(pix_end);
-          //Serial.print(" ");
-          //
-
-          if ((obj["events"][String(days_index)].isNull() == false) /*&& (obj["events"].isNull() == false)*/)
-          {
-            if (obj["events"][String(days_index)] == 1)       // Casi accidente
-            {
-              color = 0xFFA500;
-              strip.fill(color, pix_start, pix_end);       // Orange
-            }
-
-
-            else if (obj["events"][String(days_index)] == 2)  // Primer auxilio
-            {
-              color = 0xFF;
-              strip.fill(color, pix_start, pix_end);           // Blue
-            }
-
-            else if (obj["events"][String(days_index)] == 3) // No incapacitante
-            {
-              color = 0xFFFF00;
-              strip.fill(color, pix_start, pix_end);      // Yellow
-            }
-
-            else if (obj["events"][String(days_index)] == 4)  // Accidente
-            {
-              color = 0xFF0000;
-              strip.fill(color, pix_start, pix_end);       // Red
-            }
-
-            else
-            {
-              color = 0x00FF00;
-              strip.fill(color, pix_start, pix_end);   // Sin accidente
-            }
-
-          }
-          else
-          {
-            color = 0x00FF00;
-            strip.fill(color, pix_start, pix_end);   // Sin accidente
-          }
-          //strip.clear();
-          //esp_task_wdt_reset();
-          //delay(500);
-        }
-        strip.show();
-
         if (obj["enable_neo"].as<bool>())
         {
           display1.setPin(obj["neo_pin_days"].as<int>());
@@ -322,11 +252,76 @@ void PrintOut()
             display1.print(" ");
           display1.print(anio, color);
           display1.show();
-
-
-
         }
       }
+
+      strip.clear();
+      int days_index;
+      int pix_start, pix_end;
+      if (color <= 0)
+        color = 0x00FF00;
+      for (days_index = 1; days_index <= dia_hoy; days_index++)
+        //for (days_index = 1; days_index <= int(now.day()); days_index++)
+        //for (days_index = 1; days_index <= 31; days_index++)
+      {
+        pix_start = pixelCruz[days_index - 1];
+        pix_end = (pixelCruz[days_index]) - (pixelCruz[days_index - 1]);
+        Serial.print(days_index);
+        Serial.print("\t");
+        serializeJson(obj["events"][String(days_index)], Serial);
+        Serial.print("\t");
+        Serial.print(pix_start);
+        Serial.print("\t");
+        Serial.println(pix_end);
+        //Serial.print(" ");
+        //
+
+        if ((obj["events"][String(days_index)].isNull() == false) /*&& (obj["events"].isNull() == false)*/)
+        {
+          if (obj["events"][String(days_index)] == 1)       // Casi accidente
+          {
+            color = 0xFFA500;
+            strip.fill(color, pix_start, pix_end);       // Orange
+          }
+
+
+          else if (obj["events"][String(days_index)] == 2)  // Primer auxilio
+          {
+            color = 0xFF;
+            strip.fill(color, pix_start, pix_end);           // Blue
+          }
+
+          else if (obj["events"][String(days_index)] == 3) // No incapacitante
+          {
+            color = 0xFFFF00;
+            strip.fill(color, pix_start, pix_end);      // Yellow
+          }
+
+          else if (obj["events"][String(days_index)] == 4)  // Accidente
+          {
+            color = 0xFF0000;
+            strip.fill(color, pix_start, pix_end);       // Red
+          }
+
+          else
+          {
+            color = 0x00FF00;
+            strip.fill(color, pix_start, pix_end);   // Sin accidente
+          }
+
+        }
+        else
+        {
+          color = 0x00FF00;
+          strip.fill(color, pix_start, pix_end);   // Sin accidente
+        }
+        //strip.clear();
+        //esp_task_wdt_reset();
+        //delay(500);
+      }
+      strip.show();
+
+
 
       // ------------------------------------- Status BLink
       if (WiFi.status() == WL_CONNECTED)
