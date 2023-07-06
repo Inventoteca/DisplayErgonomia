@@ -180,6 +180,9 @@ void read_clock()
     Serial.print("{\"t_unix\": ");
     Serial.print(now.unixtime());
     Serial.println("}");
+
+    // Si el dia actual es diferente al anterior se reinicia
+    // Si el mes o el el anio es diferente se reinicia events
   }
   else
   {

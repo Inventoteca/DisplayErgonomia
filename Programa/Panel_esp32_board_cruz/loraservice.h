@@ -20,6 +20,7 @@ extern byte ackCount;
 extern uint32_t packetCount;
 extern char payload[];
 extern byte sendSize;
+extern bool success;
 
 
 #ifdef ENABLE_ATC

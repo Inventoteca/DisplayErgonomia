@@ -25,30 +25,53 @@ unsigned long mainTime = 1000;
 const uint32_t connectTimeoutMs = 10000;
 unsigned long  s_timestamp;
 
-// ----------------------------------------------------------------------------------------------- factory_reset
+// ----------------------------------------------------------------------------------------------- factory_reset1 PUSH
 void IRAM_ATTR factory_reset1()
 {
-  if (factory_press == false)
-  {
-    Serial.println("{\"reset_button\":\"pressed\"}");
-    factory_press = true;
-    factory_time = millis();
+  Serial.println("{\"reset_button\":\"pressed\"}");
+  //if (factory_press == false)
+  //{
+  //Serial.println("{\"reset_button\":\"pressed\"}");
+  factory_press = false;
+  prev_factory_time = millis();
+  factory_time = millis();
 
-  }
-  else
-  {
-    prev_factory_time = millis();
-    reset_time = true;
-    Serial.println("{\"reset_button\":\"released\"}");
-  }
+  //}
+  //else
+  //{
+  //prev_factory_time = millis();
+  //reset_time = true;
+  //Serial.println("{\"reset_button\":\"released\"}");
+  //}
 
 }
 
+
+// ----------------------------------------------------------------------------------------------- factory_reset2 RELEASE
+void IRAM_ATTR factory_reset2()
+{
+  //Serial.println("{\"reset_button\":\"pressed\"}");
+  //if (factory_press == false)
+  //{
+  //Serial.println("{\"reset_button\":\"pressed\"}");
+  //factory_press = true;
+  //factory_time = millis();
+
+  //}
+  //else
+  //{
+    prev_factory_time = millis();
+    reset_time = true;
+    Serial.println("{\"reset_button\":\"released\"}");
+  //}
+
+}
 // --------------------------------------------------------------------------------------------- check_reset
 void check_reset()
 {
   if (reset_time)
   {
+    Serial.println("{\"reset_time\":\"ok\"}");
     if ((prev_factory_time - factory_time) > 5000)
     {
       reset_config();

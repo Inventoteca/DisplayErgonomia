@@ -34,14 +34,6 @@ void fcsDownloadCallback(FCS_DownloadStatusInfo info)
     Serial.println("Update firmware completed.");
     Serial.println();
     Serial.println("Restarting...\n\n");
-
-    obj["updated"] = true;
-    saveConfigData();
-    json.set("updated", true);
-    SendData();
-
-
-    delay(2000);
     ESP.restart();
 
   }
@@ -88,6 +80,16 @@ void SendData()
       //   Serial.printf("%s\n", fbdo.errorReason().c_str());
 
       //json.set("events", events_json);
+      if (obj["updated"].as<bool>() == false)
+      {
+        json.clear();
+        json.set("updated", true);
+        if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
+          Serial.printf("%s\n", fbdo.errorReason().c_str());
+        //obj["updated"] = true;
+        //saveConfig = true;
+      }
+
 
       if (Firebase.RTDB.updateNode(&fbdo, route + "/actual", &json) == false)
         Serial.printf("%s\n", fbdo.errorReason().c_str());
@@ -107,12 +109,6 @@ void SendData()
   {
     connectFirebase();
   }
-
-  if (obj["enable_lora"].as<bool>())
-  {
-    //sendMessage(message);
-  }
-
 }
 
 
@@ -151,9 +147,10 @@ void prepareData()
   json.clear();
   //json.set("updatedBySelf", true);
   route = "/panels/" + obj["id"].as<String>() ; //+ "/data/" + String(now.year()) + "_" + String(now.month());
-  json.set("updated", obj["updated"].as<bool>());
+  //json.set("updated", obj["updated"].as<bool>());
   json.set("Ts/.sv", "timestamp"); // .sv is the required place holder for sever value which currently supports only string "timestamp" as a value
-
+ // json.set("version",VERSION);
+  
   // ------------------------------------------ ergo
   if (obj["type"].as<String>() == "ergo")
   {
@@ -231,6 +228,7 @@ void prepareData()
 }
 
 
+//------------------------------------------------------------------ connectFirebase
 void connectFirebase()
 {
   // Firebase
@@ -311,11 +309,9 @@ void connectFirebase()
   {
     updated = true;
     String storage_id = obj["storage_id"].as<String>();
-
-    // If you want to get download url to use with your own OTA update process using core update library,
-    // see Metadata.ino example
-
-    Serial.println("\nDownload firmware file...\n");
+    SendData();
+    Serial.println("{\"new_firmware\":true}");
+    //delay(2000);
 
     // In ESP8266, this function will allocate 16k+ memory for internal SSL client.
     if (!Firebase.Storage.downloadOTA(&fbdo, storage_id/* Firebase Storage bucket id */, "Panel_esp32_board_cruz.ino.esp32da.bin" /* path of firmware file stored in the bucket */, fcsDownloadCallback /* callback function */))
@@ -327,9 +323,6 @@ void connectFirebase()
 // ---------------------------------------------------------------------------------------------------- streamTimeoutCallback
 void streamTimeoutCallback(bool timeout)
 {
-  // if (timeout)
-  //   Serial.println("stream timed out, resuming...\n");
-
   if (!stream.httpConnected())
     Serial.printf("{\"stream_error\":\"%s\"}\n\n", stream.errorReason().c_str());
 }

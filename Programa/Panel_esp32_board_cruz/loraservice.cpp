@@ -9,6 +9,7 @@ byte ackCount = 0;
 uint32_t packetCount = 0;
 char payload[1024] = "";
 byte sendSize = 0;
+bool success = false;
 
 #ifdef ENABLE_ATC
 RFM69_ATC radio;
@@ -24,27 +25,51 @@ void init_lora()
   nodeid_remote = obj["nodeid_remote"].as<int>();
   networkid = obj["networkid"].as<int>();
   lora_key = obj["lora_key"].as<const char*>();
+  bool lora_registered = obj["lora_registered"].as<bool>();
   //spy = obj["lora_spy"].as<bool>();
 
   //size_t key_size = strlen(temp_key);
   //char lora_key[key_size + 1];  // +1 para el carácter de terminación nulo
   //strcpy(lora_key, temp_key);
 
+  success = radio.initialize(RF69_915MHZ, nodeid, networkid);
 
-  radio.initialize(RF69_915MHZ, nodeid, networkid);
+  if (success)
+  {
 #ifdef IS_RFM69HW_HCW
-  radio.setHighPower(); //must include this only for RFM69HW/HCW!
+    radio.setHighPower(); //must include this only for RFM69HW/HCW!
 #endif
-  radio.encrypt(lora_key);
-  radio.spyMode(spy);
-  //radio.setFrequency(916000000); //set frequency to some custom frequency
-  //char buff[50];
-  //sprintf(buff, "\nListening at %d Mhz...", FREQUENCY == RF69_433MHZ ? 433 : FREQUENCY == RF69_868MHZ ? 868 : 915);
-  //Serial.println(buff);
-  //#ifdef ENABLE_ATC
-  //Serial.println("RFM69_ATC Enabled (Auto Transmission Control)");
-  //#endif
-  Serial.println("{\"init_lora\":true}");
+    radio.encrypt(lora_key);
+    radio.spyMode(spy);
+    //radio.setFrequency(916000000); //set frequency to some custom frequency
+    //char buff[50];
+    //sprintf(buff, "\nListening at %d Mhz...", FREQUENCY == RF69_433MHZ ? 433 : FREQUENCY == RF69_868MHZ ? 868 : 915);
+    //Serial.println(buff);
+    //#ifdef ENABLE_ATC
+    //Serial.println("RFM69_ATC Enabled (Auto Transmission Control)");
+    //#endif
+    if (obj["lora_registered"].as<bool>() == false)
+    {
+      obj["lora_registered"] = true;
+      Serial.println("{\"init_lora\":true}");
+      saveConfig = true;
+    }
+  }
+  else
+  {
+    Serial.println("{\"init_lora\":false}");
+    if (lora_registered == false)
+    {
+      obj["enable_lora"] = false;
+      Serial.println("{\"init_lora\":false}");
+      Serial.println("{\"enable_lora\":false}");
+      saveConfig = true;
+      //saveConfigData();
+      //loadConfig();
+      //ESP.restart();
+    }
+  }
+
 }
 
 
@@ -59,7 +84,7 @@ void receive_lora()
       payload[i] = (char)radio.DATA[i];
     }
     Serial.print("{\"RX_RSSI\":"); Serial.print(radio.RSSI); Serial.println("}");
-    Serial.println(payload);
+    //Serial.println(payload);
 
     if (radio.ACKRequested())
     {
@@ -94,23 +119,31 @@ void receive_lora()
 // ------------------------------------------------------ send_lora
 void send_lora()
 {
-  prepare_payload();
-  sendSize = strlen(payload);
-  //Serial.print("Sending[");
-  //Serial.print(sendSize);
-  //Serial.print("]: ");
-  //for (byte i = 0; i < sendSize; i++)
-  //  Serial.print((char)payload[i]);
-  //Serial.println();
-
-  Serial.print("{\"SendFrom\":"); Serial.print(nodeid); Serial.println("}");
-  Serial.print("{\"SendTo\":"); Serial.print(nodeid_remote); Serial.println("}");
-  
-  if (radio.sendWithRetry(nodeid_remote, payload, sendSize))
+  if (success)
   {
-    Serial.println("{\"ACK\":true}");
+    prepare_payload();
+    sendSize = strlen(payload);
+    //Serial.print("Sending[");
+    //Serial.print(sendSize);
+    //Serial.print("]: ");
+    //for (byte i = 0; i < sendSize; i++)
+    //  Serial.print((char)payload[i]);
+    //Serial.println();
+
+    Serial.print("{\"SendFrom\":"); Serial.print(nodeid); Serial.println("}");
+    Serial.print("{\"SendTo\":"); Serial.print(nodeid_remote); Serial.println("}");
+
+    if (radio.sendWithRetry(nodeid_remote, payload, sendSize))
+    {
+      Serial.println("{\"ACK\":true}");
+    }
+    else Serial.println("{\"ACK\":false}");
   }
-  else Serial.println("{\"ACK\":false}");
+  else
+  {
+    init_lora();
+  }
+
 
 }
 

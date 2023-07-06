@@ -1,5 +1,5 @@
-  /*
-   Panel Cruz
+/*
+  Panel Cruz
 */
 
 // -------------------------- library
@@ -13,6 +13,8 @@
 #include "wifiservice.h"
 #include  "loraservice.h"
 
+//#define VERSION "0.9.0"
+
 
 //################################################################----------------------- setup--------------------- #############################
 void setup() {
@@ -20,7 +22,8 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.onEvent(WiFiEvent);
   pinMode(FACTORY_BT, INPUT);
-  attachInterrupt(FACTORY_BT, factory_reset1, CHANGE);
+  //attachInterrupt(FACTORY_BT, factory_reset1, FALLING);
+  attachInterrupt(FACTORY_BT, factory_reset2, RISING);
 
   // WatchDog Timer
   esp_task_wdt_init(WDT_TIMEOUT, true);  //enable panic so ESP32 restarts
@@ -32,8 +35,8 @@ void setup() {
     return;
   } else {
     Serial.println("{\"spiffs\":true}");
-    Cfg_get(/*NULL*/);  // Load File from spiffs
-    loadConfig();       // Load and update behaivor of system
+    //Cfg_get(/*NULL*/);  // Load File from spiffs
+    //loadConfig();       // Load and update behaivor of system
   }
 }
 
@@ -42,10 +45,10 @@ void setup() {
 //#################################--------------------------------------------- loop------------------------###################################
 void loop()
 {
-  if (obj["enable_lora"].as<bool>())
+  /*if ((obj["enable_lora"].as<bool>())&& (success))
   {
     //    //onReceive(LoRa.parsePacket());
-   receive_lora();
+    receive_lora();
   }
 
   if (millis() - mainRefresh > mainTime)
@@ -68,7 +71,8 @@ void loop()
         read_clock();
         PrintOut();
         SendData();
-        send_lora();
+        if (obj["enable_lora"].as<bool>())
+          send_lora();
       }
     }
     mainRefresh = millis();
@@ -98,6 +102,7 @@ void loop()
 
 
   // ---------------------------------------- wdt reset
-  check_reset();
+  check_reset();*/
   esp_task_wdt_reset();
+  delay(1000);
 }

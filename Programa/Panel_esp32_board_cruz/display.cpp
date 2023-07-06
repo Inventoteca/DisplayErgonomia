@@ -3,6 +3,7 @@
 bool neo_digits_status = false;
 bool blk = false;
 short color_status[3] = {0, 0, 0};
+int color = 0xFFFFFF;
 //unsigned long printRefresh = 0;
 //unsigned long printTime = 1000;
 
@@ -15,83 +16,107 @@ int pixelCruz[] = {0, 2, 7, 12, 16, 21, 27, 30, 37, 43, 51, 55, 62, 69, 75, 82, 
 void displayInit()
 {
 
-  if (obj["type"].as<String>() == "ergo")
+  if (neo_digits_status == false)
   {
-    display1.setPin(obj["neo_pin"].as<int>());
-    //display1.setPin(25);
-    display1.updateDigitType(obj["digits"].as<int>(), obj["pixels"].as<int>());
-    //display1.updateDigitType(17,2);
-
-    display1.begin();             // This fuction calls Adafruit_NeoPixel.begin() to configure.
-    //display1.clear();
-    //display1.show();
-
-  }
-  else if (obj["type"].as<String>() == "cruz")
-  {
-    strip.setPin(obj["neo_pin"].as<int>());
-    strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-    strip.clear();
-    strip.show();            // Turn OFF all pixels ASAP
-    strip.setBrightness(255);
-    Serial.println("{\"strip_croix\":true}");
-  }
-
-  // Testing display
-  /*
     if (obj["type"].as<String>() == "ergo")
     {
-    for (int disp_num = 0; disp_num < obj["neodisplay"]["digits"].as<unsigned int>(); disp_num++)
-    {
-      display1.setCursor(disp_num);
-      display1.print("'8.");      // It prints the value.
-      display1.show();              // Lights up the pixels.
-      delay(200);
-      display1.setCursor(disp_num);
-      display1.print(" ");
-      //
-    }
+      display1.setPin(obj["neo_pin"].as<int>());
+      //display1.setPin(25);
+      display1.updateDigitType(obj["digits"].as<int>(), obj["pixels"].as<int>());
+      //display1.updateDigitType(17,2);
 
-    display1.clear();
-    display1.print("oC", Red);
-    display1.print("% ", Green);
-    display1.print("uV", Purple);
-    display1.print("dB ", Blue);
-    display1.print("luxe", White);
-    display1.print("PPN.N", Cian);
-    display1.show();
-    delay(1000);
-    display1.clear();
-    display1.show();
-
-
-    }
-
-    if (obj["type"].as<String>() == "neo")
-    {
-    for (int disp_num = 0; disp_num < obj["neodisplay"]["digits"].as<unsigned int>(); disp_num++)
-    {
-      display1.updateColor(Random); //Before for all display
-      display1.setCursor(disp_num);
-      display1.print(disp_num);      // It prints the value.
-      display1.show();              // Lights up the pixels.
-      delay(300);
-      //display1.setCursor(disp_num);
-      //display1.print(" ");
+      display1.begin();             // This fuction calls Adafruit_NeoPixel.begin() to configure.
       //display1.clear();
+      //display1.show();
+
+    }
+    else if (obj["type"].as<String>() == "cruz")
+    {
+      Serial.print("{\"neo_pin\":"); Serial.print(obj["neo_pin"].as<int>()); Serial.println("}");
+      strip.setPin(obj["neo_pin"].as<int>());
+      strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+      strip.clear();
+      strip.show();            // Turn OFF all pixels ASAP
+      strip.setBrightness(255);
+
+      Serial.print("{\"neo_pin_days\":"); Serial.print(obj["neo_pin_days"].as<int>()); Serial.println("}");
+      display1.setPin(obj["neo_pin_days"].as<int>());
+      display1.updateDigitType(obj["digits_days"].as<int>(), obj["pixels_day"].as<int>());
+      display1.begin();
+      display1.clear();
+      display1.print(8888, color);
+      display1.show();
+
+
+      Serial.print("{\"neo_pin_year\":"); Serial.print(obj["neo_pin_year"].as<int>()); Serial.println("}");
+      display1.updateDigitType(obj["digits_year"].as<int>(), obj["pixels_year"].as<int>());
+      display1.setPin(obj["neo_pin_year"].as<int>());
+      display1.begin();
+      display1.clear();
+      display1.print(8888, color);
+      display1.show();
+
+      Serial.println("{\"strip_croix\":true}");
+      delay(100);
     }
 
-    //display1.updateColor(Random); //Before for all display
-    display1.clear();
-    display1.print("12:00");
-    display1.updateColor(Random, 0, 3); //After for each digit
-    }
+    // Testing display
+    /*
+      if (obj["type"].as<String>() == "ergo")
+      {
+      for (int disp_num = 0; disp_num < obj["neodisplay"]["digits"].as<unsigned int>(); disp_num++)
+      {
+        display1.setCursor(disp_num);
+        display1.print("'8.");      // It prints the value.
+        display1.show();              // Lights up the pixels.
+        delay(200);
+        display1.setCursor(disp_num);
+        display1.print(" ");
+        //
+      }
 
-    //Serial.println("Display  done!.");
-    //display1.show();
-  */
-  Serial.println("{\"neodigits\":true}");
-  neo_digits_status = true;
+      display1.clear();
+      display1.print("oC", Red);
+      display1.print("% ", Green);
+      display1.print("uV", Purple);
+      display1.print("dB ", Blue);
+      display1.print("luxe", White);
+      display1.print("PPN.N", Cian);
+      display1.show();
+      delay(1000);
+      display1.clear();
+      display1.show();
+
+
+      }
+
+      if (obj["type"].as<String>() == "neo")
+      {
+      for (int disp_num = 0; disp_num < obj["neodisplay"]["digits"].as<unsigned int>(); disp_num++)
+      {
+        display1.updateColor(Random); //Before for all display
+        display1.setCursor(disp_num);
+        display1.print(disp_num);      // It prints the value.
+        display1.show();              // Lights up the pixels.
+        delay(300);
+        //display1.setCursor(disp_num);
+        //display1.print(" ");
+        //display1.clear();
+      }
+
+      //display1.updateColor(Random); //Before for all display
+      display1.clear();
+      display1.print("12:00");
+      display1.updateColor(Random, 0, 3); //After for each digit
+      }
+
+      //Serial.println("Display  done!.");
+      //display1.show();
+    */
+    Serial.println("{\"neodigits\":true}");
+    neo_digits_status = true;
+  }
+
 
 }
 
@@ -99,6 +124,7 @@ void displayInit()
 // --------------------------------------------------------------------------------------- PrintOut
 void PrintOut()
 {
+  if (neo_digits_status)
   {
     //Serial.println("printout");
     if (obj["enable_oled"].as<bool>())
@@ -203,9 +229,9 @@ void PrintOut()
         strip.clear();
         int days_index;
         int pix_start, pix_end;
-        int color = 0x00FF00;
+        color = 0x00FF00;
         for (days_index = 1; days_index <= dia_hoy; days_index++)
-        //for (days_index = 1; days_index <= int(now.day()); days_index++)
+          //for (days_index = 1; days_index <= int(now.day()); days_index++)
           //for (days_index = 1; days_index <= 31; days_index++)
         {
           pix_start = pixelCruz[days_index - 1];
@@ -267,8 +293,8 @@ void PrintOut()
 
         if (obj["enable_neo"].as<bool>())
         {
-          display1.setPin(DHTPIN);
-          display1.updateDigitType(obj["digits"].as<int>(), obj["pixels"].as<int>());
+          display1.setPin(obj["neo_pin_days"].as<int>());
+          display1.updateDigitType(obj["digits_days"].as<int>(), obj["pixels_day"].as<int>());
           display1.begin();
           display1.clear();
 
@@ -284,8 +310,8 @@ void PrintOut()
 
 
 
-          display1.updateDigitType(4, 2);
-          display1.setPin(Sound_RX);
+          display1.updateDigitType(obj["digits_year"].as<int>(), obj["pixels_year"].as<int>());
+          display1.setPin(obj["neo_pin_year"].as<int>());
           display1.begin();
           display1.clear();
           if (mes < 10)
@@ -331,4 +357,6 @@ void PrintOut()
       }
     }
   }
+  else
+    displayInit();
 }

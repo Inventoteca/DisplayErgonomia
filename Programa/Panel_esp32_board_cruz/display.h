@@ -18,6 +18,7 @@
 extern bool neo_digits_status;
 extern bool blk;
 extern short color_status[3];
+extern int color;
 //extern unsigned long printRefresh;
 //extern unsigned long printTime;
 

@@ -24,13 +24,13 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
   {
 
     //case ARDUINO_EVENT_SC_SCAN_DONE:
-      //{
-        //Serial.println("{\"wifi_event\":\"scan\"}");
-        //color_status[0] = 255;
-        //color_status[1] = 255;
-        //color_status[2] = 255;
-      //}
-      //break;
+    //{
+    //Serial.println("{\"wifi_event\":\"scan\"}");
+    //color_status[0] = 255;
+    //color_status[1] = 255;
+    //color_status[2] = 255;
+    //}
+    //break;
 
     case ARDUINO_EVENT_SC_FOUND_CHANNEL:
       {
