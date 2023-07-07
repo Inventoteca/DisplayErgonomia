@@ -30,8 +30,6 @@ extern const uint32_t connectTimeoutMs;
 extern unsigned long  s_timestamp;
 extern int buttonState; 
 
-void IRAM_ATTR factory_reset1();
-void IRAM_ATTR factory_reset2();
 void IRAM_ATTR factory_reset3();
 void reset_config();
 void check_reset();

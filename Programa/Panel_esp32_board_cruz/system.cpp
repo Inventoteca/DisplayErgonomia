@@ -26,47 +26,6 @@ unsigned long mainTime = 1000;
 const uint32_t connectTimeoutMs = 10000;
 unsigned long  s_timestamp;
 
-// ----------------------------------------------------------------------------------------------- factory_reset1 PUSH
-void IRAM_ATTR factory_reset1()
-{
-  Serial.println("{\"reset_button\":\"pressed\"}");
-  //if (factory_press == false)
-  //{
-  //Serial.println("{\"reset_button\":\"pressed\"}");
-  factory_press = false;
-  prev_factory_time = millis();
-  factory_time = millis();
-
-  //}
-  //else
-  //{
-  //prev_factory_time = millis();
-  //reset_time = true;
-  //Serial.println("{\"reset_button\":\"released\"}");
-  //}
-
-}
-
-
-// ----------------------------------------------------------------------------------------------- factory_reset2 RELEASE
-void IRAM_ATTR factory_reset2()
-{
-  //Serial.println("{\"reset_button\":\"pressed\"}");
-  //if (factory_press == false)
-  //{
-  //Serial.println("{\"reset_button\":\"pressed\"}");
-  //factory_press = true;
-  //factory_time = millis();
-
-  //}
-  //else
-  //{
-  prev_factory_time = millis();
-  reset_time = true;
-  Serial.println("{\"reset_button\":\"released\"}");
-  //}
-
-}
 
 // ----------------------------------------------------------------------------------------------- factory_reset3 change
 void IRAM_ATTR factory_reset3()
@@ -104,22 +63,6 @@ void check_reset()
     factory_press = false;
     reset_time = false;
   }
-  /*buttonState = digitalRead(FACTORY_BT); 
-  
-  if (buttonState == LOW)
-  {
-    Serial.println("{\"reset_button\":\"pressed\"}");
-    factory_press = true;
-    factory_time = millis();
-
-  }
-  else if (factory_press == true)
-  {
-    prev_factory_time = millis();
-    reset_time = true;
-    factory_press = false;
-    Serial.println("{\"reset_button\":\"released\"}");
-  }*/
 
 }
 
@@ -250,7 +193,7 @@ void loadConfig()
   {
     //last_ac = obj["last_ac"].as<DateTime>();
     //uint32_t last_ac_aux;
-    last_ac = obj["last_ac"].as<uint32_t>();
+    last_ac = (obj["last_ac"].as<uint32_t>()) + (obj["gmtOff"].as<long>());
     //uint32_t last_ac_sec = static_cast<uint32_t>(last_ac_aux /* / 1000 */);
     //last_ac(last_ac_aux);
     //last_ac = obj["last_ac"];

@@ -22,8 +22,6 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.onEvent(WiFiEvent);
   pinMode(FACTORY_BT, INPUT);
-  //attachInterrupt(FACTORY_BT, factory_reset1, FALLING);
-  //attachInterrupt(FACTORY_BT, factory_reset2, CHANGE);
   attachInterrupt(FACTORY_BT, factory_reset3, CHANGE);
 
   // WatchDog Timer
@@ -105,5 +103,4 @@ void loop()
   // ---------------------------------------- wdt reset
   check_reset();
   esp_task_wdt_reset();
-  //delay(1000);
 }

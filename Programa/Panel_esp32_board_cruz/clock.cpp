@@ -30,8 +30,6 @@ void init_clock()
   if (! rtc.begin())
   {
     Serial.println("{\"rtc_init\":false}");
-    //Serial.flush();
-    //while (1) delay(10);
   }
   else
   {
@@ -141,7 +139,8 @@ void read_clock()
   if (rtc_ready == true)
   {
     now = rtc.now();
-    dias = int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L));
+    //dias = int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L));
+    dias = (now.unixtime() - last_ac.unixtime()) / 86400;
     mes = now.month();
     anio = now.year();
     dia_hoy = now.day(); 
