@@ -26,11 +26,12 @@ unsigned long mainTime = 1000;
 const uint32_t connectTimeoutMs = 10000;
 unsigned long  s_timestamp;
 
+unsigned long tiempoInicio;
+
 
 // ----------------------------------------------------------------------------------------------- factory_reset3 change
 void IRAM_ATTR factory_reset3()
 {
-  //Serial.println("{\"reset_button\":\"pressed\"}");
   if (factory_press == false)
   {
     Serial.println("{\"reset_button\":\"pressed\"}");
@@ -51,6 +52,9 @@ void IRAM_ATTR factory_reset3()
 // --------------------------------------------------------------------------------------------- check_reset
 void check_reset()
 {
+  // Force Factory to input
+  pinMode(FACTORY_BT, INPUT);
+
   if (reset_time)
   {
     Serial.println("{\"reset_time\":\"ok\"}");
@@ -64,6 +68,30 @@ void check_reset()
     reset_time = false;
   }
 
+  // ------------------------------------------------------reboot time es en horas
+  int reboot_time = obj["reboot_time"].as<unsigned int>();
+  if (reboot_time < 1)
+    reboot_time = 24;
+  // Si han pasado más de 24 horas del reset anterior o el tiempo en reboot time
+  if (millis() - tiempoInicio >=  (reboot_time * 60 * 60 * 1000))
+  //if (millis() - tiempoInicio >=  (reboot_time  * 1000))
+  { // Comparar el tiempo actual con el tiempo de inicio
+    Serial.print("{\"reboot_time\":"); Serial.print(obj["reboot_time"].as<unsigned int>()); Serial.println("}");
+    tiempoInicio = millis();  // Actualizar el tiempo de inicio
+    ESP.restart();  // Reiniciar el ESP32
+  }
+
+  //------------------------------------------------------ restart from command
+  if (obj["restart"].as<bool>())
+  {
+    Serial.println("{\"reboot\":true}");
+    SendData();
+    obj["restart"] = false;
+    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"reboot_save\":true}" : "{\"reboot_save\":false}");
+    delay(2000);
+    ESP.restart();
+  }
+
 }
 
 //----------------------------------------------------------------------------------------------------------- reset_config
@@ -72,11 +100,13 @@ void reset_config()
   WiFi.disconnect();
   //WiFi.mode(WIFI_OFF);
   WiFi.mode(WIFI_STA);
-  obj["ssid"] = "";
-  obj["pass"] = "";
-  obj["enable_wifi"] = true;
-  obj["count_wifi"] = 0;
-  obj["registered_wifi"] = false;
+
+  //obj["ssid"] = "";
+  //obj["pass"] = "";
+  //obj["enable_wifi"] = true;
+  //obj["count_wifi"] = 0;
+  //obj["registered_wifi"] = false;
+  obj = getJSonFromFile(&doc, filedefault);
   Serial.println(saveJSonToAFile(&obj, filename) ? "{\"factory_reset\":true}" : "{\"factory_reset\":false}");
   delay(2000);
   ESP.restart();
@@ -206,6 +236,8 @@ void loadConfig()
   //----------------- RTC
   if (obj["enable_rtc"].as<bool>())
   {
+    rtcUpdated = false;
+    ntpConnected = false;
     init_clock();
   }
 

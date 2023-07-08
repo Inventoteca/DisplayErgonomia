@@ -14,6 +14,7 @@ volatile bool dataChanged = false;
 volatile bool nullData = false;
 volatile bool saveConfig = false;
 volatile bool fire_stream = false;
+volatile bool update_events = false;
 String route = "/panels/" + obj["id"].as<String>();// + "/actual";
 FirebaseData stream;
 
@@ -43,17 +44,6 @@ void fcsDownloadCallback(FCS_DownloadStatusInfo info)
   }
 }
 
-//
-//// Local time
-//void printLocalTime()
-//{
-//  struct tm timeinfo;
-//  if (!getLocalTime(&timeinfo)) {
-//    Serial.println("Failed to obtain time");
-//    return;
-//  }
-//  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");   // Comment for ESP8266
-//}
 
 
 // -------------------------------------------------------------------------------------- SendData
@@ -72,33 +62,54 @@ void SendData()
     // ------------------------------------- cruz
     else if (obj["type"].as<String>() == "cruz")
     {
-      // Log file for reports Cruz
-      // Actual readings file for reports Cruz
-      //copyJsonObject(events_json, events_obj);
-      //json.clear();
-      //if (Firebase.RTDB.updateNode(&fbdo, route + "/events", &events_json) == false)
-      //   Serial.printf("%s\n", fbdo.errorReason().c_str());
+      //------------------ automatic update events, new month
+      if (update_events)
+      {
+        json.clear();
+        String jsonString = "{\"events\":\"32\":0}";
+        FirebaseJson firebaseJson;
+        firebaseJson.setJsonData(jsonString);
+        json.set("events", firebaseJson);
+        json.set("mes_prev", mes);
+        Serial.println("{\"update_events\":true}");
+        if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
+          Serial.printf("%s\n", fbdo.errorReason().c_str());
+        //else
+        update_events = false;
 
-      //json.set("events", events_json);
+      }
+
+      // ------------------------------------- response for new firmware
       if (obj["updated"].as<bool>() == false)
       {
         json.clear();
         json.set("updated", true);
+        Serial.println("{\"update_firmware\":true}");
         if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
           Serial.printf("%s\n", fbdo.errorReason().c_str());
-        //obj["updated"] = true;
-        //saveConfig = true;
+        else
+          obj["updated"] = true;
+      }
+
+      // ------------------------------------- response for new firmware
+      if (obj["restart"].as<bool>() == true)
+      {
+        json.clear();
+        json.set("restart", false);
+        if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
+          Serial.printf("%s\n", fbdo.errorReason().c_str());
       }
 
       json.remove("updated");
-      
+      json.remove("restart");
+      json.remove("mes_prev");
       if (Firebase.RTDB.updateNode(&fbdo, route + "/actual", &json) == false)
         Serial.printf("%s\n", fbdo.errorReason().c_str());
 
 
-
       json.remove("Ts/.sv");
       json.remove("time");
+      json.remove("mes_prev");
       if (Firebase.RTDB.updateNode(&fbdo, route + "/data/" + String(now.year()) + "_" + String(now.month()), &json) == false)
       {
         Serial.printf("%s\n", fbdo.errorReason().c_str());
@@ -120,23 +131,40 @@ void streamCallback(FirebaseStream data)
 
   Serial.println("{\"stream\":true}");
 
-  Serial.printf("stream path: %s\nevent path: %s\ndata type: %s\nevent type: %s\ndata:  %s\n\n",
-                data.streamPath().c_str(),
-                data.dataPath().c_str(),
-                data.dataType().c_str(),
-                data.eventType().c_str(),
-                data.payload().c_str());
+  if (obj["test"].as<bool>() == true)
+  {
+    Serial.printf("stream path: %s\nevent path: %s\ndata type: %s\nevent type: %s\ndata:  %s\n\n",
+                  data.streamPath().c_str(),
+                  data.dataPath().c_str(),
+                  data.dataType().c_str(),
+                  data.eventType().c_str(),
+                  data.payload().c_str());
+  }
+
 
   if ((strcmp(data.dataPath().c_str(), "/") == 0) && (strcmp(data.eventType().c_str(), "patch") != 0))
   {
-    //Serial.println("All obj");
-    //DynamicJsonDocument doc(1024);
+    if (strcmp(data.dataType().c_str(), "null") != 0)
+    {
+      //Serial.println("All obj");
+      //DynamicJsonDocument doc(1024);
 
-    // Llamar a deserializeJson() para decodificar la respuesta
-    deserializeJson(doc, data.payload().c_str());
-    serializeJson(obj, Serial);
-    saveConfigData();
-    loadConfig();
+      // Llamar a deserializeJson() para decodificar la respuesta
+      deserializeJson(doc, data.payload().c_str());
+      if (obj["test"].as<bool>() == true)
+        serializeJson(obj, Serial);
+      saveConfigData();
+      loadConfig();
+    }
+    else
+    {
+      obj["registered"] = false;
+      saveConfigData();
+      loadConfig();
+      ESP.restart();
+      //SendData();
+    }
+
   }
 }
 
@@ -150,8 +178,8 @@ void prepareData()
   route = "/panels/" + obj["id"].as<String>() ; //+ "/data/" + String(now.year()) + "_" + String(now.month());
   //json.set("updated", obj["updated"].as<bool>());
   json.set("Ts/.sv", "timestamp"); // .sv is the required place holder for sever value which currently supports only string "timestamp" as a value
- // json.set("version",VERSION);
-  
+  // json.set("version",VERSION);
+
   // ------------------------------------------ ergo
   if (obj["type"].as<String>() == "ergo")
   {
@@ -206,11 +234,20 @@ void prepareData()
     //json.set("dayOff", obj["dayOff"].as<int>());
     //json.set("ping",true);
     //JsonVariant eventsData = obj["events"];
+
+    //------------------ automatic update events, new month
     String jsonString;
-    serializeJson(obj["events"], jsonString);
-    FirebaseJson firebaseJson;
-    firebaseJson.setJsonData(jsonString);
-    json.set("events", firebaseJson);
+    if (!update_events)
+    {
+      serializeJson(obj["events"], jsonString);
+      FirebaseJson firebaseJson;
+      firebaseJson.setJsonData(jsonString);
+      json.set("events", firebaseJson);
+    }
+    //else
+    //{
+
+    //}
   }
 
   //json.set("sensors", obj["sensors"]);
@@ -260,22 +297,45 @@ void connectFirebase()
     while (!Firebase.ready());
 
     route = "/panels/" + obj["id"].as<String>();
-    copyJsonObject(json, obj);
 
-
-    if (!Firebase.RTDB.get(&fbdo, route + "/config")) {
-      Serial.println("{\"config_file\":false}");
-      // El nodo no existe, actualizamos.
-      if (!Firebase.RTDB.updateNode(&fbdo, route + "/config", &json)) {
+    // El el dispositivo no esta registrado
+    if (obj["registered"].as<bool>() == false)
+    {
+      obj["registered"] = true;
+      copyJsonObject(json, obj);
+      if (!Firebase.RTDB.updateNode(&fbdo, route + "/config", &json))
+      {
         Serial.printf("%s\n", fbdo.errorReason().c_str());
-      } else {
-        Serial.println("{\"upload_config\":true}");
+      }
+      else
+      {
+        Serial.println("{\"registered_rtdb\":true}");
       }
     }
     else
     {
-      Serial.println("{\"get_config_file\":true}");
+      // El nodo no existe, actualizamos.
+      if (!Firebase.RTDB.get(&fbdo, route + "/config"))
+      {
+        Serial.println("{\"config_file\":false}");
+        copyJsonObject(json, obj);
+
+        if (!Firebase.RTDB.updateNode(&fbdo, route + "/config", &json))
+        {
+          Serial.printf("%s\n", fbdo.errorReason().c_str());
+        }
+        else
+        {
+          Serial.println("{\"upload_config\":true}");
+        }
+      }
+
+      else
+      {
+        Serial.println("{\"get_config_file\":true}");
+      }
     }
+
 
 
     // Timeout, prevent to program halt

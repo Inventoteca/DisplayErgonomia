@@ -3,7 +3,7 @@
 bool neo_digits_status = false;
 bool blk = false;
 short color_status[3] = {0, 0, 0};
-uint32_t color = 0xFFFFFF;
+uint32_t color = 0x00FF00;
 //unsigned long printRefresh = 0;
 //unsigned long printTime = 1000;
 
@@ -36,6 +36,8 @@ void displayInit()
       strip.setPin(obj["neo_pin"].as<int>());
       strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
       strip.clear();
+      if (obj["test"].as<bool>())
+        strip.fill(0xFFFFFF);
       strip.show();            // Turn OFF all pixels ASAP
       strip.setBrightness(255);
 
@@ -44,7 +46,9 @@ void displayInit()
       display1.updateDigitType(obj["digits_days"].as<int>(), obj["pixels_day"].as<int>());
       display1.begin();
       display1.clear();
-      display1.print(8888, color);
+      if (obj["test"].as<bool>())
+        display1.print(8888, 0xFFFFFF);
+
       display1.show();
 
 
@@ -53,11 +57,13 @@ void displayInit()
       display1.setPin(obj["neo_pin_year"].as<int>());
       display1.begin();
       display1.clear();
-      display1.print(8888, color);
+      if (obj["test"].as<bool>())
+        display1.print(8888, 0xFFFFFF);
       display1.show();
 
       Serial.println("{\"strip_croix\":true}");
-      delay(100);
+      if (obj["test"].as<bool>())
+        delay(1000);
     }
 
     // Testing display

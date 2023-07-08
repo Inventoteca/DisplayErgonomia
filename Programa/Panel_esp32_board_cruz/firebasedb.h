@@ -21,6 +21,7 @@ extern volatile bool dataChanged;
 extern volatile bool nullData;
 extern volatile bool saveConfig;
 extern volatile bool fire_stream;
+extern volatile bool update_events;
 extern FirebaseData stream;
 extern String route;
 

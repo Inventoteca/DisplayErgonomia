@@ -27,7 +27,8 @@ NTPClient timeClient(ntpUDP, ntpServer, gmtOffset_sec, daylightOffset_sec);
 // ---------------------------------- init_clock
 void init_clock()
 {
-  if (! rtc.begin())
+  rtc_ready = rtc.begin();
+  if (!rtc_ready )
   {
     Serial.println("{\"rtc_init\":false}");
   }
@@ -60,7 +61,7 @@ void init_clock()
     Serial.print("{\"dayOff\":");
     Serial.print(daylightOffset_sec);
     Serial.println("}");
-    rtc_ready = true;
+    
   }
 }
 
@@ -136,7 +137,7 @@ void update_clock()
 // -------------------------------- read_clock
 void read_clock()
 {
-  if (rtc_ready == true)
+  if (rtc_ready)
   {
     now = rtc.now();
     //dias = int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L));
@@ -182,9 +183,34 @@ void read_clock()
 
     // Si el dia actual es diferente al anterior se reinicia
     // Si el mes o el el anio es diferente se reinicia events
+    if(obj["mes_prev"].as<int>() != mes)
+    {
+      Serial.println("{\"new_month\":true}");
+      Serial.print("{\"prev_mes\": "); Serial.print(obj["mes_prev"].as<int>());  Serial.println("}");
+      Serial.print("{\"actual_mes\": "); Serial.print(mes);  Serial.println("}");
+      obj.remove("events");
+      obj["events"]["32"]=0;
+      obj["mes_prev"] = mes;
+      SendData();
+      saveConfig = true;
+      update_events = true;
+    }
   }
   else
   {
     init_clock();
   }
 }
+
+
+//
+//// Local time
+//void printLocalTime()
+//{
+//  struct tm timeinfo;
+//  if (!getLocalTime(&timeinfo)) {
+//    Serial.println("Failed to obtain time");
+//    return;
+//  }
+//  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");   // Comment for ESP8266
+//}

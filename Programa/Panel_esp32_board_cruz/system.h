@@ -28,7 +28,8 @@ extern unsigned long mainRefresh;
 extern unsigned long mainTime;
 extern const uint32_t connectTimeoutMs;
 extern unsigned long  s_timestamp;
-extern int buttonState; 
+extern int buttonState;
+extern unsigned long tiempoInicio; 
 
 void IRAM_ATTR factory_reset3();
 void reset_config();

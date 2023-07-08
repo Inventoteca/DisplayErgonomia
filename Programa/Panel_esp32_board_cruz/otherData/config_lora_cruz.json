@@ -12,8 +12,8 @@
   "enable_wifi": true,
   "events": {"32": 0},
   "firepass": "Homerosim",
-  "gmtOff": -18000,
-  "id": "34:94:54:C7:D3:98",
+  "gmtOff": -21600,
+  "id": "",
   "key": "AIzaSyAOfGOjdpVQZtnhwTjmNRy8mApY993zHfc",
   "last_ac": 1584687661,
   "lora_key": "sampleEncryptKey",
@@ -35,6 +35,7 @@
   "ssid": "Inventoteca_2G",
   "status_pix": 4,
   "storage_id": "smart-industry-panels.appspot.com",
+  "test": true,
   "type": "cruz",
   "updated": true,
   "url": "smart-industry-panels-default-rtdb.firebaseio.com"

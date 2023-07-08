@@ -1,13 +1,14 @@
 #include "filespiffs.h"
 
 JsonObject obj;
-StaticJsonDocument<1500> doc;
+StaticJsonDocument<FILE_SIZE> doc;
 JsonArray dev;
-StaticJsonDocument<512> dev_doc;
+StaticJsonDocument<FILE_SIZE> dev_doc;
 
 const char* device_list = "/devices.json";
 const char* filename = "/config.json";
 const char *sen_filename = "/sensors.json";
+const char *filedefault = "/default.json";
 
 File file;
 
@@ -25,11 +26,12 @@ File file;
   if (obj.size() == 0)
   {
     Serial.println("{\"config_file\":\"empty\"}");
-    return;
-    //obj = getJSonFromFile(&doc, filedefault);
-    //Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved\":true}" : "{\"file_saved\":false}");
+    //return;
+    obj = getJSonFromFile(&doc, filedefault);
+    Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_default_restore\":true}" : "{\"file_default_restore\":false}");
   }
-  else
+  
+  if (obj["test"].as<bool>() == true)
   {
     // Comment for production
     serializeJson(obj, Serial);
@@ -77,7 +79,7 @@ bool saveJSonToAFile(JsonObject * doc, String filename) {
 
 // ------------------------------------------------------------------------------------------------ getJsonFromFile
 
-JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1500> *doc, String filename, bool forceCleanONJsonError)
+JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<FILE_SIZE> *doc, String filename, bool forceCleanONJsonError)
 {
   // open the file for reading:
   file = SPIFFS.open(filename);;
@@ -88,7 +90,7 @@ JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1500>
     size_t size = file.size();
     //Serial.println(size);
 
-    if (size > 1500)
+    if (size > FILE_SIZE)
     {
       //Serial.println("Too large file");
 
@@ -127,7 +129,7 @@ JsonObject getJSonFromFile(/*DynamicJsonDocument *doc*/ StaticJsonDocument<1500>
 
 // ------------------------------------------------------------------------------------------------ getJsonArrayFromFile
 
-JsonArray getJSonArrayFromFile(StaticJsonDocument<512> *dev_doc, String filename, bool forceCleanONJsonError)
+JsonArray getJSonArrayFromFile(StaticJsonDocument<FILE_SIZE> *dev_doc, String filename, bool forceCleanONJsonError)
 {
   // open the file for reading:
   file = SPIFFS.open(filename);;
@@ -138,7 +140,7 @@ JsonArray getJSonArrayFromFile(StaticJsonDocument<512> *dev_doc, String filename
     size_t size = file.size();
     //Serial.println(size);
 
-    if (size > 512)
+    if (size > FILE_SIZE)
     {
       //Serial.println("Too large file");
       //return false;
