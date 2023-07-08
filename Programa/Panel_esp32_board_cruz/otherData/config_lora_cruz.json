@@ -1,6 +1,7 @@
 {
   "count_wifi": 0,
   "dayOff": 0,
+  "defColor": 65280,
   "digits": 4,
   "digits_days": 4,
   "digits_year": 4,
@@ -15,7 +16,7 @@
   "gmtOff": -21600,
   "id": "",
   "key": "AIzaSyAOfGOjdpVQZtnhwTjmNRy8mApY993zHfc",
-  "last_ac": 1584687661,
+  "last_ac": 1609912800,
   "lora_key": "sampleEncryptKey",
   "lora_registered": false,
   "mainTime": 5000,

@@ -74,7 +74,7 @@ void check_reset()
     reboot_time = 24;
   // Si han pasado más de 24 horas del reset anterior o el tiempo en reboot time
   if (millis() - tiempoInicio >=  (reboot_time * 60 * 60 * 1000))
-  //if (millis() - tiempoInicio >=  (reboot_time  * 1000))
+    //if (millis() - tiempoInicio >=  (reboot_time  * 1000))
   { // Comparar el tiempo actual con el tiempo de inicio
     Serial.print("{\"reboot_time\":"); Serial.print(obj["reboot_time"].as<unsigned int>()); Serial.println("}");
     tiempoInicio = millis();  // Actualizar el tiempo de inicio
@@ -133,6 +133,7 @@ void loadConfig()
 {
 
   updated = obj["updated"].as<bool>();
+  color = (obj["defColor"].as<uint32_t>() > 0 ? obj["defColor"].as<uint32_t>() : 0x00FF00);
 
   // ------------- ID
   String s_aux = obj["id"].as<String>();

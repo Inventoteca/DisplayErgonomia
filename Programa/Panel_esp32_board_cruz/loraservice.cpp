@@ -178,10 +178,10 @@ void prepare_payload()
     msg["mes"] = mes;
     msg["anio"] = anio;
     msg["dia_hoy"] = dia_hoy;
-    if (color > 0)
-      msg["color"] = color;
-   else
-      msg["color"] = 0x00FF00;
+    //if (obj["defColor"].as<uint32_t>() > 0)
+    //  msg["color"] = obj["defColor"].as<uint32_t>();
+    //else
+    msg["color"] = color;
     serializeJson(msg, payload);
 
   }
