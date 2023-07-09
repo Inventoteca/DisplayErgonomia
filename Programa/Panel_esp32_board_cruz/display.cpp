@@ -281,14 +281,14 @@ void PrintOut()
             else
             {
               
-              //color = 0x00FF00;
+              color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0x00FF00);
               strip.fill(0x00FF00, pix_start, pix_end);   // Sin accidente
             }
 
           }
           else
           {
-            //color = 0x00FF00;
+            color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0x00FF00);
             strip.fill(0x00FF00, pix_start, pix_end);   // Sin accidente
           }
           //strip.clear();

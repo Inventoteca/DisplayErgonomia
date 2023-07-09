@@ -110,7 +110,7 @@ void receive_lora()
       anio = lora_obj["anio"];
       dia_hoy = lora_obj["dia_hoy"];
       color = lora_obj["color"].as<uint32_t>();
-
+      obj["defColor"] = lora_obj["color"].as<uint32_t>();
     }
     PrintOut();
   }
