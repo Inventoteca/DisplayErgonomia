@@ -230,6 +230,8 @@ void prepareData()
     json.set("time", now.unixtime());
     json.set("last_ac", last_ac.unixtime());
     json.set("days_ac", dias);
+    json.set("defColor",color);
+    json.set("gmtOff", obj["gmtOff"].as<long>());
     //json.set("gmtOff", obj["gmtOff"].as<long>());
     //json.set("dayOff", obj["dayOff"].as<int>());
     //json.set("ping",true);

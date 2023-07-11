@@ -255,41 +255,41 @@ void PrintOut()
           {
             if (obj["events"][String(days_index)] == 1)       // Casi accidente
             {
-              color = 0xFFA500;
+              color = 0xFFFFA500;
               strip.fill(color, pix_start, pix_end);       // Orange
             }
 
 
             else if (obj["events"][String(days_index)] == 2)  // Primer auxilio
             {
-              color = 0xFF;
+              color = 0xFF0000FF;
               strip.fill(color, pix_start, pix_end);           // Blue
             }
 
             else if (obj["events"][String(days_index)] == 3) // No incapacitante
             {
-              color = 0xFFFF00;
+              color = 0xFFFFFF00;
               strip.fill(color, pix_start, pix_end);      // Yellow
             }
 
             else if (obj["events"][String(days_index)] == 4)  // Accidente
             {
-              color = 0xFF0000;
+              color = 0xFFFF0000;
               strip.fill(color, pix_start, pix_end);       // Red
             }
 
             else
             {
               
-              color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0x00FF00);
-              strip.fill(0x00FF00, pix_start, pix_end);   // Sin accidente
+              color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0xFF00FF00);
+              strip.fill(0xFF00FF00, pix_start, pix_end);   // Sin accidente
             }
 
           }
           else
           {
-            color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0x00FF00);
-            strip.fill(0x00FF00, pix_start, pix_end);   // Sin accidente
+            color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0xFF00FF00);
+            strip.fill(0xFF00FF00, pix_start, pix_end);   // Sin accidente
           }
           //strip.clear();
           //esp_task_wdt_reset();
