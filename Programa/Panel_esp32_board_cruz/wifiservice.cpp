@@ -58,8 +58,11 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         memcpy(pass, info.sc_got_ssid_pswd.password, sizeof(info.sc_got_ssid_pswd.password) + 1);
         memcpy(ssid, info.sc_got_ssid_pswd.ssid, sizeof(info.sc_got_ssid_pswd.ssid) + 1);
 
-        //Serial.printf("SSID:%s\n", ssid);
-        //Serial.printf("PASSWORD:%s\n", pass);
+        if (obj["test"].as<bool>()) {
+          Serial.printf("SSID:%s\n", ssid);
+          Serial.printf("PASSWORD:%s\n", pass);
+        }
+
 
         // Save config
         obj["ssid"] = ssid;
@@ -85,6 +88,7 @@ void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
       }
       break;
   }
+  //return;
 }
 
 // -------------------------------------------------------------------- Wifi_disconnected
@@ -99,7 +103,7 @@ void Wifi_disconnected(WiFiEvent_t event, WiFiEventInfo_t info)
     Serial.println("Reconnecting...");
     WiFi.begin(obj["ssid"].as<const char*>(), obj["pass"].as<const char*>());
   }
-
+  //return;
 }
 
 

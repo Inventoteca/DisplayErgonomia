@@ -1,5 +1,6 @@
 #include "system.h"
 
+#define   PRESS   LOW
 
 bool factory_press = false;
 unsigned long factory_time = 0;
@@ -32,18 +33,20 @@ unsigned long tiempoInicio;
 // ----------------------------------------------------------------------------------------------- factory_reset3 change
 void IRAM_ATTR factory_reset3()
 {
-  if (factory_press == false)
+  if ((factory_press == false) && (digitalRead(FACTORY_BT) == PRESS))
   {
-    Serial.println("{\"reset_button\":\"pressed\"}");
+    Serial.println("{\"R_bt\":\"push\"}");
     factory_press = true;
     factory_time = millis();
+    return;
 
   }
-  else
+  else if((digitalRead(FACTORY_BT) == !PRESS))
   {
     prev_factory_time = millis();
     reset_time = true;
-    Serial.println("{\"reset_button\":\"released\"}");
+    //Serial.println("{\"reset_button\":\"released\"}");
+    return;
   }
 
 }
@@ -57,7 +60,7 @@ void check_reset()
 
   if (reset_time)
   {
-    Serial.println("{\"reset_time\":\"ok\"}");
+    Serial.print("{\"reset_time\":"); Serial.print(prev_factory_time - factory_time); Serial.println("}");
     if ((prev_factory_time - factory_time) > 5000)
     {
       reset_config();
