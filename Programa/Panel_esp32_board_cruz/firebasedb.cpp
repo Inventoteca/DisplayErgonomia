@@ -147,8 +147,6 @@ void streamCallback(FirebaseStream data)
     if (strcmp(data.dataType().c_str(), "null") != 0)
     {
       //Serial.println("All obj");
-      //DynamicJsonDocument doc(1024);
-
       // Llamar a deserializeJson() para decodificar la respuesta
       deserializeJson(doc, data.payload().c_str());
       if (obj["test"].as<bool>() == true)
@@ -166,6 +164,41 @@ void streamCallback(FirebaseStream data)
     }
 
   }
+  else  if ((strcmp(data.dataPath().c_str(), "/") == 0) && (strcmp(data.eventType().c_str(), "patch") == 0))
+  {
+    if (strcmp(data.dataType().c_str(), "null") != 0)
+    {
+      DynamicJsonDocument doc_patch(128);
+      deserializeJson(doc_patch, data.payload().c_str());
+
+      if (doc_patch.containsKey("defColor"))
+      {
+        obj["defColor"] = doc_patch["defColor"];
+        // Aquí puedes agregar más campos específicos de acuerdo a tus necesidades
+        //Serial.println("Fast Up Color");
+        saveConfigData();
+        loadConfig();
+      }
+    }
+  }
+  else  if ((strcmp(data.dataPath().c_str(), "/events") == 0) && (strcmp(data.eventType().c_str(), "patch") == 0))
+  {
+    if (strcmp(data.dataType().c_str(), "null") != 0)
+    {
+      DynamicJsonDocument doc_patch(128);
+      deserializeJson(doc_patch, data.payload().c_str());
+
+      Serial.println("Fast Up Events");
+      deserializeJson(doc_patch, Serial);
+
+      // Combinar los objetos JSON
+      obj["events"] = doc_patch;
+      saveConfigData();
+      loadConfig();
+
+    }
+  }
+
 }
 
 
@@ -230,7 +263,7 @@ void prepareData()
     json.set("time", now.unixtime());
     json.set("last_ac", last_ac.unixtime());
     json.set("days_ac", dias);
-    json.set("defColor",color);
+    json.set("defColor", color);
     json.set("gmtOff", obj["gmtOff"].as<long>());
     //json.set("gmtOff", obj["gmtOff"].as<long>());
     //json.set("dayOff", obj["dayOff"].as<int>());
