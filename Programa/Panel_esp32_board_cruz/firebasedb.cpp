@@ -151,8 +151,9 @@ void streamCallback(FirebaseStream data)
       deserializeJson(doc, data.payload().c_str());
       if (obj["test"].as<bool>() == true)
         serializeJson(obj, Serial);
-      saveConfigData();
-      loadConfig();
+      saveConfig = true;
+      //saveConfigData();
+      //loadConfig();
     }
     else
     {
@@ -176,8 +177,19 @@ void streamCallback(FirebaseStream data)
         obj["defColor"] = doc_patch["defColor"];
         // Aquí puedes agregar más campos específicos de acuerdo a tus necesidades
         //Serial.println("Fast Up Color");
-        saveConfigData();
-        loadConfig();
+        //saveConfigData();
+        //loadConfig();
+        saveConfig = true;
+      }
+
+      else if (doc_patch.containsKey("last_ac"))
+      {
+        obj["last_ac"] = doc_patch["last_ac"];
+        // Aquí puedes agregar más campos específicos de acuerdo a tus necesidades
+        //Serial.println("Fast Up Color");
+        //saveConfigData();
+        //loadConfig();
+        saveConfig = true;
       }
     }
   }
@@ -189,12 +201,19 @@ void streamCallback(FirebaseStream data)
       deserializeJson(doc_patch, data.payload().c_str());
 
       Serial.println("Fast Up Events");
-      deserializeJson(doc_patch, Serial);
+      Serial.println();
+      serializeJson(doc_patch, Serial);
+      Serial.println();
 
       // Combinar los objetos JSON
-      obj["events"] = doc_patch;
-      saveConfigData();
-      loadConfig();
+      for (const auto& kv : doc_patch.as<JsonObject>())
+      {
+        obj["events"][kv.key()] = kv.value();
+      }
+
+      serializeJson(obj["events"], Serial);
+      Serial.println();
+      saveConfig = true;
 
     }
   }
