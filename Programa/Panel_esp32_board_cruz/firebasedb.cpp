@@ -24,23 +24,30 @@ void fcsDownloadCallback(FCS_DownloadStatusInfo info)
   esp_task_wdt_reset();
   if (info.status == fb_esp_fcs_download_status_init)
   {
-    Serial.printf("Downloading firmware %s (%d)\n", info.remoteFileName.c_str(), info.fileSize);
+    Serial.printf("update %s (%d)\n", info.remoteFileName.c_str(), info.fileSize);
   }
   else if (info.status == fb_esp_fcs_download_status_download)
   {
-    Serial.printf("Downloaded %d%s, Elapsed time %d ms\n", (int)info.progress, "%", info.elapsedTime);
+    Serial.printf("Done %d%s, Time %d ms\n", (int)info.progress, "%", info.elapsedTime);
   }
   else if (info.status == fb_esp_fcs_download_status_complete)
   {
-    Serial.println("Update firmware completed.");
+    Serial.println("Completed.");
     Serial.println();
+
+    Serial.println("{\"save_last_config\":true}");
+    obj["updated"] = true;
+    obj["registered"] = false;
+    saveConfig = true;
+    saveConfigData();
+    //loadConfig();
     Serial.println("Restarting...\n\n");
     ESP.restart();
 
   }
   else if (info.status == fb_esp_fcs_download_status_error)
   {
-    Serial.printf("Download firmware failed, %s\n", info.errorMsg.c_str());
+    Serial.printf("Update fail, %s\n", info.errorMsg.c_str());
   }
 }
 
@@ -82,13 +89,16 @@ void SendData()
       // ------------------------------------- response for new firmware
       if (obj["updated"].as<bool>() == false)
       {
+        obj["updated"] = true;
+        obj["registered"] = false;
+        saveConfig = true;
         json.clear();
         json.set("updated", true);
         Serial.println("{\"update_firmware\":true}");
         if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
           Serial.printf("%s\n", fbdo.errorReason().c_str());
-        else
-          obj["updated"] = true;
+        //else
+
       }
 
       // ------------------------------------- response for new firmware
