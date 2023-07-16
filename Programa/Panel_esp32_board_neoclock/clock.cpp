@@ -10,6 +10,9 @@ int dias;
 int mes;
 int anio;
 int dia_hoy;
+int hora;
+int minuto;
+int segundo;
 
 const char* ntpServer = "pool.ntp.org";
 //long  gmtOffset_sec = obj["gmtOff"].as<long>();               // Central Mexico (-5 UTC, -18000): Pacifico (-7 UTC, -25200) :  Noroeste (-8 UTC, -28800)
@@ -141,26 +144,29 @@ void read_clock()
   {
     now = rtc.now();
     //dias = int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L));
-    dias = (now.unixtime() - last_ac.unixtime()) / 86400;
+    //dias = (now.unixtime() - last_ac.unixtime()) / 86400;
     mes = now.month();
     anio = now.year();
     dia_hoy = now.day(); 
-
+    hora = now.hour();
+    minuto = now.minute();
+    segundo = now.second();
+    
     Serial.print("{\"time\":\"");
-    Serial.print(now.year(), DEC);
+    Serial.print(dia_hoy);
     Serial.print('/');
-    Serial.print(now.month(), DEC);
+    Serial.print(mes);
     Serial.print('/');
-    Serial.print(now.day(), DEC);
+    Serial.print(anio);
     Serial.print(' ');
-    Serial.print(now.hour(), DEC);
+    Serial.print(hora);
     Serial.print(':');
-    Serial.print(now.minute(), DEC);
+    Serial.print(minuto);
     Serial.print(':');
-    Serial.print(now.second(), DEC);
+    Serial.print(segundo);
     Serial.println("\"}");
 
-    Serial.print("{\"since\":\"");
+    /*Serial.print("{\"since\":\"");
     Serial.print(last_ac.year(), DEC);
     Serial.print('/');
     Serial.print(last_ac.month(), DEC);
@@ -179,11 +185,12 @@ void read_clock()
     Serial.println("}");
     Serial.print("{\"t_unix\": ");
     Serial.print(now.unixtime());
-    Serial.println("}");
+    Serial.println("}");*/
 
     // Si el dia actual es diferente al anterior se reinicia
     // Si el mes o el el anio es diferente se reinicia events
-    if(obj["mes_prev"].as<int>() != mes)
+    // Revisar esto para envolverlo en type cruz
+    /*if(obj["mes_prev"].as<int>() != mes)
     {
       Serial.println("{\"new_month\":true}");
       Serial.print("{\"prev_mes\": "); Serial.print(obj["mes_prev"].as<int>());  Serial.println("}");
@@ -194,7 +201,7 @@ void read_clock()
       SendData();
       saveConfig = true;
       update_events = true;
-    }
+    }*/
   }
   else
   {

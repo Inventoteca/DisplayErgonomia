@@ -1,5 +1,5 @@
 /*
-  Panel Cruz
+  NeoClock
 */
 
 // -------------------------- library
@@ -63,6 +63,19 @@ void loop()
     }
     // ------------------------------------------- cruz
     else if (obj["type"].as<String>() == "cruz")
+    {
+      if (obj["enable_rtc"].as<bool>())
+      {
+        read_clock();
+        PrintOut();
+        SendData();
+        if (obj["enable_lora"].as<bool>())
+          send_lora();
+      }
+    }
+
+    // ------------------------------------------- neo
+    else if (obj["type"].as<String>() == "neo")
     {
       if (obj["enable_rtc"].as<bool>())
       {

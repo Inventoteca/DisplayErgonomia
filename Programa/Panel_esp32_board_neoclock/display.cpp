@@ -66,6 +66,39 @@ void displayInit()
         delay(1000);
     }
 
+    if (obj["type"].as<String>() == "neo")
+    {
+      display1.setPin(obj["neo_pin"].as<int>());
+      display1.updateDigitType(obj["digits"].as<int>(), obj["pixels"].as<int>());
+      display1.begin();
+      display1.clear();
+      Serial.print("{\"neo_pin\":"); Serial.print(obj["neo_pin"].as<int>()); Serial.println("}");
+      if (obj["test"].as<bool>())
+      {
+        for (int disp_num = 0; disp_num < obj["neodisplay"]["digits"].as<unsigned int>(); disp_num++)
+        {
+          display1.updateColor(Random); //Before for all display
+          display1.setCursor(disp_num);
+          display1.print(disp_num);      // It prints the value.
+          display1.show();              // Lights up the pixels.
+          delay(300);
+          //display1.setCursor(disp_num);
+          //display1.print(" ");
+          //display1.clear();
+        }
+
+        //display1.updateColor(Random); //Before for all display
+        display1.clear();
+        display1.print("04:20");
+        display1.updateColor(Random, 0, 3); //After for each digit
+        display1.show();
+        delay(1000);
+      }
+    }
+
+    //Serial.println("Display  done!.");
+    //
+
     // Testing display
     /*
       if (obj["type"].as<String>() == "ergo")
@@ -96,28 +129,6 @@ void displayInit()
 
       }
 
-      if (obj["type"].as<String>() == "neo")
-      {
-      for (int disp_num = 0; disp_num < obj["neodisplay"]["digits"].as<unsigned int>(); disp_num++)
-      {
-        display1.updateColor(Random); //Before for all display
-        display1.setCursor(disp_num);
-        display1.print(disp_num);      // It prints the value.
-        display1.show();              // Lights up the pixels.
-        delay(300);
-        //display1.setCursor(disp_num);
-        //display1.print(" ");
-        //display1.clear();
-      }
-
-      //display1.updateColor(Random); //Before for all display
-      display1.clear();
-      display1.print("12:00");
-      display1.updateColor(Random, 0, 3); //After for each digit
-      }
-
-      //Serial.println("Display  done!.");
-      //display1.show();
     */
     Serial.println("{\"neodigits\":true}");
     neo_digits_status = true;
@@ -230,11 +241,11 @@ void PrintOut()
         strip.clear();
         int days_index;
         int pix_start, pix_end;
-        
+
         color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0x00FF00);
         //color = 16777215;
 
-          
+
         for (days_index = 1; days_index <= dia_hoy; days_index++)
           //for (days_index = 1; days_index <= int(now.day()); days_index++)
           //for (days_index = 1; days_index <= 31; days_index++)
@@ -280,7 +291,7 @@ void PrintOut()
 
             else
             {
-              
+
               color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0xFF00FF00);
               strip.fill(0xFF00FF00, pix_start, pix_end);   // Sin accidente
             }
@@ -330,6 +341,21 @@ void PrintOut()
           display1.show();
         }
       }
+      else if (obj["type"].as<String>() == "neo")
+      {
+
+        display1.setCursor(0);
+        if (hora < 10)
+          display1.print(" ");
+
+        display1.print(hora, color);
+        display1.print(":",color);
+        
+        if (minuto < 10)
+          display1.print("0");
+        display1.print(minuto,color);
+        display1.show();
+      }
 
 
 
@@ -358,7 +384,8 @@ void PrintOut()
       // ------------------------------------- Status WiFiEvent
       else
       {
-        display1.updatePoint(obj["status_pix"].as<int>(), color_status[0], color_status[1], color_status[2]);
+        // Revisar esto en la cruz
+        //display1.updatePoint(obj["status_pix"].as<int>(), color_status[0], color_status[1], color_status[2]);
       }
     }
   }
