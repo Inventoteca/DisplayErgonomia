@@ -179,7 +179,7 @@ void streamCallback(FirebaseStream data)
   {
     if (strcmp(data.dataType().c_str(), "null") != 0)
     {
-      DynamicJsonDocument doc_patch(1024);
+      DynamicJsonDocument doc_patch(128);
       deserializeJson(doc_patch, data.payload().c_str());
 
       if (doc_patch.containsKey("defColor"))
@@ -207,13 +207,13 @@ void streamCallback(FirebaseStream data)
   {
     if (strcmp(data.dataType().c_str(), "null") != 0)
     {
-      DynamicJsonDocument doc_patch(1024);
+      DynamicJsonDocument doc_patch(128);
       deserializeJson(doc_patch, data.payload().c_str());
 
-      //Serial.println("Fast Up Events");
-      //Serial.println();
-      //serializeJson(doc_patch, Serial);
-      //Serial.println();
+      Serial.println("Fast Up Events");
+      Serial.println();
+      serializeJson(doc_patch, Serial);
+      Serial.println();
 
       // Combinar los objetos JSON
       for (const auto& kv : doc_patch.as<JsonObject>())
