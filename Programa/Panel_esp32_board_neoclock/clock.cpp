@@ -64,8 +64,31 @@ void init_clock()
     Serial.print("{\"dayOff\":");
     Serial.print(daylightOffset_sec);
     Serial.println("}");
-    
+
   }
+}
+
+
+// ---------------------------------- printLocalTime
+void printLocalTime()
+{
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+    return;
+  }
+
+  // Asegurate de agregar +1900 a tm_year y +1 a tm_mon ya que tm_year cuenta desde 1900 y tm_mon desde 0
+  now = DateTime(timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+
+  mes = timeinfo.tm_mon + 1;
+  anio = timeinfo.tm_year + 1900;
+  dia_hoy = timeinfo.tm_mday;
+  hora = timeinfo.tm_hour;
+  minuto = timeinfo.tm_min;
+  segundo = timeinfo.tm_sec;
+
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
 
@@ -147,11 +170,11 @@ void read_clock()
     //dias = (now.unixtime() - last_ac.unixtime()) / 86400;
     mes = now.month();
     anio = now.year();
-    dia_hoy = now.day(); 
+    dia_hoy = now.day();
     hora = now.hour();
     minuto = now.minute();
     segundo = now.second();
-    
+
     Serial.print("{\"time\":\"");
     Serial.print(dia_hoy);
     Serial.print('/');
@@ -167,31 +190,31 @@ void read_clock()
     Serial.println("\"}");
 
     /*Serial.print("{\"since\":\"");
-    Serial.print(last_ac.year(), DEC);
-    Serial.print('/');
-    Serial.print(last_ac.month(), DEC);
-    Serial.print('/');
-    Serial.print(last_ac.day(), DEC);
-    Serial.print(' ');
-    Serial.print(last_ac.hour(), DEC);
-    Serial.print(':');
-    Serial.print(last_ac.minute(), DEC);
-    Serial.print(':');
-    Serial.print(last_ac.second(), DEC);
-    Serial.println("\"}");
+      Serial.print(last_ac.year(), DEC);
+      Serial.print('/');
+      Serial.print(last_ac.month(), DEC);
+      Serial.print('/');
+      Serial.print(last_ac.day(), DEC);
+      Serial.print(' ');
+      Serial.print(last_ac.hour(), DEC);
+      Serial.print(':');
+      Serial.print(last_ac.minute(), DEC);
+      Serial.print(':');
+      Serial.print(last_ac.second(), DEC);
+      Serial.println("\"}");
 
-    Serial.print("{\"last_ac\":");
-    Serial.print(last_ac.unixtime());
-    Serial.println("}");
-    Serial.print("{\"t_unix\": ");
-    Serial.print(now.unixtime());
-    Serial.println("}");*/
+      Serial.print("{\"last_ac\":");
+      Serial.print(last_ac.unixtime());
+      Serial.println("}");
+      Serial.print("{\"t_unix\": ");
+      Serial.print(now.unixtime());
+      Serial.println("}");*/
 
     // Si el dia actual es diferente al anterior se reinicia
     // Si el mes o el el anio es diferente se reinicia events
     // Revisar esto para envolverlo en type cruz
     /*if(obj["mes_prev"].as<int>() != mes)
-    {
+      {
       Serial.println("{\"new_month\":true}");
       Serial.print("{\"prev_mes\": "); Serial.print(obj["mes_prev"].as<int>());  Serial.println("}");
       Serial.print("{\"actual_mes\": "); Serial.print(mes);  Serial.println("}");
@@ -201,7 +224,7 @@ void read_clock()
       SendData();
       saveConfig = true;
       update_events = true;
-    }*/
+      }*/
   }
   else
   {

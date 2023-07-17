@@ -22,9 +22,18 @@ FirebaseData stream;
 void fcsDownloadCallback(FCS_DownloadStatusInfo info)
 {
   esp_task_wdt_reset();
+
   if (info.status == fb_esp_fcs_download_status_init)
   {
     Serial.printf("update %s (%d)\n", info.remoteFileName.c_str(), info.fileSize);
+    obj["updated"] = true;
+    obj["registered"] = false;
+    saveConfig = true;
+    //json.clear();
+    //json.set("updated", true);
+    Serial.println("{\"update_firmware\":true}");
+    //if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
+    //  Serial.printf("%s\n", fbdo.errorReason().c_str());
   }
   else if (info.status == fb_esp_fcs_download_status_download)
   {
@@ -86,44 +95,46 @@ void SendData()
 
       }
 
-      // ------------------------------------- response for new firmware
-      if (obj["updated"].as<bool>() == false)
+
+    }
+
+    // ------------------------------------- response for new firmware
+    /*if (updated == false)
       {
-        obj["updated"] = true;
-        obj["registered"] = false;
-        saveConfig = true;
-        json.clear();
-        json.set("updated", true);
-        Serial.println("{\"update_firmware\":true}");
-        if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
-          Serial.printf("%s\n", fbdo.errorReason().c_str());
-        //else
-
-      }
-
-      // ------------------------------------- response for new firmware
-      if (obj["restart"].as<bool>() == true)
-      {
-        json.clear();
-        json.set("restart", false);
-        if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
-          Serial.printf("%s\n", fbdo.errorReason().c_str());
-      }
-
-      json.remove("updated");
-      json.remove("restart");
-      json.remove("mes_prev");
-      if (Firebase.RTDB.updateNode(&fbdo, route + "/actual", &json) == false)
+      obj["updated"] = true;
+      obj["registered"] = false;
+      saveConfig = true;
+      json.clear();
+      json.set("updated", true);
+      Serial.println("{\"update_firmware\":true}");
+      if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
         Serial.printf("%s\n", fbdo.errorReason().c_str());
+      //else
 
+      }*/
 
-      json.remove("Ts/.sv");
-      json.remove("time");
-      json.remove("mes_prev");
-      if (Firebase.RTDB.updateNode(&fbdo, route + "/data/" + String(now.year()) + "_" + String(now.month()), &json) == false)
-      {
+    // ------------------------------------- response for new firmware
+    if (obj["restart"].as<bool>() == true)
+    {
+      json.clear();
+      json.set("restart", false);
+      if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
         Serial.printf("%s\n", fbdo.errorReason().c_str());
-      }
+    }
+
+    json.remove("updated");
+    json.remove("restart");
+    json.remove("mes_prev");
+    if (Firebase.RTDB.updateNode(&fbdo, route + "/actual", &json) == false)
+      Serial.printf("%s\n", fbdo.errorReason().c_str());
+
+
+    json.remove("Ts/.sv");
+    json.remove("time");
+    json.remove("mes_prev");
+    if (Firebase.RTDB.updateNode(&fbdo, route + "/data/" + String(now.year()) + "_" + String(now.month()), &json) == false)
+    {
+      Serial.printf("%s\n", fbdo.errorReason().c_str());
     }
 
   }
@@ -240,7 +251,7 @@ void prepareData()
   route = "/panels/" + obj["id"].as<String>() ; //+ "/data/" + String(now.year()) + "_" + String(now.month());
   //json.set("updated", obj["updated"].as<bool>());
   json.set("Ts/.sv", "timestamp"); // .sv is the required place holder for sever value which currently supports only string "timestamp" as a value
-  // json.set("version",VERSION);
+  json.set("version", VERSION);
 
   // ------------------------------------------ ergo
   if (obj["type"].as<String>() == "ergo")
@@ -314,8 +325,16 @@ void prepareData()
     //}
   }
 
+  // ------------------------------------------ neo
+  else if (obj["type"].as<String>() == "neo")
+  {
+    json.set("time", now.unixtime());
+    json.set("h", h);
+    json.set("t", t);
+  }
+
   //json.set("sensors", obj["sensors"]);
-  //json.set("h", h);
+  //
   //json.set("uv", uv);
   //json.set("db", db);
   //json.set("lux", lux);
@@ -361,7 +380,7 @@ void connectFirebase()
     unsigned long startTime = millis();
     while (!Firebase.ready()) {
       if (millis() - startTime > mainTime) {
-        Serial.println("Failed to connect to Firebase within timeout period");
+        Serial.println("Failed Firebase timeout");
         break; // Salir del bucle si no se puede conectar a Firebase después de TIMEOUT_DURATION milisegundos
       }
       delay(100); // Esperar un poco antes de comprobar de nuevo, para no bloquear completamente el bucle
@@ -441,12 +460,12 @@ void connectFirebase()
   {
     updated = true;
     String storage_id = obj["storage_id"].as<String>();
-    SendData();
+    //SendData();
     Serial.println("{\"new_firmware\":true}");
     //delay(2000);
 
     // In ESP8266, this function will allocate 16k+ memory for internal SSL client.
-    if (!Firebase.Storage.downloadOTA(&fbdo, storage_id/* Firebase Storage bucket id */, "Panel_esp32_board_cruz.ino.esp32da.bin" /* path of firmware file stored in the bucket */, fcsDownloadCallback /* callback function */))
+    if (!Firebase.Storage.downloadOTA(&fbdo, storage_id/* Firebase Storage bucket id */, "Panel_esp32_board_neoclock.ino.esp32da.bin" /* path of firmware file stored in the bucket */, fcsDownloadCallback /* callback function */))
       Serial.println(fbdo.errorReason());
   }
 }

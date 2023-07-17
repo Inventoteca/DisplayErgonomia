@@ -30,7 +30,7 @@ File file;
     obj = getJSonFromFile(&doc, filedefault);
     Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_default_restore\":true}" : "{\"file_default_restore\":false}");
   }
-  
+
   if (obj["test"].as<bool>() == true)
   {
     // Comment for production
@@ -211,5 +211,6 @@ bool saveJSonArrayToAFile(JsonArray * dev_doc, String filename)
 void saveConfigData()
 {
   Serial.println(saveJSonToAFile(&obj, filename) ? "{\"config_update_spiffs\":true}" : "{\"conifg_update_spiffs\":false}");
-  serializeJson(obj, Serial);
+  if (obj["test"].as<bool>() == true)
+    serializeJson(obj, Serial);
 }

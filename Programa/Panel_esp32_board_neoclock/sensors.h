@@ -7,7 +7,7 @@
 #include <MQUnifiedsensor.h>
 #include "pines.h"
 
-#define DHTTYPE     DHT22   // DHT 22  (AM2302), AM2321
+#define DHTTYPE     DHT11   // DHT 22  (AM2302), AM2321
 
 extern bool sensors_init;
 extern DHT dht;
@@ -48,6 +48,8 @@ extern float b; //Y-Intercept
 extern float R0; //Sensor Resistance in fresh air f
 
 void sensorInit();
+void dht_init();
+void dht_read_sensor();
 void ReadSensors();
 float mapfloat(float x, float in_min, float in_max, float out_min, float out_max);
 

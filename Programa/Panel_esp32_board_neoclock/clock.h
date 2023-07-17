@@ -35,5 +35,6 @@ extern NTPClient timeClient;
 void update_clock();
 void read_clock();
 void init_clock();
+void printLocalTime();
 
 #endif

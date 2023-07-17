@@ -34,9 +34,7 @@ void sensorInit()
   if (sensors_init == false)
   {
     // --------------------------- temperature & humidity
-     Wire.begin(); 
-    dht.begin();
-    Serial.println("{\"dht\":true}");
+    dht_init();
 
     // --------------------------- ultraviolet radiation
     Serial.println("{\"uv\":true}");
@@ -144,11 +142,46 @@ void sensorInit()
 }
 
 
-// --------------------------------------------------------------------------------ReadSensors()
+// ------------------------------------------------------------------------------- dht_init
+void dht_init()
+{
+  Wire.begin();
+  dht.begin();
+  Serial.println("{\"dht\":true}");
+}
+
+// --------------------------------------------------------------------------------- dht_read
+void dht_read_sensor()
+{
+
+  // -------------------------- Temperature
+  t = dht.readTemperature();
+  //t = t + (obj["t_cal"].as<int>());
+
+  // -------------------------- Humidity
+  h = dht.readHumidity();
+
+  // Check if any reads failed.
+  if (isnan(h) || isnan(t) || (h > 100) || (t > 100) || (t <= 0))
+  {
+    h = last_h;
+    t = last_t;
+    Serial.println("{\"dht\":false}");
+
+  }
+  else  //temperature and humidity ok
+  {
+    last_t = t;
+    last_h = h;
+  }
+}
+
+
+// -------------------------------------------------------------------------------- ReadSensors()
 void ReadSensors()
 {
 
- //if (obj["sensors_enable"] == true) // Sensors available
+  //if (obj["sensors_enable"] == true) // Sensors available
   {
     if (sensors_init == false)          // Sensors not already init
     {
@@ -192,7 +225,7 @@ void ReadSensors()
     //      last_db = db;
     //    }
 
-//    if ((millis() - tempRefresh) >= obj["sensors_time"].as<unsigned int>() /*tempSample*/)
+    //    if ((millis() - tempRefresh) >= obj["sensors_time"].as<unsigned int>() /*tempSample*/)
     {
       //tempRefresh = millis();
 
@@ -204,27 +237,7 @@ void ReadSensors()
       if (db > 95)db = 95;
 
       // ------------------------------------- Temperature,Humidity , UV
-
-      // -------------------------- Temperature
-      t = dht.readTemperature();
-      //t = t + (obj["t_cal"].as<int>());
-
-      // -------------------------- Humidity
-      h = dht.readHumidity();
-
-      // Check if any reads failed.
-      if (isnan(h) || isnan(t) || (h > 100) || (t > 100) || (t <= 0))
-      {
-        h = last_h;
-        t = last_t;
-        Serial.println("{\"dht\":false}");
-
-      }
-      else  //temperature and humidity ok
-      {
-        last_t = t;
-        last_h = h;
-      }
+      dht_read_sensor();
 
 
       // ---------------------------- UV

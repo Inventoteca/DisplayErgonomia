@@ -2,7 +2,9 @@
   NeoClock
 */
 
+
 // -------------------------- library
+#include  "version.h"
 #include "filespiffs.h"
 #include "display.h"
 #include "pines.h"
@@ -13,11 +15,12 @@
 #include "wifiservice.h"
 #include  "loraservice.h"
 
-//#define VERSION "0.9.0"
+
 
 
 //################################################################----------------------- setup--------------------- #############################
 void setup() {
+  Serial.print("{\"NeoClock_ver\":"); Serial.print(VERSION); Serial.println("}");
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
   pinMode(FACTORY_BT, INPUT);
@@ -43,7 +46,7 @@ void setup() {
 //#################################--------------------------------------------- loop------------------------###################################
 void loop()
 {
-  if ((obj["enable_lora"].as<bool>())&& (success))
+  if ((obj["enable_lora"].as<bool>()) && (success))
   {
     //    //onReceive(LoRa.parsePacket());
     receive_lora();
@@ -80,12 +83,23 @@ void loop()
       if (obj["enable_rtc"].as<bool>())
       {
         read_clock();
-        PrintOut();
-        SendData();
-        if (obj["enable_lora"].as<bool>())
-          send_lora();
       }
+      else
+        printLocalTime();
+
+      if(obj["enable_dht"].as<bool>())
+      {
+        dht_read_sensor();
+        Serial.print("{\"t\":");Serial.print(t);Serial.print("}");
+        Serial.print("{\"h\":");Serial.print(h);Serial.print("}");
+      }
+
     }
+
+    if (obj["enable_lora"].as<bool>())
+      send_lora();
+      
+    PrintOut();
     mainRefresh = millis();
   }
 
@@ -95,6 +109,7 @@ void loop()
     if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time
     {
       checkServer();
+      SendData();
       s_timestamp = millis();
     }
   }

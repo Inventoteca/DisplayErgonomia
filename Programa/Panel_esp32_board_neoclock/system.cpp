@@ -41,7 +41,7 @@ void IRAM_ATTR factory_reset3()
     return;
 
   }
-  else if((digitalRead(FACTORY_BT) == !PRESS))
+  else if ((digitalRead(FACTORY_BT) == !PRESS))
   {
     prev_factory_time = millis();
     reset_time = true;
@@ -237,6 +237,16 @@ void loadConfig()
     Serial.println("\"}");
   }
 
+  //---------------- cruz
+  if (obj["type"].as<String>() == "neo")
+  {
+    if (obj["enable_dht"].as<bool>())
+    {
+      dht_init();
+      dht_read_sensor();
+    }
+  }
+
   //----------------- RTC
   if (obj["enable_rtc"].as<bool>())
   {
@@ -244,6 +254,15 @@ void loadConfig()
     ntpConnected = false;
     init_clock();
   }
+  else
+  {
+    gmtOffset_sec = obj["gmtOff"].as<long>();
+    daylightOffset_sec = obj["dayOff"].as<int>();
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    printLocalTime();
+  }
+
+
 
   // ------------- LoRa
   if (obj["enable_lora"].as<bool>())

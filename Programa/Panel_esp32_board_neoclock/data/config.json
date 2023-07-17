@@ -4,6 +4,7 @@
   "defColor": 4282835695,
   "digits": 4,
   "email": "info@inventoteca.com",
+  "enable_dht":true,
   "enable_lora": false,
   "enable_neo": true,
   "enable_oled": false,

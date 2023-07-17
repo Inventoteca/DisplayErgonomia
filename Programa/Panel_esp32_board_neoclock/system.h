@@ -12,6 +12,7 @@
 #include "wifiservice.h"
 //#include "clock.h"
 #include "loraservice.h"
+#include "sensors.h"
 
 //15 seconds WDT
 #define WDT_TIMEOUT 15
