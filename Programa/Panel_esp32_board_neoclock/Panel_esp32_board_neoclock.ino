@@ -70,10 +70,7 @@ void loop()
       if (obj["enable_rtc"].as<bool>())
       {
         read_clock();
-        PrintOut();
-        SendData();
-        if (obj["enable_lora"].as<bool>())
-          send_lora();
+
       }
     }
 
@@ -87,19 +84,19 @@ void loop()
       else
         printLocalTime();
 
-      if(obj["enable_dht"].as<bool>())
+      if (obj["enable_dht"].as<bool>())
       {
         dht_read_sensor();
-        Serial.print("{\"t\":");Serial.print(t);Serial.print("}");
-        Serial.print("{\"h\":");Serial.print(h);Serial.print("}");
+        Serial.print("{\"t\":"); Serial.print(t); Serial.print("}");
+        Serial.print("{\"h\":"); Serial.print(h); Serial.print("}");
       }
 
     }
 
+    PrintOut();
+    SendData();
     if (obj["enable_lora"].as<bool>())
       send_lora();
-      
-    PrintOut();
     mainRefresh = millis();
   }
 

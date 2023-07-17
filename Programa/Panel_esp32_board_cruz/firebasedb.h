@@ -5,6 +5,7 @@
 //#include <addons/TokenHelper.h>         // Provide the token generation process info.
 //#include <addons/RTDBHelper.h>          // Provide the RTDB payload printing info and other helper functions.
 #include "system.h"
+#include "version.h"
 //#include "sensors.h"
 
 // Define Firebase Data object

@@ -237,7 +237,7 @@ void loadConfig()
     Serial.println("\"}");
   }
 
-  //---------------- cruz
+  //---------------- neo
   if (obj["type"].as<String>() == "neo")
   {
     if (obj["enable_dht"].as<bool>())

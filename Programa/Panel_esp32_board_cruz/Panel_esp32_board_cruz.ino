@@ -3,6 +3,7 @@
 */
 
 // -------------------------- library
+#include  "version.h"
 #include "filespiffs.h"
 #include "display.h"
 #include "pines.h"
@@ -13,12 +14,11 @@
 #include "wifiservice.h"
 #include  "loraservice.h"
 
-//#define VERSION "0.9.0"
-
 
 //################################################################----------------------- setup--------------------- #############################
 void setup() {
   Serial.begin(115200);
+  Serial.print("{\"PanelCruz_ver\":"); Serial.print(VERSION); Serial.println("}");
   WiFi.mode(WIFI_STA);
   pinMode(FACTORY_BT, INPUT);
   attachInterrupt(FACTORY_BT, factory_reset3, CHANGE);
@@ -43,7 +43,7 @@ void setup() {
 //#################################--------------------------------------------- loop------------------------###################################
 void loop()
 {
-  if ((obj["enable_lora"].as<bool>())&& (success))
+  if ((obj["enable_lora"].as<bool>()) && (success))
   {
     //    //onReceive(LoRa.parsePacket());
     receive_lora();
@@ -67,12 +67,14 @@ void loop()
       if (obj["enable_rtc"].as<bool>())
       {
         read_clock();
-        PrintOut();
-        SendData();
-        if (obj["enable_lora"].as<bool>())
-          send_lora();
+
       }
     }
+    
+    PrintOut();
+    SendData();
+    if (obj["enable_lora"].as<bool>())
+      send_lora();
     mainRefresh = millis();
   }
 

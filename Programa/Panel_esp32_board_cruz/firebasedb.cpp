@@ -22,9 +22,16 @@ FirebaseData stream;
 void fcsDownloadCallback(FCS_DownloadStatusInfo info)
 {
   esp_task_wdt_reset();
+
   if (info.status == fb_esp_fcs_download_status_init)
   {
     Serial.printf("update %s (%d)\n", info.remoteFileName.c_str(), info.fileSize);
+    obj["updated"] = true;
+    obj["registered"] = false;
+    saveConfig = true;
+    //json.clear();
+    //json.set("updated", true);
+    Serial.println("{\"update_firmware\":true}");
   }
   else if (info.status == fb_esp_fcs_download_status_download)
   {
@@ -87,7 +94,7 @@ void SendData()
       }
 
       // ------------------------------------- response for new firmware
-      if (obj["updated"].as<bool>() == false)
+      /*if (obj["updated"].as<bool>() == false)
       {
         obj["updated"] = true;
         obj["registered"] = false;
@@ -99,7 +106,7 @@ void SendData()
           Serial.printf("%s\n", fbdo.errorReason().c_str());
         //else
 
-      }
+      }*/
 
       // ------------------------------------- response for new firmware
       if (obj["restart"].as<bool>() == true)
@@ -240,7 +247,7 @@ void prepareData()
   route = "/panels/" + obj["id"].as<String>() ; //+ "/data/" + String(now.year()) + "_" + String(now.month());
   //json.set("updated", obj["updated"].as<bool>());
   json.set("Ts/.sv", "timestamp"); // .sv is the required place holder for sever value which currently supports only string "timestamp" as a value
-  // json.set("version",VERSION);
+  json.set("version",VERSION);
 
   // ------------------------------------------ ergo
   if (obj["type"].as<String>() == "ergo")
@@ -441,7 +448,7 @@ void connectFirebase()
   {
     updated = true;
     String storage_id = obj["storage_id"].as<String>();
-    SendData();
+    //SendData();
     Serial.println("{\"new_firmware\":true}");
     //delay(2000);
 
