@@ -346,14 +346,17 @@ void PrintOut()
 
         display1.clear();
 
-        // Determina qué se va a mostrar basándose en el segundo actual
-        if (segundo % 20 < 10) {    // Primeros 10 segundos de cada 20 segundos
+        // Obtener el tiempo transcurrido en milisegundos
+        unsigned long tiempoActual = millis();
+
+        // Determina qué se va a mostrar basándose en el tiempo transcurrido
+        if (tiempoActual % 20000 < 10000) {    // Primeros 10 segundos de cada 20 segundos
           if (hora < 10) display1.print(" ");
           display1.print(hora, color);
-          if (segundo % 2 == 0) display1.print(":", color);    // Parpadeo de los dos puntos
+          if (tiempoActual % 2000 < 1000) display1.print(":", color);    // Parpadeo de los dos puntos
           if (minuto < 10) display1.print("0");
           display1.print(minuto, color);
-        } else if (segundo % 20 < 15) {    // Siguientes 5 segundos
+        } else if (tiempoActual % 20000 < 15000) {    // Siguientes 5 segundos
           display1.print(t);
           display1.print("º");
           display1.setCursor(3);
