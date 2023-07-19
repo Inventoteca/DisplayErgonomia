@@ -192,20 +192,19 @@ void streamCallback(FirebaseStream data)
       if (doc_patch.containsKey("defColor"))
       {
         obj["defColor"] = doc_patch["defColor"];
-        // Aquí puedes agregar más campos específicos de acuerdo a tus necesidades
-        //Serial.println("Fast Up Color");
-        //saveConfigData();
-        //loadConfig();
         saveConfig = true;
       }
 
       else if (doc_patch.containsKey("last_ac"))
       {
         obj["last_ac"] = doc_patch["last_ac"];
-        // Aquí puedes agregar más campos específicos de acuerdo a tus necesidades
-        //Serial.println("Fast Up Color");
-        //saveConfigData();
-        //loadConfig();
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("registered"))
+      {
+        obj["registered"] = doc_patch["registered"];
+        if (obj["registered"] == false)
+          obj["restart"] = true;
         saveConfig = true;
       }
     }
@@ -373,22 +372,10 @@ void connectFirebase()
       }
       delay(100); // Esperar un poco antes de comprobar de nuevo, para no bloquear completamente el bucle
     }
-    // Timeout, prevent to program halt
-    config.timeout.wifiReconnect = 5 * 1000; // 10 Seconds to 2 min (10 * 1000)
-    config.timeout.socketConnection = 30 * 1000; // 1 sec to 1 min (30 * 1000)
-    config.timeout.sslHandshake = 2 * 60 * 1000; // 1 sec to 2 min (2 * 60 * 1000)
-    config.timeout.rtdbKeepAlive = 20 * 1000;    // 20 sec to 2 min (45 * 1000)
-    config.timeout.rtdbStreamReconnect = 1 * 1000;  //1 sec to 1 min (1 * 1000)
-    config.timeout.rtdbStreamError = 3 * 1000;    // 3 sec to 30 sec (3 * 1000)
-    config.timeout.serverResponse = 1 * 1000;    //Server response read timeout in ms 1 sec - 1 min ( 10 * 1000).
 
-  }
-
-  else
-  {
     route = "/panels/" + obj["id"].as<String>();
 
-    // El el dispositivo no esta registrado
+    // El el dispositivo no esta registrado, o se actualizó
     if (obj["registered"].as<bool>() == false)
     {
       obj["registered"] = true;
@@ -402,60 +389,74 @@ void connectFirebase()
         Serial.println("{\"registered_rtdb\":true}");
       }
     }
-
-    
-    if ((!fire_stream) /*|| (!fire_events)*/)
-    {
-      if (!Firebase.RTDB.beginStream(&stream, route + "/config"))
-        Serial.printf("config sream begin error, %s\n\n", stream.errorReason().c_str());
-      else
-      {
-        Firebase.RTDB.setStreamCallback(&stream, streamCallback, streamTimeoutCallback);
-        fire_stream = true;
-      }
-
-    }
-
-
-    // Firebase.ready() should be called repeatedly to handle authentication tasks.
-
-    if (!updated)
-    {
-      updated = true;
-      String storage_id = obj["storage_id"].as<String>();
-      //SendData();
-      Serial.println("{\"new_firmware\":true}");
-      //delay(2000);
-
-      // In ESP8266, this function will allocate 16k+ memory for internal SSL client.
-      if (!Firebase.Storage.downloadOTA(&fbdo, storage_id/* Firebase Storage bucket id */, "Panel_esp32_board_cruz.ino.esp32da.bin" /* path of firmware file stored in the bucket */, fcsDownloadCallback /* callback function */))
-        Serial.println(fbdo.errorReason());
-    }
-
-    // El nodo no existe, actualizamos.
-    if (!Firebase.RTDB.get(&fbdo, route + "/config"))
-    {
-      Serial.println("{\"config_file\":false}");
-      copyJsonObject(json, obj);
-
-      if (!Firebase.RTDB.updateNode(&fbdo, route + "/config", &json))
-      {
-        Serial.printf("%s\n", fbdo.errorReason().c_str());
-      }
-      else
-      {
-        Serial.println("{\"upload_config\":true}");
-      }
-    }
-
     else
     {
-      Serial.println("{\"get_config_file\":true}");
+      //Si no existe el nodo.
+      if (!Firebase.RTDB.get(&fbdo, route + "/config"))
+      {
+        Serial.println("{\"config_file\":false}");
+        copyJsonObject(json, obj);
+
+        //subimos desde spifss.
+        if (!Firebase.RTDB.updateNode(&fbdo, route + "/config", &json))
+        {
+          Serial.printf("%s\n", fbdo.errorReason().c_str());
+        }
+        else
+        {
+          Serial.println("{\"upload_config\":true}");
+        }
+      }
+      // El nodo existe, bajamos la info
+      else
+      {
+        Serial.println("{\"dowload_config\":true}");
+      }
     }
+
+
+
+    // Timeout, prevent to program halt
+    config.timeout.wifiReconnect = 5 * 1000; // 10 Seconds to 2 min (10 * 1000)
+    config.timeout.socketConnection = 30 * 1000; // 1 sec to 1 min (30 * 1000)
+    config.timeout.sslHandshake = 2 * 60 * 1000; // 1 sec to 2 min (2 * 60 * 1000)
+    config.timeout.rtdbKeepAlive = 20 * 1000;    // 20 sec to 2 min (45 * 1000)
+    config.timeout.rtdbStreamReconnect = 1 * 1000;  //1 sec to 1 min (1 * 1000)
+    config.timeout.rtdbStreamError = 3 * 1000;    // 3 sec to 30 sec (3 * 1000)
+    config.timeout.serverResponse = 1 * 1000;    //Server response read timeout in ms 1 sec - 1 min ( 10 * 1000).
+
   }
 
-}
 
+
+  if ((!fire_stream) /*|| (!fire_events)*/)
+  {
+    if (!Firebase.RTDB.beginStream(&stream, route + "/config"))
+      Serial.printf("config sream begin error, %s\n\n", stream.errorReason().c_str());
+    else
+    {
+      Firebase.RTDB.setStreamCallback(&stream, streamCallback, streamTimeoutCallback);
+      fire_stream = true;
+    }
+
+  }
+
+
+  // Firebase.ready() should be called repeatedly to handle authentication tasks.
+
+  if (!updated)
+  {
+    updated = true;
+    String storage_id = obj["storage_id"].as<String>();
+    //SendData();
+    Serial.println("{\"new_firmware\":true}");
+    //delay(2000);
+
+    // In ESP8266, this function will allocate 16k+ memory for internal SSL client.
+    if (!Firebase.Storage.downloadOTA(&fbdo, storage_id/* Firebase Storage bucket id */, "Panel_esp32_board_cruz.ino.esp32da.bin" /* path of firmware file stored in the bucket */, fcsDownloadCallback /* callback function */))
+      Serial.println(fbdo.errorReason());
+  }
+}
 
 // ---------------------------------------------------------------------------------------------------- streamTimeoutCallback
 void streamTimeoutCallback(bool timeout)

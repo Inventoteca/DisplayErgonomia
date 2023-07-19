@@ -67,7 +67,6 @@ void loop()
       if (obj["enable_rtc"].as<bool>())
       {
         read_clock();
-
       }
     }
     

@@ -91,7 +91,7 @@ void check_reset()
     SendData();
     obj["restart"] = false;
     Serial.println(saveJSonToAFile(&obj, filename) ? "{\"reboot_save\":true}" : "{\"reboot_save\":false}");
-    delay(2000);
+    //delay(2000);
     ESP.restart();
   }
 
