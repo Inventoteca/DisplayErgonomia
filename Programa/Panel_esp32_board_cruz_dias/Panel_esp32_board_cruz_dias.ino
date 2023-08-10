@@ -46,7 +46,7 @@ void loop()
   if ((obj["enable_lora"].as<bool>()) && (success))
   {
     //    //onReceive(LoRa.parsePacket());
-    receive_lora();
+      receive_lora();
   }
 
   if (millis() - mainRefresh > mainTime)
