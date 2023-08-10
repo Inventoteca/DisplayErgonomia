@@ -67,13 +67,14 @@ void loop()
       if (obj["enable_rtc"].as<bool>())
       {
         read_clock();
+        PrintOut();
+        SendData();
+        if (obj["enable_lora"].as<bool>())
+          send_lora();
       }
     }
-    
-    PrintOut();
-    SendData();
-    if (obj["enable_lora"].as<bool>())
-      send_lora();
+
+
     mainRefresh = millis();
   }
 

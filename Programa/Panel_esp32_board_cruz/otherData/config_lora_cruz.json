@@ -31,6 +31,7 @@
   "pixels": 3,
   "pixels_days": 3,
   "pixels_year": 2,
+  "reboot_time": 24,
   "registered": false,
   "registered_wifi": true,
   "ssid": "Inventoteca_2G",

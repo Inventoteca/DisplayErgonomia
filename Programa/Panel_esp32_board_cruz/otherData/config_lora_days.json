@@ -1,6 +1,7 @@
 {
   "count_wifi": 0,
   "dayOff": 0,
+  "defColor": 65280,
   "digits": 4,
   "digits_days": 4,
   "digits_year": 4,
@@ -13,7 +14,7 @@
   "events": {"32": 0},
   "firepass": "Homerosim",
   "gatewayid": 0,
-  "gmtOff": -18000,
+  "gmtOff": -21600,
   "id": "40:91:51:93:45:FC",
   "key": "AIzaSyAOfGOjdpVQZtnhwTjmNRy8mApY993zHfc",
   "last_ac": 1688000000,
