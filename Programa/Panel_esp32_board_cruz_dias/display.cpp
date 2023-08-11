@@ -32,24 +32,50 @@ void displayInit()
     }
     else if (obj["type"].as<String>() == "cruz")
     {
-      Serial.print("{\"neo_pin\":"); Serial.print(obj["neo_pin"].as<int>()); Serial.println("}");
-      strip.setPin(obj["neo_pin"].as<int>());
-      strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-      strip.clear();
-      if (obj["test"].as<bool>())
-        strip.fill(0xFFFFFF);
-      strip.show();            // Turn OFF all pixels ASAP
-      strip.setBrightness(255);
-
       Serial.print("{\"neo_pin_days\":"); Serial.print(obj["neo_pin_days"].as<int>()); Serial.println("}");
       display1.setPin(obj["neo_pin_days"].as<int>());
       display1.updateDigitType(obj["digits_days"].as<int>(), obj["pixels_day"].as<int>());
       display1.begin();
       display1.clear();
       if (obj["test"].as<bool>())
+      {
         display1.print(8888, 0xFFFFFF);
+        display1.show();
+        delay(1000);
+        display1.clear();
+        display1.show();
+      }
 
-      display1.show();
+      Serial.print("{\"neo_pin\":"); Serial.print(obj["neo_pin"].as<int>()); Serial.println("}");
+      strip.setPin(obj["neo_pin"].as<int>());
+      strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+      strip.clear();
+      strip.setBrightness(255);
+      if (obj["test"].as<bool>())
+      {
+        strip.fill(0xFFFFA500); // Orange
+        strip.show();
+        delay(1000);
+
+        strip.fill(0xFF0000FF); // Blue
+        strip.show();
+        delay(1000);
+
+        strip.fill(0xFFFFFF00); // Yellow
+        strip.show();
+        delay(1000);
+
+        strip.fill(0xFFFF0000); // Red
+        strip.show();
+        delay(1000);
+
+        strip.fill(0xFF00FF00); // Green
+        strip.show();
+        delay(1000);
+        strip.clear();
+        strip.show();
+
+      }
 
 
       Serial.print("{\"neo_pin_year\":"); Serial.print(obj["neo_pin_year"].as<int>()); Serial.println("}");
@@ -58,12 +84,18 @@ void displayInit()
       display1.begin();
       display1.clear();
       if (obj["test"].as<bool>())
+      {
         display1.print(8888, 0xFFFFFF);
-      display1.show();
+        display1.show();
+        delay(1000);
+        display1.clear();
+        display1.show();
+      }
+
 
       Serial.println("{\"strip_croix\":true}");
-      if (obj["test"].as<bool>())
-        delay(1000);
+      //if (obj["test"].as<bool>())
+
     }
 
     // Testing display
@@ -230,11 +262,11 @@ void PrintOut()
         strip.clear();
         int days_index;
         int pix_start, pix_end;
-        
+
         color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0x00FF00);
         //color = 16777215;
 
-          
+
         for (days_index = 1; days_index <= dia_hoy; days_index++)
           //for (days_index = 1; days_index <= int(now.day()); days_index++)
           //for (days_index = 1; days_index <= 31; days_index++)
@@ -280,16 +312,16 @@ void PrintOut()
 
             else
             {
-              
+
               color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0xFF00FF00);
-              strip.fill(0xFF00FF00, pix_start, pix_end);   // Sin accidente
+              strip.fill(0xFF00FF00, pix_start, pix_end);   // Sin accidente Green
             }
 
           }
           else
           {
             color = ((obj["defColor"].as<uint32_t>() > 0) ? obj["defColor"].as<uint32_t>() : 0xFF00FF00);
-            strip.fill(0xFF00FF00, pix_start, pix_end);   // Sin accidente
+            strip.fill(0xFF00FF00, pix_start, pix_end);   // Sin accidente Green
           }
           //strip.clear();
           //esp_task_wdt_reset();

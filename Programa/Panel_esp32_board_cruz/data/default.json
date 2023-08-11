@@ -1,7 +1,7 @@
 {
   "count_wifi": 0,
   "dayOff": 0,
-  "defColor": 65280,
+  "defColor": 4278212988,
   "digits": 4,
   "digits_days": 4,
   "digits_year": 4,
@@ -33,10 +33,11 @@
   "pixels_year": 2,
   "registered": false,
   "registered_wifi": true,
+  "reboot_time": 1,
   "ssid": "",
   "status_pix": 4,
   "storage_id": "smart-industry-panels.appspot.com",
-  "test": true,
+  "test": false,
   "type": "cruz",
   "updated": true,
   "url": "smart-industry-panels-default-rtdb.firebaseio.com"
