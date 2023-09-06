@@ -12,8 +12,6 @@
 
 NeoDigito display1 = NeoDigito(DIGITS, PIXPERSEG, PIN);
 
-//const char* ssid = "Inventoteca_2G";
-//const char* password = "science_7425";
 
 String city = "Tonantzintla+Puebla";
 
@@ -41,6 +39,8 @@ String dayAndDate;
 
 WiFiManager wifiManager;
 
+
+// -------------------------------- Dias y meses
 // Función para convertir el número del día de la semana al nombre en español
 String dayInSpanish(int dayOfWeek) {
   const char* days[] = {"Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"};
@@ -51,22 +51,6 @@ String monthInSpanish(int month) {
   const char* months[] = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
   return months[month];
 }
-
-// For old version of ESP8266 Board Version less < 3.1.2
-/*bool getLocalTime(struct tm * info, uint32_t ms = 5000)
-{
-  uint32_t start = millis();
-  time_t now;
-  while ((millis() - start) <= ms) {
-    time(&now);
-    localtime_r(&now, info);
-    if (info->tm_year > (2016 - 1900)) {
-      return true;
-    }
-    delay(10);
-  }
-  return false;
-}*/
 
 // ------------------------------- printLocalTime
 void printLocalTime()
@@ -120,6 +104,8 @@ void printLocalTime()
 
 }
 
+
+// ------------------------------------ setup
 void setup()
 {
   Serial.begin(115200);
@@ -149,15 +135,46 @@ void setup()
 
   // Configura el punto de acceso con el SSID generado
   const char* apPassword = "12345678"; // Debe tener al menos 8 caracteres
-  // Intenta conectarse a una red previamente configurada
-  if (!wifiManager.autoConnect(apSSID.c_str())) {
-    Serial.println("Falló la conexión a Wi-Fi y se alcanzó el tiempo de espera");
 
-    // Abre el portal de configuración si no pudo conectarse
-    wifiManager.startConfigPortal(apSSID.c_str(), apPassword);
+
+  // Si no puedes conectarte a la red WiFi previamente configurada, entra en modo de configuración
+  if (WiFi.status() != WL_CONNECTED) {
+    // Configurar el portal cautivo con WiFiManager
+    wifiManager.autoConnect(apSSID.c_str());
   }
 
-  Serial.println("Conectado");
+  // Si aún no estás conectado, puedes utilizar SmartConfig
+  if (WiFi.status() != WL_CONNECTED) {
+    WiFi.beginSmartConfig();
+
+    // Espera a que termine SmartConfig
+    while (!WiFi.smartConfigDone()) {
+      delay(500);
+      Serial.print(".");
+    }
+    Serial.println("");
+    Serial.println("SmartConfig recibido.");
+
+    // Espera a que se conecte a WiFi
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+    }
+    Serial.println("");
+    Serial.print("Conectado a ");
+    Serial.println(WiFi.SSID());
+  }
+
+
+  // Intenta conectarse a una red previamente configurada
+  //if (!wifiManager.autoConnect(apSSID.c_str())) {
+  //  Serial.println("Falló la conexión a Wi-Fi y se alcanzó el tiempo de espera");
+
+  // Abre el portal de configuración si no pudo conectarse
+  //  wifiManager.startConfigPortal(apSSID.c_str(), apPassword);
+  // }
+
+  //Serial.println("Conectado");
   display1.updateColor(Green);    // Color specified by name RED, WHITE, YELLOW, etc or 32bit, or 8bit numbers (R, G, B)
   //display1.show();
   delay(500);
@@ -242,7 +259,7 @@ void loop() {
       else if (startChar - condition.length() < dayAndDate.length()) {
         int dateChar = startChar - condition.length();
         String dateSnippet = dayAndDate.substring(dateChar, dateChar + 4);
-        display1.print(dateSnippet,White);
+        display1.print(dateSnippet, White);
         //neodisplay.updateColor(Rainbow);
       }
       else {
