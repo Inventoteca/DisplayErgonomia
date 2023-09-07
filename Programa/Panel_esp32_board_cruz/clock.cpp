@@ -245,7 +245,7 @@ void read_clock()
         Serial.print("{\"prev_mes\": "); Serial.print(obj["mes_prev"].as<int>());  Serial.println("}");
         Serial.print("{\"actual_mes\": "); Serial.print(mes);  Serial.println("}");
         obj.remove("events");
-        obj["events"]["32"] = 0;
+        obj["events"]["m32"] = 0;
         obj["mes_prev"] = mes;
         SendData();
         saveConfig = true;
