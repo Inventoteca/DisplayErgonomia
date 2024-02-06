@@ -102,6 +102,8 @@ JsonArray dev;
 StaticJsonDocument<512> dev_doc;
 StaticJsonDocument<1736> doc;
 //StaticJsonDocument<1024> sen_doc;
+DynamicJsonDocument msg(1024);
+String message;
 
 File file;
 
@@ -198,7 +200,7 @@ byte localAddress;     // address of this device
 byte destination = 6;      // destination to send to
 long lastSendTime = 0;        // last send time
 int interval = 2000;          // interval between sends
-String message;
+//String message;
 //char c_msg[30];
 
 // ----------------- MQTT vars
@@ -470,19 +472,10 @@ static void lora_send(struct jsonrpc_request *r)
 // -------------------------------------------------------------------------------------- SendData
 void SendData()
 {
-  DynamicJsonDocument msg(1024);
-  String message;
+
   //message = "HeLoRa World!";   // send a message
   //msg["method"] =
-  msg["sensors"]["t"] = t;
-  msg["sensors"]["h"] = h;
-  msg["sensors"]["uv"] = uv;
-  msg["sensors"]["db"] = db;
-  msg["sensors"]["lux"] = lux;
-  msg["sensors"]["ppm"] = ppm;
-  last_db = 0;
-  serializeJson(msg, message);
-  Serial.println(message);
+
   if (obj["lora"]["enable"].as<bool>())
   {
     sendMessage(message);
@@ -893,6 +886,16 @@ void PrintOut()
 
     // Prepare for LoRa
     //SendData();
+    msg["sensors"]["t"] = t;
+    msg["sensors"]["h"] = h;
+    msg["sensors"]["uv"] = uv;
+    msg["sensors"]["db"] = db;
+    msg["sensors"]["lux"] = lux;
+    msg["sensors"]["ppm"] = ppm;
+    last_db = 0;
+    message = "";
+    serializeJson(msg, message);
+    Serial.println(message);
     printRefresh = millis();
 
   }
@@ -1033,7 +1036,6 @@ void ReadSensors()
       //double percentage = ppm / 10000; //Convert to percentage
 
       PrintOut();
-      SendData();
 
 
     }
@@ -2368,10 +2370,10 @@ void ReadSerial()
 //################################################################----------------------- setup--------------------- #############################
 void setup()
 {
-  //Heltec.begin(true /*DisplayEnable */, true /*LoRa*/, true /*Serial Enable*/);
+  Heltec.begin(true /*DisplayEnable */, true /*LoRa*/, true /*Serial Enable*/);
 
-  Serial.begin(115200);
-  Wire.begin(); //
+  //Serial.begin(115200);
+  //Wire.begin(); //
 
   //WiFi.mode(WIFI_AP_STA);
   //printLocalTime();
