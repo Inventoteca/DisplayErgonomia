@@ -924,7 +924,7 @@ void ReadSensors()
     //----------------------------- Sound
     if (!Serial1.available())
     {
-      //Serial.println("Send");
+      Serial.println("MicSend");
       i = 0;
       db = 0;
       Serial1.write(0x01);
@@ -935,7 +935,12 @@ void ReadSensors()
       Serial1.write(0x01);
       Serial1.write(0x84);
       Serial1.write(0x0A);
-      while (!Serial1.available());
+      unsigned int mic_wait = 0;
+      //while ((!Serial1.available()) && (mic_wait >= 1000))
+      //{
+        //mic_wait++;
+        //delayMicroseconds(1);
+      //}
       while (Serial1.available())
       {
         buf[i] = Serial1.read();
@@ -951,11 +956,12 @@ void ReadSensors()
           //Serial.println(db);
         }
       }
-      if (last_db > db)
-      {
-        db = last_db;
-      }
-      last_db = db;
+
+      //if (last_db > db)
+      //{
+      //db = last_db;
+      //}
+      //last_db = db;
     }
 
     if ((millis() - tempRefresh) >= obj["sensors"]["time"].as<unsigned int>() /*tempSample*/)
@@ -1235,7 +1241,7 @@ void sensorInit()
     while (Serial1.available())
     {
       ch_db[i] = Serial1.read();
-      //Serial.println(ch[i], HEX);
+      //Serial.println(ch_db[i], HEX);
       i++;
       if (i >= 7)
       {
@@ -2383,19 +2389,6 @@ void setup()
   //Heltec.begin(true, false, true);
   //
   //Serial.begin(115200);
-  jsonrpc_init(NULL, NULL);
-  jsonrpc_export("Config.Get", Cfg_get);
-  jsonrpc_export("Config.Set", Cfg_set);
-  jsonrpc_export("WiFi.Set", Wifi_set);
-  //jsonrpc_export("Server.Set", server_set);
-  jsonrpc_export("Sensors.Set", sensors_set);
-  jsonrpc_export("Sensors.Get", sensors_get);
-  jsonrpc_export("Display.Set", display_set);
-  jsonrpc_export("Accesory.Set", accesory_set);
-  jsonrpc_export("Accesory.Del", accesory_del);
-  //jsonrpc_export("LoRa.Send", lora_send);
-  //jsonrpc_export("count", counter);
-  //jsonrpc_export("Update", update_ota);
   //pinMode(NEO_PIN, OUTPUT);
   pinMode(FACTORY_BT, INPUT);
 
@@ -2408,41 +2401,13 @@ void setup()
 
   Serial.println("{\"spiffs\":true}");
   Cfg_get(NULL);
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_STA);
+  //WiFi.disconnect(true);
+  //WiFi.mode(WIFI_STA);
 
   loadConfig();
-  //if ()
-  //{
-  //   Heltec.begin(true     /*DisplayEnable*/, obj["lora"]["enable"].as<bool>() /*LoRa */, true /*Serial */, true /*PABOOST */, BAND /* BAND*/);
-  //}
 
-  /*
-    // Assign the api key (required)
-    config.api_key = obj["firebase"]["api_key"].as<String>();
-    // Assign the user sign in credentials
-    auth.user.email = obj["firebase"]["email"].as<String>();
-    auth.user.password = obj["firebase"]["pass"].as<String>();
-    // Assign the callback function for the long running token generation task
-    config.token_status_callback = tokenStatusCallback; // see addons/TokenHelper.h
-
-    // Assign download buffer size in byte
-    // Data to be downloaded will read as multiple chunks with this size, to compromise between speed and memory used for buffering.
-    // The memory from external SRAM/PSRAM will not use in the TCP client internal rx buffer.
-    config.fcs.download_buffer_size = 2048;
-
-    Firebase.begin(&config, &auth);
-
-    Firebase.reconnectWiFi(true);
-  */
-
-  //reportState(NULL);
-
-  //WiFi.disconnect(true);
-
-
-  WiFi.onEvent(WiFiEvent);
-  WiFi.onEvent(Wifi_disconnected, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+  //WiFi.onEvent(WiFiEvent);
+  //WiFi.onEvent(Wifi_disconnected, ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
 
 }
