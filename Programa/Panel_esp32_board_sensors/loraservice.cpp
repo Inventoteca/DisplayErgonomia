@@ -11,6 +11,8 @@ char payload[1024] = "";
 byte sendSize = 0;
 bool success = false;
 
+DynamicJsonDocument msg(1024);
+
 #ifdef ENABLE_ATC
 RFM69_ATC radio;
 #else
@@ -153,12 +155,12 @@ void send_lora()
 void prepare_payload()
 {
   //memset(payload, 0, sizeof(payload));
-  DynamicJsonDocument msg(1024);
+  //DynamicJsonDocument msg(1024);
   //String message;
 
   // ------------------------------------------ ergo
-  if (obj["type"].as<String>() == "ergo")
-  {
+  /*if (obj["type"].as<String>() == "ergo")
+    {
     msg["sensors"]["t"] = t;
     msg["sensors"]["h"] = h;
     msg["sensors"]["uv"] = int(uv * 10); // avoid float
@@ -166,10 +168,10 @@ void prepare_payload()
     msg["sensors"]["lux"] = lux;
     msg["sensors"]["ppm"] = ppm;
     serializeJson(msg, payload);
-  }
-  // ------------------------------------------ cruz
-  else if (obj["type"].as<String>() == "cruz")
-  {
+    }
+    // ------------------------------------------ cruz
+    else if (obj["type"].as<String>() == "cruz")
+    {
     //sprintf(payload, "{\"dias\": %d}", dias);
     //dias = int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L));
     //mes = now.month();
@@ -185,9 +187,10 @@ void prepare_payload()
     msg["color"] = color;
     serializeJson(msg, payload);
 
-  }
+    }
 
-
-  //serializeJson(msg, message);
+  */
+  serializeJson(msg, payload);
   Serial.println(payload);
+
 }

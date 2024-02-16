@@ -13,7 +13,6 @@ int last_db;
 int t;
 int h;
 int db;
-//double ppm;
 unsigned int ppm;
 float uv;
 unsigned long lux;
@@ -67,7 +66,7 @@ void sensorInit()
     while ((Serial1.available()) && (datas <= 7))
     {
       ch_db[datas] = Serial1.read();
-      Serial.println(ch_db[datas], HEX);
+      //Serial.println(ch_db[datas], HEX);
       datas++;
 
     }
@@ -160,7 +159,7 @@ void sensorInit()
 void ReadSensors()
 {
 
-  //if (obj["enable_sensors"] == true) // Sensors available
+  if (obj["enable_sensors"] == true) // Sensors available
   {
     if (sensors_init == false)          // Sensors not already init
     {
@@ -181,9 +180,11 @@ void ReadSensors()
       Serial1.write(0x01);
       Serial1.write(0x84);
       Serial1.write(0x0A);
-      //delay(50);
+      delay(10);
       unsigned int mic_wait;
       datas = 0;
+      ch_db[3] = 0;
+      ch_db[4] = 0;
       while ((!Serial1.available()) && (mic_wait >= 1500))
       {
         mic_wait++;
@@ -192,7 +193,7 @@ void ReadSensors()
       while (Serial1.available() && (datas <= 7))
       {
         ch_db[datas] = Serial1.read();
-        Serial.println(ch_db[datas], HEX);
+        //Serial.println(ch_db[datas], HEX);
         datas++;
 
         //if (datas >= 7)
@@ -203,29 +204,25 @@ void ReadSensors()
         //}
       }
 
-      Serial.print(ch_db[3], HEX);
-      Serial.println(ch_db[4], HEX);
+      //Serial.print(ch_db[3], HEX);
+      //Serial.println(ch_db[4], HEX);
       db = ((ch_db[3] * 256) + ch_db[4]) / 10;
-      Serial.println(db, DEC);
+      //Serial.println(db, DEC);
 
-      //if (last_db > db)
-      //{
-      //db = last_db;
-      //}
-      //last_db = db;
+      if (last_db > db)
+      {
+        db = last_db;
+      }
+      last_db = db;
+
+
+      //if (db > 95)db = 95;
     }
 
-    //    if ((millis() - tempRefresh) >= obj["sensors_time"].as<unsigned int>() /*tempSample*/)
+    if (millis() - mainRefresh > mainTime)
     {
-      //tempRefresh = millis();
+      // mainRefresh = millis();
 
-
-      // Demo Sound sensor
-      //db = analogRead(VR_PIN);
-      //db = map(db, 1300, 1390, 60, 40);
-      //db = abs(db);
-
-      if (db > 95)db = 95;
 
       // ------------------------------------- Temperature,Humidity , UV
 
@@ -306,22 +303,26 @@ void ReadSensors()
       if (ppm > 9999) ppm = 9999;
       //double percentage = ppm / 10000; //Convert to percentage
 
-    }
-    DynamicJsonDocument msg(1024);
-    //String message;
+      //String message;
 
-    // ------------------------------------------ ergo
-    //if (obj["type"].as<String>() == "ergo")
-    //{
-    msg["sensors"]["t"] = t;
-    msg["sensors"]["h"] = h;
-    msg["sensors"]["uv"] = int(uv * 10); // avoid float
-    msg["sensors"]["db"] = db;
-    msg["sensors"]["lux"] = lux;
-    msg["sensors"]["ppm"] = ppm;
-    serializeJson(msg, Serial);
-    Serial.println();
-    //}
+      // ------------------------------------------ ergo
+      //if (obj["type"].as<String>() == "ergo")
+      //{
+      msg["sensors"]["t"] = t;
+      msg["sensors"]["h"] = h;
+      msg["sensors"]["uv"] = int(uv * 10); // avoid float
+      msg["sensors"]["db"] = db;
+      msg["sensors"]["lux"] = lux;
+      msg["sensors"]["ppm"] = ppm;
+      serializeJson(msg, Serial);
+      Serial.println();
+
+      db = 0;
+      last_db = 0;
+      //}
+
+    }
+
 
   }
 

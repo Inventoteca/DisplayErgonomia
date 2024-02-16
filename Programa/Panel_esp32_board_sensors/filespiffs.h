@@ -1,11 +1,7 @@
 #ifndef FILESPIFFS_H
 #define FILESPIFFS_H
 
-
-
-#include <ArduinoJson.h>
-#include "SPIFFS.h"
-#include "FS.h"
+#include "system.h"
 
 #define FILE_SIZE   1750
 

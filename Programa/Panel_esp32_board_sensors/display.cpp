@@ -196,22 +196,22 @@ void PrintOut()
       displayOLED.drawString(0, 0, obj["name"]);
       //
       //displayOLED.setFont(ArialMT_Plain_14);
-      displayOLED.drawString(0, 16, String(t));
+      displayOLED.drawString(0, 16, String(msg["sensors"]["t"].as<int>()));
       displayOLED.drawString(25, 16, "°C");
-      displayOLED.drawString(0, 32, String(h));
+      displayOLED.drawString(0, 32, String(msg["sensors"]["h"].as<int>()));
       displayOLED.drawString(25, 32, "%");
-      displayOLED.drawString(0, 48, String(uv, 1));
+      displayOLED.drawString(0, 48, String(msg["sensors"]["uv"].as<float>(), 1));
       displayOLED.drawString(25, 48, "uv");
       //
       //
-      displayOLED.drawString(60, 16, String(db));
+      displayOLED.drawString(60, 16, String(msg["sensors"]["db"].as<int>()));
       displayOLED.drawString(90, 16, "dB");
-      displayOLED.drawString(55, 32, String(lux));
+      displayOLED.drawString(55, 32, String(msg["sensors"]["lux"].as<unsigned long>()));
       displayOLED.drawString(95, 32, "Lux");
-      displayOLED.drawString(55, 48, String(ppm));
+      displayOLED.drawString(55, 48, String(msg["sensors"]["ppm"].as<unsigned int>()));
       displayOLED.drawString(95, 45, "ppm");
       //
-           displayOLED.display();
+      displayOLED.display();
     }
 
     if (obj["enable_neo"].as<bool>())
@@ -387,7 +387,7 @@ void PrintOut()
 
       // ------------------------------------- Status BLink
       /*if (WiFi.status() == WL_CONNECTED)
-      {
+        {
         if (blk == true)
         {
           if (obj["type"].as<String>() == "ergo")
@@ -406,12 +406,12 @@ void PrintOut()
           color_status[0] = color_status[1] = color_status[2] = 0;
           //display1.show();
         }
-      }
-      // ------------------------------------- Status WiFiEvent
-      else
-      {
+        }
+        // ------------------------------------- Status WiFiEvent
+        else
+        {
         display1.updatePoint(obj["status_pix"].as<int>(), color_status[0], color_status[1], color_status[2]);
-      }*/
+        }*/
     }
   }
   else

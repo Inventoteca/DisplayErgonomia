@@ -1,13 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include <NeoDigito.h>
-#include <Adafruit_NeoPixel.h>
-#include <WiFi.h> //import for wifi functionality
-#include "filespiffs.h"
-#include "clock.h"
-#include "pines.h"
-#include "firebasedb.h"
+#include "system.h"
 
 #define PIX_STATUS  17    // Decimal poimt as LED status
 // -------------- neodigits

@@ -38,23 +38,24 @@ void loop()
     receive_lora();
   }
 
+
+
   if (millis() - mainRefresh > mainTime)
   {
     // ------------------------------------------- ergo
     if (obj["type"].as<String>() == "ergo")
     {
+
+      if (obj["enable_rtc"].as<bool>())
+      {
+        read_clock();
+      }
+
       if (obj["enable_sensors"].as<bool>())  // Sensor Panel normal
       {
-        if (obj["enable_rtc"].as<bool>())
-        {
-          read_clock();
-        }
-
         ReadSensors();
-        SendData();
-        PrintOut();
-
       }
+
     }
     // ------------------------------------------- cruz
     else if (obj["type"].as<String>() == "cruz")
@@ -69,7 +70,9 @@ void loop()
       }
     }
 
-
+    PrintOut();
+    if ((obj["enable_lora"].as<bool>()) && (success))
+      send_lora();
     mainRefresh = millis();
   }
 
@@ -79,6 +82,7 @@ void loop()
     if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time
     {
       checkServer();
+      SendData();
       s_timestamp = millis();
     }
   }

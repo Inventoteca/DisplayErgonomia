@@ -1,8 +1,6 @@
 #ifndef LORASERVICE_H
 #define LORASERVICE_H
 
-#include <RFM69.h>         //get it here: https://www.github.com/lowpowerlab/rfm69
-#include <RFM69_ATC.h>     //get it here: https://www.github.com/lowpowerlab/rfm69
 #include "system.h"
 
 //--------------- LoRa definitios
@@ -21,6 +19,8 @@ extern uint32_t packetCount;
 extern char payload[];
 extern byte sendSize;
 extern bool success;
+
+extern DynamicJsonDocument msg;
 
 
 #ifdef ENABLE_ATC

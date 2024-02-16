@@ -1,12 +1,9 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#include "time.h"
-//#include <Arduino.h>
-#include "RTClib.h"
-#include <NTPClient.h>
-#include <WiFiUdp.h>
-#include "wifiservice.h"
+
+#include "system.h"
+
 
 extern char daysOfTheWeek[7][12];
 extern DateTime now;

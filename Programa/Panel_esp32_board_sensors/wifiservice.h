@@ -1,9 +1,6 @@
 #ifndef WIFISERVICE_H
 #define WIFISERVICE_H
 
-
-#include <WiFi.h> //import for wifi functionality
-//#include "display.h"
 #include "system.h"
 
 //extern const uint32_t connectTimeoutMs;
