@@ -80,7 +80,7 @@ void receive_lora()
 {
   DynamicJsonDocument lora_doc(1024);
   JsonObject lora_obj = lora_doc.as<JsonObject>();
-  
+
   if (radio.receiveDone())
   {
     memset(payload, 0, sizeof(payload));
@@ -98,19 +98,17 @@ void receive_lora()
     else
       Serial.println  ("{\"ACK_send\":false}");
 
+    deserializeJson(lora_doc, payload);
+
+
     if (obj["test"].as<bool>() == true)
     {
       Serial.print("{\"RX_RSSI\":"); Serial.print(radio.RSSI); Serial.println("}");
-      Serial.println(payload);
+      //Serial.println(payload);
+      serializeJson(lora_doc, Serial);
+      Serial.println();
     }
 
-
-    
-
-    
-    deserializeJson(lora_doc, payload);
-    serializeJson(lora_doc, Serial);
-    Serial.println();
 
     // -------------------------------------------------- cruz
     if (obj["type"].as<String>() == "cruz")
@@ -126,7 +124,12 @@ void receive_lora()
 
     else if (obj["type"].as<String>() == "ergo")
     {
-
+      msg["sensors"]["t"] = lora_doc["sensors"]["t"];
+      msg["sensors"]["h"] = lora_doc["sensors"]["h"];
+      msg["sensors"]["uv"] = lora_doc["sensors"]["uv"]; // avoid float
+      msg["sensors"]["db"] = lora_doc["sensors"]["db"];
+      msg["sensors"]["lux"] = lora_doc["sensors"]["lux"];
+      msg["sensors"]["ppm"] = lora_doc["sensors"]["ppm"];
     }
 
   }
