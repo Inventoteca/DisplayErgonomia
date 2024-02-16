@@ -27,7 +27,7 @@ NTPClient timeClient(ntpUDP, ntpServer, gmtOffset_sec, daylightOffset_sec);
 // ---------------------------------- init_clock
 void init_clock()
 {
-  
+
   if (!rtc.begin())
   {
     Serial.println("{\"rtc_init\":false}");
@@ -196,8 +196,7 @@ void read_clock()
         ESP.restart();  // Reiniciar el ESP32
       }
 
-      //dias = int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L));
-      dias = (now.unixtime() - last_ac.unixtime()) / 86400;
+
       mes = now.month();
       anio = now.year();
       dia_hoy = now.day();
@@ -216,42 +215,56 @@ void read_clock()
       Serial.print(now.second(), DEC);
       Serial.println("\"}");
 
-      Serial.print("{\"since\":\"");
-      Serial.print(last_ac.year(), DEC);
-      Serial.print('/');
-      Serial.print(last_ac.month(), DEC);
-      Serial.print('/');
-      Serial.print(last_ac.day(), DEC);
-      Serial.print(' ');
-      Serial.print(last_ac.hour(), DEC);
-      Serial.print(':');
-      Serial.print(last_ac.minute(), DEC);
-      Serial.print(':');
-      Serial.print(last_ac.second(), DEC);
-      Serial.println("\"}");
-
-      Serial.print("{\"last_ac\":");
-      Serial.print(last_ac.unixtime());
-      Serial.println("}");
-      Serial.print("{\"t_unix\": ");
-      Serial.print(now.unixtime());
-      Serial.println("}");
-
-      // Si el dia actual es diferente al anterior se reinicia
-      // Si el mes o el el anio es diferente se reinicia events
-      if (obj["mes_prev"].as<int>() != mes)
+      if (obj["type"].as<String>() == "cruz")
       {
-        Serial.println("{\"new_month\":true}");
-        Serial.print("{\"prev_mes\": "); Serial.print(obj["mes_prev"].as<int>());  Serial.println("}");
-        Serial.print("{\"actual_mes\": "); Serial.print(mes);  Serial.println("}");
-        obj.remove("events");
-        obj["events"]["m32"] = 0;
-        obj["mes_prev"] = mes;
-        SendData();
-        saveConfig = true;
-        update_events = true;
+        //dias = int(round(round(now.unixtime() - last_ac.unixtime()) / 86400L));
+
+
+        dias = (now.unixtime() - last_ac.unixtime()) / 86400;
+
+
+        Serial.print("{\"since\":\"");
+        Serial.print(last_ac.year(), DEC);
+        Serial.print('/');
+        Serial.print(last_ac.month(), DEC);
+        Serial.print('/');
+        Serial.print(last_ac.day(), DEC);
+        Serial.print(' ');
+        Serial.print(last_ac.hour(), DEC);
+        Serial.print(':');
+        Serial.print(last_ac.minute(), DEC);
+        Serial.print(':');
+        Serial.print(last_ac.second(), DEC);
+        Serial.println("\"}");
+
+        Serial.print("{\"last_ac\":");
+        Serial.print(last_ac.unixtime());
+        Serial.println("}");
+        Serial.print("{\"t_unix\": ");
+        Serial.print(now.unixtime());
+        Serial.println("}");
+
+        // Si el dia actual es diferente al anterior se reinicia
+        // Si el mes o el el anio es diferente se reinicia events
+        if (obj["mes_prev"].as<int>() != mes)
+        {
+          Serial.println("{\"new_month\":true}");
+          Serial.print("{\"prev_mes\": "); Serial.print(obj["mes_prev"].as<int>());  Serial.println("}");
+          Serial.print("{\"actual_mes\": "); Serial.print(mes);  Serial.println("}");
+          obj.remove("events");
+          obj["events"]["m32"] = 0;
+          obj["mes_prev"] = mes;
+          SendData();
+          saveConfig = true;
+          update_events = true;
+        }
+      }
+      else if (obj["type"].as<String>() == "ergo")
+      {
+
       }
     }
+
   }
   else
   {

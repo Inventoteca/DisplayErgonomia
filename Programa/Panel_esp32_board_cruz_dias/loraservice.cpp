@@ -1,6 +1,6 @@
 #include "loraservice.h"
 
-bool spy = false; //set to 'true' to sniff all packets on the same network
+bool spy = true; //set to 'true' to sniff all packets on the same network
 int nodeid; //= obj["nodeid"].as<int>();
 int nodeid_remote; //= obj["nodeid"].as<int>();
 int networkid;// = obj["networkid"].as<int>();

@@ -1,6 +1,6 @@
 #include "loraservice.h"
 
-bool spy = false; //set to 'true' to sniff all packets on the same network
+bool spy = true; //set to 'true' to sniff all packets on the same network
 int nodeid; //= obj["nodeid"].as<int>();
 int nodeid_remote; //= obj["nodeid"].as<int>();
 int networkid;// = obj["networkid"].as<int>();
@@ -50,12 +50,12 @@ void init_lora()
     //#ifdef ENABLE_ATC
     //Serial.println("RFM69_ATC Enabled (Auto Transmission Control)");
     //#endif
-    if (obj["lora_registered"].as<bool>() == false)
-    {
-      obj["lora_registered"] = true;
-      Serial.println("{\"init_lora\":true}");
-      saveConfig = true;
-    }
+    //if (obj["lora_registered"].as<bool>() == false)
+    //{
+    //obj["lora_registered"] = true;
+    Serial.println("{\"init_lora\":true}");
+    //saveConfig = true;
+    //}
   }
   else
   {
@@ -78,6 +78,9 @@ void init_lora()
 // -------------------------------------------------------- receive_lora
 void receive_lora()
 {
+  DynamicJsonDocument lora_doc(1024);
+  JsonObject lora_obj = lora_doc.as<JsonObject>();
+  
   if (radio.receiveDone())
   {
     memset(payload, 0, sizeof(payload));
@@ -85,8 +88,6 @@ void receive_lora()
     {
       payload[i] = (char)radio.DATA[i];
     }
-    Serial.print("{\"RX_RSSI\":"); Serial.print(radio.RSSI); Serial.println("}");
-    //Serial.println(payload);
 
     if (radio.ACKRequested())
     {
@@ -97,11 +98,18 @@ void receive_lora()
     else
       Serial.println  ("{\"ACK_send\":false}");
 
-    DynamicJsonDocument lora_doc(1024);
-    deserializeJson(lora_doc, payload);
+    if (obj["test"].as<bool>() == true)
+    {
+      Serial.print("{\"RX_RSSI\":"); Serial.print(radio.RSSI); Serial.println("}");
+      Serial.println(payload);
+    }
 
-    JsonObject lora_obj = lora_doc.as<JsonObject>();
-    serializeJson(lora_obj, Serial);
+
+    
+
+    
+    deserializeJson(lora_doc, payload);
+    serializeJson(lora_doc, Serial);
     Serial.println();
 
     // -------------------------------------------------- cruz
@@ -113,8 +121,14 @@ void receive_lora()
       dia_hoy = lora_obj["dia_hoy"];
       color = lora_obj["color"].as<uint32_t>();
       obj["defColor"] = lora_obj["color"].as<uint32_t>();
+      PrintOut();
     }
-    PrintOut();
+
+    else if (obj["type"].as<String>() == "ergo")
+    {
+
+    }
+
   }
 }
 
@@ -191,6 +205,6 @@ void prepare_payload()
 
   */
   serializeJson(msg, payload);
-  Serial.println(payload);
+  //Serial.println(payload);
 
 }

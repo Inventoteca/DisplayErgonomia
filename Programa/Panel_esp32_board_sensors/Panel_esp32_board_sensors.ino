@@ -46,14 +46,17 @@ void loop()
     if (obj["type"].as<String>() == "ergo")
     {
 
-      if (obj["enable_rtc"].as<bool>())
-      {
-        read_clock();
-      }
+
 
       if (obj["enable_sensors"].as<bool>())  // Sensor Panel normal
       {
         ReadSensors();
+
+        if (obj["enable_rtc"].as<bool>())
+          read_clock();
+
+        if ((obj["enable_lora"].as<bool>()) && (success))
+          send_lora();
       }
 
     }
@@ -71,8 +74,6 @@ void loop()
     }
 
     PrintOut();
-    if ((obj["enable_lora"].as<bool>()) && (success))
-      send_lora();
     mainRefresh = millis();
   }
 
