@@ -38,13 +38,15 @@ void sensorInit()
     // --------------------------- temperature & humidity
     Wire.begin();
     dht.begin();
+    Serial1.begin(9600, SERIAL_8N1, Sound_RX, Sound_TX);
+
     Serial.println("{\"dht\":true}");
 
     // --------------------------- ultraviolet radiation
     Serial.println("{\"uv\":true}");
 
     //----------------------------- sound sensor
-    Serial1.begin(9600, SERIAL_8N1, Sound_RX, Sound_TX);
+
     //Serial1.begin(9600);
     Serial1.write(0x01);
     Serial1.write(0x03);
@@ -62,21 +64,22 @@ void sensorInit()
     //mic_wait++;
     //delayMicroseconds(1);
     //}
-    while ((Serial1.available()) && (datas <=7))
+    while ((Serial1.available()) && (datas <= 7))
     {
       ch_db[datas] = Serial1.read();
       Serial.println(ch_db[datas], HEX);
       datas++;
-      if (datas >= 7)
-      {
-        Serial.println("{\"db\":true}");
-        //i = 0;
-        return;
-      }
+
     }
     if (datas <= 0)
     {
       Serial.println("{\"db\":false}");
+    }
+    else
+    {
+      Serial.println("{\"db\":true}");
+      //i = 0;
+      //return;
     }
     datas = 0;
     //else
@@ -165,7 +168,7 @@ void ReadSensors()
     }
 
     //----------------------------- Sound
-    if (!Serial1.available())
+    //if (!Serial1.available())
     {
       //Serial.println("Send");
       unsigned int datas = 0;
@@ -178,15 +181,14 @@ void ReadSensors()
       Serial1.write(0x01);
       Serial1.write(0x84);
       Serial1.write(0x0A);
-      //delay(20);
+      //delay(50);
       unsigned int mic_wait;
       datas = 0;
-      //while ((!Serial1.available()) && (mic_wait >= 1000))
-      //{
-      //mic_wait++;
-      //delayMicroseconds(1);
-      //}
-      delay(50);
+      while ((!Serial1.available()) && (mic_wait >= 1500))
+      {
+        mic_wait++;
+        delayMicroseconds(1);
+      }
       while (Serial1.available() && (datas <= 7))
       {
         ch_db[datas] = Serial1.read();
@@ -297,7 +299,10 @@ void ReadSensors()
 
       double ppm_log = (log10(ratio) - b) / m; //Get ppm value in linear scale according to the the ratio value
       ppm = pow(10, ppm_log); //Convert ppm value to log scale
+      //if (obj["ppm_cal"].as<int>() < 400)
       //ppm = ppm + (obj["ppm_cal"].as<int>()); // Fresh air
+      //else
+      ppm = ppm + 400; // Fresh air
       if (ppm > 9999) ppm = 9999;
       //double percentage = ppm / 10000; //Convert to percentage
 
@@ -315,6 +320,7 @@ void ReadSensors()
     msg["sensors"]["lux"] = lux;
     msg["sensors"]["ppm"] = ppm;
     serializeJson(msg, Serial);
+    Serial.println();
     //}
 
   }

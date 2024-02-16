@@ -386,7 +386,7 @@ void PrintOut()
 
 
       // ------------------------------------- Status BLink
-      if (WiFi.status() == WL_CONNECTED)
+      /*if (WiFi.status() == WL_CONNECTED)
       {
         if (blk == true)
         {
@@ -411,7 +411,7 @@ void PrintOut()
       else
       {
         display1.updatePoint(obj["status_pix"].as<int>(), color_status[0], color_status[1], color_status[2]);
-      }
+      }*/
     }
   }
   else

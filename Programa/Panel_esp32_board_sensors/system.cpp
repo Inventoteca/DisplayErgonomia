@@ -195,16 +195,7 @@ void loadConfig()
     Serial.println("{\"wifi\":{\"enable\":false}}");
   }
 
-  // --------------------------- OLED
-  //if (obj["oled"].as<bool>())
-  //{
-  //    Heltec.display->clear();
-  //    Heltec.display->drawString(0, 0, obj["name"]);
-  //      Heltec.display->display();
-  //Heltec.display->flipScreenVertically();
-  //}
-
-  // ------------------------- NeoDisplay
+  // ------------------------- NeoDisplay & OLED
   if (obj["enable_neo"].as<bool>())
   {
     //Display Init

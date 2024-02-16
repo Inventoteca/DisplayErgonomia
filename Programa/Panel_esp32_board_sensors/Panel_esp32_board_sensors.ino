@@ -45,11 +45,15 @@ void loop()
     {
       if (obj["enable_sensors"].as<bool>())  // Sensor Panel normal
       {
-        read_clock();
+        if (obj["enable_rtc"].as<bool>())
+        {
+          read_clock();
+        }
+
         ReadSensors();
         SendData();
         PrintOut();
-        
+
       }
     }
     // ------------------------------------------- cruz
