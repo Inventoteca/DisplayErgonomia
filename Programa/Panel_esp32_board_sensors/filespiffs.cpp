@@ -12,6 +12,22 @@ const char *filedefault = "/default.json";
 
 File file;
 
+// ------------------------------------------------------------------------------------- spiffs_init
+bool spiffs_init()
+{
+  // SPIFFS Init
+  if (!SPIFFS.begin(true)) 
+  {
+    Serial.println("{\"spiffs\":false}");
+    return false;
+  } 
+  else 
+  {
+    Serial.println("{\"spiffs\":true}");
+    return true;
+  }
+}
+
 // ------------------------------------------------------------------------------------------------------ Cfg_get
 /*static*/ void Cfg_get(/*struct jsonrpc_request * r*/)
 //  {"method":"Config.Get"}

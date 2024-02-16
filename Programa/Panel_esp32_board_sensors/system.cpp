@@ -24,11 +24,34 @@ unsigned long startMillis = 0;
 unsigned long mainRefresh = obj["mainTime"].as<uint32_t>();
 unsigned long mainTime = 1000;
 
-const uint32_t connectTimeoutMs = 10000;
+uint32_t connectTimeoutMs = 10000;
 unsigned long  s_timestamp;
 
 unsigned long tiempoInicio;
 
+
+// ----------------------------------------------------------- init
+void system_init()
+{
+  Serial.begin(115200);
+  Serial.print("{\"SensorBox_ver\":"); Serial.print(VERSION); Serial.println("}");
+  WiFi.mode(WIFI_STA);
+  pinMode(FACTORY_BT, INPUT);
+  attachInterrupt(FACTORY_BT, factory_reset3, CHANGE);
+
+  // WatchDog Timer
+  esp_task_wdt_init(WDT_TIMEOUT, true);  //enable panic so ESP32 restarts
+  esp_task_wdt_add(NULL);                //add current thread to WDT watch
+
+  // SPIFFS Init
+  if (spiffs_init())
+  {
+    Cfg_get(/*NULL*/);  // Load File from spiffs
+    loadConfig();       // Load and update behaivor of system
+    wifi_init();
+  }
+
+}
 
 // ----------------------------------------------------------------------------------------------- factory_reset3 change
 void IRAM_ATTR factory_reset3()
@@ -41,7 +64,7 @@ void IRAM_ATTR factory_reset3()
     return;
 
   }
-  else if((digitalRead(FACTORY_BT) == !PRESS))
+  else if ((digitalRead(FACTORY_BT) == !PRESS))
   {
     prev_factory_time = millis();
     reset_time = true;
@@ -135,6 +158,7 @@ bool strToBool(String str)
 void loadConfig()
 {
 
+  connectTimeoutMs = (obj["connectTimeoutMs"].as<uint32_t>() > 0 ? obj["connectTimeoutMs"].as<uint32_t>() : 10000);
   updated = obj["updated"].as<bool>();
   color = (obj["defColor"].as<uint32_t>() > 0 ? obj["defColor"].as<uint32_t>() : 0x00FF00);
 
@@ -157,44 +181,6 @@ void loadConfig()
     serializeJson(obj, Serial);
   }
 
-  // ----------------------- WiFi STA
-  if (obj["enable_wifi"].as<bool>() == true && (WiFi.status() != WL_CONNECTED))
-  {
-    WiFi.mode(WIFI_STA);
-    String auxssid = obj["ssid"].as<String>();
-    String auxpass = obj["pass"].as<String>();
-
-
-    // ---- WiFi already Registered and ssid pass is not empty or (try to connect a new wifi)
-    if ((obj["registered_wifi"].as<bool>() == true) && (auxssid.length() > 0) && (auxpass.length() > 0) /*|| (obj["wifi"]["sta"]["count"] < 2)*/)
-    {
-
-      Serial.println("{\"load_registered_wifi\":true}");
-      WiFi.begin(obj["ssid"].as<const char*>(), obj["pass"].as<const char*>());
-      //Serial.print("WiFi connecting: \t");
-      Serial.print("{\"wifi\":{\"ssid\":\"");
-      Serial.print(obj["ssid"].as<const char*>());
-      Serial.println("\"}}");
-    }
-    // ---- New WiFi or wrong configured
-    else //if (((obj["wifi"]["sta"]["registered"].as<bool>() == false) && (obj["wifi"]["sta"]["count"] >= 2)) || (auxssid.length() == 0))
-    {
-      //
-      //      if (auxssid.length() == 0){
-      //        Serial.println("{\"load_new_wifi\":true}");}
-      //      else{
-      //        Serial.println("{\"wrong_new_wifi\":true}");}
-      neoConfig();
-    }
-  }
-  else if (obj["enable_wifi"].as<bool>() == false)
-  {
-    //
-    WiFi.disconnect(true);
-    WiFi.mode(WIFI_OFF);
-    Serial.println("{\"wifi\":{\"enable\":false}}");
-  }
-
   // ------------------------- NeoDisplay & OLED
   if (obj["enable_neo"].as<bool>())
   {
@@ -209,7 +195,7 @@ void loadConfig()
   {
     if (obj["enable_sensors"].as<bool>())
     {
-       sensorInit();
+      sensorInit();
     }
   }
 

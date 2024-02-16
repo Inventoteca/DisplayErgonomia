@@ -14,6 +14,7 @@
 #include <WiFi.h> //import for wifi functionality
 #include <RFM69.h>         //get it here: https://www.github.com/lowpowerlab/rfm69
 #include <RFM69_ATC.h>     //get it here: https://www.github.com/lowpowerlab/rfm69
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 #include "SPIFFS.h"
 #include "FS.h"
 #include "SSD1306Wire.h"        // legacy: #include "SSD1306.h"
@@ -48,7 +49,7 @@ extern bool taskCompleted;
 extern byte localAddress;     // address of this device
 extern unsigned long mainRefresh;
 extern unsigned long mainTime;
-extern const uint32_t connectTimeoutMs;
+extern uint32_t connectTimeoutMs;
 extern unsigned long  s_timestamp;
 extern int buttonState;
 extern unsigned long tiempoInicio;
@@ -60,6 +61,6 @@ void check_reset();
 bool strToBool(String str);
 float mapfloat(float x, float in_min, float in_max, float out_min, float out_max);
 void loadConfig();
-//void prepareData();
+void system_init();
 
 #endif

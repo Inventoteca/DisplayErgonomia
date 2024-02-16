@@ -5,26 +5,11 @@
 
 
 //################################################################----------------------- setup--------------------- #############################
-void setup() {
-  Serial.begin(115200);
-  Serial.print("{\"SensorBox_ver\":"); Serial.print(VERSION); Serial.println("}");
-  WiFi.mode(WIFI_STA);
-  pinMode(FACTORY_BT, INPUT);
-  attachInterrupt(FACTORY_BT, factory_reset3, CHANGE);
+void setup() 
+{
 
-  // WatchDog Timer
-  esp_task_wdt_init(WDT_TIMEOUT, true);  //enable panic so ESP32 restarts
-  esp_task_wdt_add(NULL);                //add current thread to WDT watch
-
-  // SPIFFS Init
-  if (!SPIFFS.begin(true)) {
-    Serial.println("{\"spiffs\":false}");
-    return;
-  } else {
-    Serial.println("{\"spiffs\":true}");
-    Cfg_get(/*NULL*/);  // Load File from spiffs
-    loadConfig();       // Load and update behaivor of system
-  }
+   system_init();
+   
 }
 
 
@@ -82,8 +67,11 @@ void loop()
     // ----------------------------------------- check internet
     if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time
     {
-      checkServer();
-      SendData();
+      //checkServer();
+      if (wifi_check())
+      {
+        SendData();
+      }
       s_timestamp = millis();
     }
   }

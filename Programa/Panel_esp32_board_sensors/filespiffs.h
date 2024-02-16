@@ -28,6 +28,7 @@ JsonArray getJSonArrayFromFile(StaticJsonDocument<FILE_SIZE> *dev_doc, String fi
 bool saveJSonToAFile(JsonObject * doc, String filename);
 bool saveJSonArrayToAFile(JsonArray * dev_doc, String filename);
 void saveConfigData();
+bool spiffs_init();
 //void saveEventsData();
 
 #endif  // FILESPIFFS_H

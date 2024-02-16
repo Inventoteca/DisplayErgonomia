@@ -1,276 +1,302 @@
 #include "wifiservice.h"
 
-//const uint32_t connectTimeoutMs = 10000;
-//unsigned long  s_timestamp;
+bool server_running;
 bool correct = false;
 int wifi_trys;
 boolean isSaved = false;
+bool ALLOWONDEMAND   = true; // enable on demand
+bool WMISBLOCKING    = true;
+WiFiManager wifiManager;
+std::vector<WiFiManagerParameter*> customParams;
 
 
-//------------------------------------------------------------------------------------------------ WiFiEvent
-void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
+
+// ------------------------------------------------ wifiAP
+bool wifiAP(bool force)
 {
 
-  uint8_t ssid[65] = { 0 };
-  uint8_t pass[65] = { 0 };
-  uint8_t rvd_data[33] = { 0 };
-  char email[33] = {0};
+  server_running = false;
+  const char * ap_ssid = obj["ap"].as<const char *>();
+  const char * ap_pass = obj["ap_pass"].as<const char *>();
 
-  //Serial.printf("[WiFi-event] event: %d\n", event);
-  //Serial.printf("{\"wifi_event\":\"%d\"}", event);
-  //Serial.println();
+  Serial.print("{\"AP\": \"");
+  Serial.print(ap_ssid);
+  Serial.println("\"}");
 
-  switch (event)
+  //WiFiManager
+  wifiManager.setConfigPortalBlocking(false);
+  // captive portal redirection
+  //wifiManager.setCaptivePortalEnable(false);
+  wifiManager.setTimeout(120);
+
+  //set config save notify callback
+  wifiManager.setSaveParamsCallback(saveConfigCallback);
+  wifiManager.setSaveConfigCallback(saveWifiCallback);
+  wifiManager.setWebServerCallback(bindServerCallback);
+  wifiManager.setBreakAfterConfig(true); // needed to use saveWifiCallback
+  wifiManager.setConfigPortalTimeout(140);
+  //wifiManager.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
+
+  //set static ip
+  //wifiManager.setSTAStaticIPConfig(IPAddress(10, 0, 1, 99), IPAddress(10, 0, 1, 1), IPAddress(255, 255, 255, 0));
+
+  //reset settings - for testing
+  //wifiManager.resetSettings();
+
+  //set minimu quality of signal so it ignores AP's under that quality
+  //defaults to 8%
+  //wifiManager.setMinimumSignalQuality();
+
+  //sets timeout until configuration portal gets turned off
+  //useful to make it all retry or go to sleep
+  //in seconds
+
+
+  //fetches ssid and pass and tries to connect
+  //if it does not connect it starts an access point with the specified name
+  //here  "AutoConnectAP"
+  //and goes into a blocking loop awaiting configuration
+
+  for (JsonPair kv : doc.as<JsonObject>())
+  {
+    String keyString = kv.key().c_str();
+    char* key = new char[keyString.length() + 1];
+    strcpy(key, keyString.c_str());
+
+    String value = kv.value().as<String>();
+    char* valueCStr = new char[value.length() + 1];
+    strcpy(valueCStr, value.c_str());
+
+    WiFiManagerParameter* p = new WiFiManagerParameter(key, key, valueCStr, value.length() + 10);
+    customParams.push_back(p);
+    wifiManager.addParameter(p);
+  }
+
+  if (!obj["ap"].isNull())
   {
 
-    //case ARDUINO_EVENT_SC_SCAN_DONE:
-    //{
-    //Serial.println("{\"wifi_event\":\"scan\"}");
-    //color_status[0] = 255;
-    //color_status[1] = 255;
-    //color_status[2] = 255;
-    //}
-    //break;
+    if (force == true)
+    {
+      wifiManager.startConfigPortal(ap_ssid, ap_pass);
+      Serial.print("{\"Server_force\":");
+      Serial.print("true");
+      Serial.println("}");
+      server_running = true;
+    }
+    else
+    {
 
-    case ARDUINO_EVENT_SC_FOUND_CHANNEL:
-      {
-        //Serial.println("{\"wifi_event\":\"found\"}");
-        //color_status[0] = 255;
-        //color_status[1] = 0;
-        //color_status[2] = 255;
-      }
-      break;
+      if (wifiManager.autoConnect(ap_ssid, ap_pass))
+        server_running = false;
+      else
+        server_running = true;
 
-    case ARDUINO_EVENT_SC_GOT_SSID_PSWD:
-      {
+      Serial.print("{\"Server_force\":");
+      Serial.print("false");
+      Serial.println("}");
+    }
 
-        //Serial.println("{\"wifi_event\":\"config\"}");
-        //color_status[0] = 0;
-        //color_status[1] = 0;
-        //color_status[2] = 255;
-
-        //if (info.sc_got_ssid_pswd.type == SC_TYPE_ESPTOUCH_V2)
-        //{
-        //  ESP_ERROR_CHECK( esp_smartconfig_get_rvd_data(rvd_data, sizeof(rvd_data)) );
-        //  memcpy(email, rvd_data, sizeof(rvd_data));
-        //}
-
-        memcpy(pass, info.sc_got_ssid_pswd.password, sizeof(info.sc_got_ssid_pswd.password) + 1);
-        memcpy(ssid, info.sc_got_ssid_pswd.ssid, sizeof(info.sc_got_ssid_pswd.ssid) + 1);
-
-        if (obj["test"].as<bool>()) {
-          Serial.printf("SSID:%s\n", ssid);
-          Serial.printf("PASSWORD:%s\n", pass);
-        }
-
-
-        // Save config
-        obj["ssid"] = ssid;
-        obj["pass"] = pass;
-        //obj["enable_wifi"] = true;
-        //obj["count_wifi"] = 0;
-        obj["registered_wifi"] = false;
-
-        WiFi.stopSmartConfig();
-        smart_config = false;
-
-      }
-      break;
-
-    case ARDUINO_EVENT_SC_SEND_ACK_DONE:
-      {
-        //Serial.println("{\"wifi_event\":\"ack\"}");
-        //color_status[0] = 0;
-        //color_status[1] = 255;
-        //color_status[2] = 0;
-        obj["registered_wifi"] = true;
-        Serial.println(saveJSonToAFile(&obj, filename) ? "{\"registered_wifi_saved\":true}" : "{\"registered_wifi_saved\":false}" );
-      }
-      break;
   }
-  //return;
+  else
+  {
+    if (force == true)
+    {
+      wifiManager.startConfigPortal("SmartIndustry", "12345678");
+      Serial.print("{\"Server_force_wdefault\":");
+      Serial.print("true");
+      Serial.println("}");
+      server_running = true;
+    }
+    else
+    {
+      if ( wifiManager.autoConnect("SmartIndustry", "12345678"))
+        server_running = false;
+      else
+        server_running = true;
+
+
+      Serial.print("{\"Server_force_wdefault\":");
+      Serial.print("false");
+      Serial.println("}");
+    }
+
+  }
+  Serial.print("{\"server_running\":");
+  Serial.print(bool(server_running));
+  Serial.println("}");
+  return server_running;
 }
 
-// -------------------------------------------------------------------- Wifi_disconnected
-void Wifi_disconnected(WiFiEvent_t event, WiFiEventInfo_t info)
+
+// --------------------------------------------------- wifiINIT
+void wifi_init()
 {
-  //Serial.println("Disconnected from WIFI access point");
-  //Serial.print("WiFi lost connection. Reason: ");
-  //Serial.println(info.disconnected.reason);
-  String auxssid = obj["ssid"].as<String>();
-  if (auxssid.length() == 0)
+   /*// ----------------------- WiFi STA
+  if (obj["enable_wifi"].as<bool>() == true && (WiFi.status() != WL_CONNECTED))
   {
-    Serial.println("Reconnecting...");
-    WiFi.begin(obj["ssid"].as<const char*>(), obj["pass"].as<const char*>());
-  }
-  //return;
-}
-
-
-
-// ------------------------------------------------------------------------------------------------------- checkServer
-void checkServer()
-{
-
-  //if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time
-  {
+    WiFi.mode(WIFI_STA);
     String auxssid = obj["ssid"].as<String>();
+    String auxpass = obj["pass"].as<String>();
 
+
+    // ---- WiFi already Registered and ssid pass is not empty or (try to connect a new wifi)
+    if ((obj["registered_wifi"].as<bool>() == true) && (auxssid.length() > 0) && (auxpass.length() > 0))
+    {
+
+      Serial.println("{\"load_registered_wifi\":true}");
+      WiFi.begin(obj["ssid"].as<const char*>(), obj["pass"].as<const char*>());
+      //Serial.print("WiFi connecting: \t");
+      Serial.print("{\"wifi\":{\"ssid\":\"");
+      Serial.print(obj["ssid"].as<const char*>());
+      Serial.println("\"}}");
+    }
+    // ---- New WiFi or wrong configured
+    else //if (((obj["wifi"]["sta"]["registered"].as<bool>() == false) && (obj["wifi"]["sta"]["count"] >= 2)) || (auxssid.length() == 0))
+    {
+      //
+      //      if (auxssid.length() == 0){
+      //        Serial.println("{\"load_new_wifi\":true}");}
+      //      else{
+      //        Serial.println("{\"wrong_new_wifi\":true}");}
+      //neoConfig();
+    }
+  }
+  else if (obj["enable_wifi"].as<bool>() == false)
+  {
+    //
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    Serial.println("{\"wifi\":{\"enable\":false}}");
+  }*/
+
+
+  
+  Serial.println("{\"wifi\":{\"init\":true}}");
+  if ((obj["enable_wifi"].as<bool>() == true && (WiFi.status() != WL_CONNECTED)) || (obj["enable_wifi"].isNull()))
+  {
+    WiFi.mode(WIFI_STA);
+
+    const char * auxssid = obj["ssid"].as<const char *>();
+    const char * auxpass = obj["pass"].as<const char *>();
+
+    // Star WiFi connection
+    WiFi.begin(auxssid, auxpass);
+
+    Serial.print("{\"wifi\":{\"ssid\":\"");
+    Serial.print(auxssid);
+    Serial.println("\"}}");
+    Serial.println("{\"wifi\":\"init\"}");
+
+    // Check wifi connection or make AP
+   // wifiAP(false);
+   wifiAP(true);
+
+  }
+  else if (obj["enable_wifi"].as<bool>() == false)
+  {
+    //
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    Serial.println("{\"wifi\":{\"enable\":false}}");
+  }
+
+
+}
+
+
+
+
+
+// ------------------------------------------------------------------------------------------------------- checkServers
+bool wifi_check()
+{
+  bool flag;
+
+  // -------------------------------------------- server is running
+  if (server_running)
+  {
+    Serial.println("{\"wifi\":\"manager process\"}");
+    wifiManager.process();
+  }
+
+  //if (obj["enable_wifi"].as<bool>())
+  {
+
+    //if ((millis() - s_timestamp) >= connectTimeoutMs) // check to an interval of time
+    //{
+    //s_timestamp = millis();
 
     // ------------------ Wifi Connected
     if (WiFi.status() == WL_CONNECTED)
     {
-      Serial.println("{\"wifi\":\"connected\"}");
-      if (obj["enable_rtc"].as<bool>())
-        update_clock();
+      Serial.print("{\"wifi_connected\": ");
+      serializeJson(obj["ssid"],Serial);
+      Serial.println("}");
+      Serial.print("{\"ip\":\"");
+      Serial.print(WiFi.localIP());
+      Serial.println("\"}");
 
-      if (smart_config)
+      flag = true;
+
+      // ------------------------ firebase connection
+      if (updated == false)
       {
-        WiFi.stopSmartConfig();
-        smart_config = false;
-        Serial.println("{\"smart_config\":\"stop\"}");
+        connectFirebase();
       }
 
-      if (obj["registered_wifi"] == false)
-      {
-        obj["registered_wifi"] = true;
-        obj["count_wifi"] = 0;
 
-        Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_new_wifi\":true}" : "{\"file_saved\":false}");
-        Serial.print("{\"wifi\":{\"ssid\":\"");
-        Serial.print(obj["ssid"].as<const char*>());
-        Serial.println("\"}}");
-      }
-
-      // MQTT Enable
-      //      if (obj["mqtt"]["enable"].as<bool>())
-      //      {
-      //        if (!client.connected())
-      //        {
-      //          Serial.println("{\"mqtt_server\":\"reconnect\"}");
-      //          blk = false;
-      //          reconnect();
-      //        }
-      //        // Blink led status on printOut
-      //        else
-      //        {
-      //          //Serial.println("{\"mqtt_server\":\"connected\"}");
-      //          //if (obj["neodisplay"]["enable"].as<bool>())
-      //          //{
-      //          //  display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 0, 255, 0);
-      //          //  display1.show();
-      //          // }
-      //          blk = !blk;
-      //        }
-      //
-      //      }
-
-      connectFirebase();
     }
 
     else //wifi not connected
     {
-      if (smart_config == false)
-      {
-        Serial.println("{\"wifi\":\"disconnected\"}");
-        String auxssid = obj["ssid"].as<String>();
-        if ((auxssid.length() > 0) /*&& (obj["wifi"]["sta"]["registered"].as<bool>() == true)*/)
-        {
-          Serial.println("{\"wifi\":\"reconnecting\"}");
-          WiFi.begin(obj["ssid"].as<const char*>(), obj["pass"].as<const char*>());
-          Serial.print("{\"wifi\":{\"ssid\":\"");
-          Serial.print(obj["ssid"].as<const char*>());
-          Serial.println("\"}}");
-        }
-      }
+      Serial.println("{\"wifi\":\"disconnected\"}");
+      flag = false;
+      //STATE = 0;
+      //STATE &= ~(1 << 6);
+      if (server_running == false)
+        wifiAP(true);         // run force server
       else
-      {
-        Serial.println("{\"SmartConfig\":\"running\"}");
-      }
+        Serial.println("{\"server\":\"running\"}");
     }
 
-    //Serial.println();
-    //PrintOut();
-    //Serial.println("{\"server_check\":true}");
-    //Serial.printf("{\"status\":%d,%d,%d}", color_status[0], color_status[1], color_status[2]);
-    //Serial.println();
-    //s_timestamp = millis();
+
   }
-}
 
-
-
-// ----------------------------------------------------------------------------------------- neoConfig
-void neoConfig()
-{
-
-  //if (wifi_config == false) // Si aun no se inicia la config
-  if (!WiFi.smartConfigDone() && (smart_config == false))
-  {
-    //if (obj["wifi"]["sta"]["count"] > 0)
-    //{
-    //  obj["wifi"]["sta"]["count"] = 0;
-    //  Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_saved_wifi_count\":true}" : "{\"file_saved\":false}");
-    //}
-
-    WiFi.disconnect(true);
-    WiFi.onEvent(WiFiEvent);
-
-    //WiFi.mode(WIFI_STA);
-
-    //if (obj["neodisplay"]["enable"].as<bool>())
-    //{
-    //display1.updatePoint(obj["neodisplay"]["status"], white); //no funciona
-    //display1.updatePoint(obj["neodisplay"]["status"], 255, 255, 255); //no funciona, la libreria es u_int
-
-    //display1.updatePoint(obj["neodisplay"]["status"].as<int>(), 255, 255, 255);
-    //display1.show();
-
-    //color_status[0] = 255;
-    //color_status[1] = 255;
-    //color_status[2] = 255;
-    //}
-
-    smart_config = WiFi.beginSmartConfig(SC_TYPE_ESPTOUCH_V2);
-
-    Serial.print("{\"SmartConfig\":");
-    Serial.print(smart_config);
-    Serial.println("}");
-
-    //while (!WiFi.smartConfigDone());
-    //if (!wifi_config) ESP.restart();
-  }
-  //else // Configuracion iniciada
-  //{
-  //Serial.print("Wait conection response");
-  //if (WiFi.smartConfigDone()) // Configuracion correcta
-  //{
-  //WiFi.stopSmartConfig();
-  // wifi_config = false;
-  // wifi_trys = 0;
-  //Serial.print("SmartConfig Started Done");
   //}
+  //else
+
+  return flag;
+}
+
+
+
+// ------------------------- callback notifying us of the need to save config
+void saveConfigCallback () {
+  Serial.println("Should save config");
+
+  for (WiFiManagerParameter* p : customParams) {
+    // Suponiendo que cada p->getID() es único y coincide con las claves en 'doc'
+    const char* paramId = p->getID();
+    const char* paramValue = p->getValue();
+
+    // Actualizar o añadir el valor en el documento JSON
+    doc[paramId] = paramValue;
+  }
+  saveConfig = true;
+  //return;
+}
+
+void bindServerCallback() {
+  //wifiManager.server->on("/custom", handleRoute); // this is now crashing esp32 for some reason
+  // wm.server->on("/info",handleRoute); // you can override wm!
+}
+
+void handleRoute() {
+  Serial.println("[HTTP] handle route");
 
 }
 
-//
-//// -------------------------------------------------------------------------------------------------------------- ap_init
-//void ap_Init(const char *ap_ssidx, const char *ap_passx)
-//{
-//  Serial.println("Starting AP");
-//  IPAddress apIP(192, 168, 0, 1);   //Static IP for wifi gateway
-//  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0)); //set Static IP gateway on NodeMCU
-//  WiFi.softAP(ap_ssidx, ap_passx); //turn on WIFI
-//  Serial.println("AP Ready");
-//  Serial.println(ap_ssidx);
-//  //websocketInit();
-//}
-
-
-// ----------------------------------------------------------------------------------------------------- websockerInit
-void websocketInit()
-{
-  //webSocket.begin(); //websocket Begin
-  //webSocket.onEvent(webSocketEvent); //set Event for websocket
-  //Serial.println("Websocket is started");
+void saveWifiCallback() {
+  Serial.println("[CALLBACK] saveCallback fired");
+  saveConfig = true;
 }

@@ -71,7 +71,8 @@ void SendData()
     // ------------------------------------- ergo
     if (obj["type"].as<String>() == "ergo")
     {
-
+      if (Firebase.RTDB.updateNode(&fbdo, route + "/actual", &json) == false)
+        Serial.printf("%s\n", fbdo.errorReason().c_str());
     }
     // ------------------------------------- cruz
     else if (obj["type"].as<String>() == "cruz")
@@ -254,6 +255,14 @@ void prepareData()
     // aqui debe ir para cada nodeNAme
     nodeName = String(now.unixtime());
 
+    //json.set("sensors", obj["sensors"]);
+    json.set("t", msg["sensors"]["t"].as<int>());
+    json.set("h", msg["sensors"]["h"].as<int>());
+    json.set("uv", msg["sensors"]["uv"].as<float>());
+    json.set("db", msg["sensors"]["db"].as<int>());
+    json.set("lux", msg["sensors"]["lux"].as<unsigned long>());
+    json.set("ppm", msg["sensors"]["ppm"].as<unsigned int>());
+
     json.set("t_max", obj["t_max"].as<int>());
     json.set("t_min", obj["t_min"].as<int>());
     json.set("t_colMax", obj["t_colMax"].as<uint32_t>());
@@ -320,12 +329,6 @@ void prepareData()
     //}
   }
 
-  //json.set("sensors", obj["sensors"]);
-  //json.set("h", h);
-  //json.set("uv", uv);
-  //json.set("db", db);
-  //json.set("lux", lux);
-  //json.set("ppm", ppm);
 
   //json.set("sensors", t);
   // now we will set the timestamp value at Ts
