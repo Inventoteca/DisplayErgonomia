@@ -17,6 +17,7 @@
   "mainTime": 1000,
   "name": "Panel LoRa",
   "neo_pin": 25,
+  "pixels": 2,
   "networkid": 100,
   "nodeid": 1,
   "nodeid_remote": 2,

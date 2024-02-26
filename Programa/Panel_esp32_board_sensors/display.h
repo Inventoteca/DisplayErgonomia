@@ -7,7 +7,7 @@
 // -------------- neodigits
 #define DIGITS      17    // Number of NeoDigitos connected
 #define PIXPERSEG   2    // NeoPixels per segment
-//#define NEO_PIN     25    // Pin where the display will be attached
+#define NEO_PIN     25    // Pin where the display will be attached
 
 extern bool neo_digits_status;
 extern bool blk;

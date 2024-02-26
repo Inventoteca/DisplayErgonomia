@@ -188,7 +188,7 @@ void loadConfig()
   if (obj["enable_neo"].as<bool>())
   {
     //Display Init
-    if (neo_digits_status == false)
+    //if (neo_digits_status == false)
       displayInit();
   }
 
