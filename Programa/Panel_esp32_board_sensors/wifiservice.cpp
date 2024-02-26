@@ -189,7 +189,7 @@ void wifi_init()
 
     // Check wifi connection or make AP
    // wifiAP(false);
-   wifiAP(true);
+   wifiAP(false);
 
   }
   else if (obj["enable_wifi"].as<bool>() == false)

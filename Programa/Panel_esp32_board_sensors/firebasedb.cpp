@@ -73,6 +73,8 @@ void SendData()
     {
       if (Firebase.RTDB.updateNode(&fbdo, route + "/actual", &json) == false)
         Serial.printf("%s\n", fbdo.errorReason().c_str());
+      else
+        Serial.println("{\"data_ergo_send\":true}");
     }
     // ------------------------------------- cruz
     else if (obj["type"].as<String>() == "cruz")
@@ -298,6 +300,7 @@ void prepareData()
     json.set("ppm_colMax", obj["ppm_colMax"].as<uint32_t>());
     json.set("ppm_colMin", obj["ppm_colMin"].as<uint32_t>());
     json.set("ppm_colDef", obj["ppm_colDef"].as<uint32_t>());
+    Serial.println("{\"firebase_data_ergo\":true}");
   }
 
   // ------------------------------------------ cruz
@@ -447,7 +450,7 @@ void connectFirebase()
 
   // Firebase.ready() should be called repeatedly to handle authentication tasks.
 
-  if (!updated)
+  if (updated == false)
   {
     updated = true;
     String storage_id = obj["storage_id"].as<String>();

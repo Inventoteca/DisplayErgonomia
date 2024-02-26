@@ -33,6 +33,7 @@ void displayInit()
         display1.begin();             // This fuction calls Adafruit_NeoPixel.begin() to configure.
         //display1.clear();
         //display1.show();
+        Serial.println("{\"ergo_display\":true}");
 
       }
       else if (obj["type"].as<String>() == "cruz")

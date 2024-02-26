@@ -47,7 +47,7 @@ bool spiffs_init()
     Serial.println(saveJSonToAFile(&obj, filename) ? "{\"file_default_restore\":true}" : "{\"file_default_restore\":false}");
   }
 
-  if (obj["test"].as<bool>() == true)
+  //if (obj["test"].as<bool>() == true)
   {
     // Comment for production
     serializeJson(obj, Serial);

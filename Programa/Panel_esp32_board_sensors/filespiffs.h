@@ -3,7 +3,7 @@
 
 #include "system.h"
 
-#define FILE_SIZE   1750
+#define FILE_SIZE   2048
 
 extern JsonObject obj;
 extern StaticJsonDocument<FILE_SIZE> doc;

@@ -34,7 +34,7 @@ unsigned long tiempoInicio;
 void system_init()
 {
   Serial.begin(115200);
-  Serial.print("{\"SensorBox_ver\":"); Serial.print(VERSION); Serial.println("}");
+  Serial.print("{\"SensorPanel_ver\":"); Serial.print(VERSION); Serial.println("}");
   WiFi.mode(WIFI_STA);
   pinMode(FACTORY_BT, INPUT);
   attachInterrupt(FACTORY_BT, factory_reset3, CHANGE);
@@ -159,7 +159,10 @@ void loadConfig()
 {
 
   connectTimeoutMs = (obj["connectTimeoutMs"].as<uint32_t>() > 0 ? obj["connectTimeoutMs"].as<uint32_t>() : 10000);
-  updated = obj["updated"].as<bool>();
+  if (!obj["updated"].isNull())
+    updated = obj["updated"].as<bool>();
+  else
+    updated = true;
   color = (obj["defColor"].as<uint32_t>() > 0 ? obj["defColor"].as<uint32_t>() : 0x00FF00);
 
   // ------------- ID
