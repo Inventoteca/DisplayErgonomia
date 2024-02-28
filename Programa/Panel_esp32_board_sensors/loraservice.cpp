@@ -122,7 +122,7 @@ void receive_lora()
       PrintOut();
     }
 
-    else if (obj["type"].as<String>() == "ergo")
+    else if ((obj["type"].as<String>() == "ergo") && (!lora_doc["sensors"].isNull()))
     {
       msg["sensors"]["t"] = lora_doc["sensors"]["t"];
       msg["sensors"]["h"] = lora_doc["sensors"]["h"];

@@ -67,6 +67,14 @@ void SendData()
   {
     //json.set("updatedBySelf", true);
     prepareData();
+    // ------------------------------------- response for new firmware
+    if (obj["restart"].as<bool>() == true)
+    {
+      json.clear();
+      json.set("restart", false);
+      if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
+        Serial.printf("%s\n", fbdo.errorReason().c_str());
+    }
 
     // ------------------------------------- ergo
     if (obj["type"].as<String>() == "ergo")
@@ -110,15 +118,6 @@ void SendData()
         //else
 
         }*/
-
-      // ------------------------------------- response for new firmware
-      if (obj["restart"].as<bool>() == true)
-      {
-        json.clear();
-        json.set("restart", false);
-        if (Firebase.RTDB.updateNode(&fbdo, route + "/config", &json) == false)
-          Serial.printf("%s\n", fbdo.errorReason().c_str());
-      }
 
       json.remove("updated");
       json.remove("restart");
@@ -192,6 +191,7 @@ void streamCallback(FirebaseStream data)
       DynamicJsonDocument doc_patch(1024);
       deserializeJson(doc_patch, data.payload().c_str());
 
+      // ----------------------------------------------fast update
       if (doc_patch.containsKey("defColor"))
       {
         obj["defColor"] = doc_patch["defColor"];
@@ -208,6 +208,59 @@ void streamCallback(FirebaseStream data)
         obj["registered"] = doc_patch["registered"];
         if (obj["registered"] == false)
           obj["restart"] = true;
+        saveConfig = true;
+      }
+      // ------------------------------------- temperature
+      else if (doc_patch.containsKey("t_min"))
+      {
+        obj["t_min"] = doc_patch["t_min"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("t_max"))
+      {
+        obj["t_max"] = doc_patch["t_max"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("t_colDef"))
+      {
+        obj["t_colDef"] = doc_patch["t_colDef"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("t_colMax"))
+      {
+        obj["t_colMax"] = doc_patch["t_colMax"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("t_colMin"))
+      {
+        obj["t_colMin"] = doc_patch["t_colMin"];
+        saveConfig = true;
+      }
+
+      // ------------------------------------- humidity
+      else if (doc_patch.containsKey("t_min"))
+      {
+        obj["h_min"] = doc_patch["h_min"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("h_max"))
+      {
+        obj["h_max"] = doc_patch["h_max"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("h_colDef"))
+      {
+        obj["h_colDef"] = doc_patch["h_colDef"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("h_colMax"))
+      {
+        obj["h_colMax"] = doc_patch["h_colMax"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("t_colMin"))
+      {
+        obj["h_colMin"] = doc_patch["h_colMin"];
         saveConfig = true;
       }
     }
