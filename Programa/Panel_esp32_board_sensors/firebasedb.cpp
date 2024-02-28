@@ -263,6 +263,114 @@ void streamCallback(FirebaseStream data)
         obj["h_colMin"] = doc_patch["h_colMin"];
         saveConfig = true;
       }
+
+      // ------------------------------------- uv index
+      else if (doc_patch.containsKey("uv_min"))
+      {
+        obj["uv_min"] = doc_patch["uv_min"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("uv_max"))
+      {
+        obj["uv_max"] = doc_patch["uv_max"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("uv_colDef"))
+      {
+        obj["uv_colDef"] = doc_patch["uv_colDef"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("uv_colMax"))
+      {
+        obj["uv_colMax"] = doc_patch["uv_colMax"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("uv_colMin"))
+      {
+        obj["uv_colMin"] = doc_patch["uv_colMin"];
+        saveConfig = true;
+      }
+
+      // ------------------------------------- decibelios
+      else if (doc_patch.containsKey("db_min"))
+      {
+        obj["db_min"] = doc_patch["db_min"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("db_max"))
+      {
+        obj["db_max"] = doc_patch["db_max"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("db_colDef"))
+      {
+        obj["db_colDef"] = doc_patch["db_colDef"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("db_colMax"))
+      {
+        obj["db_colMax"] = doc_patch["db_colMax"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("db_colMin"))
+      {
+        obj["db_colMin"] = doc_patch["db_colMin"];
+        saveConfig = true;
+      }
+
+      // ------------------------------------- lux (iluminancia)
+      else if (doc_patch.containsKey("lux_min"))
+      {
+        obj["lux_min"] = doc_patch["lux_min"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("lux_max"))
+      {
+        obj["lux_max"] = doc_patch["lux_max"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("lux_colDef"))
+      {
+        obj["lux_colDef"] = doc_patch["lux_colDef"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("lux_colMax"))
+      {
+        obj["lux_colMax"] = doc_patch["lux_colMax"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("lux_colMin"))
+      {
+        obj["lux_colMin"] = doc_patch["lux_colMin"];
+        saveConfig = true;
+      }
+
+      // ------------------------------------- ppm (partes por millón)
+      else if (doc_patch.containsKey("ppm_min"))
+      {
+        obj["ppm_min"] = doc_patch["ppm_min"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("ppm_max"))
+      {
+        obj["ppm_max"] = doc_patch["ppm_max"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("ppm_colDef"))
+      {
+        obj["ppm_colDef"] = doc_patch["ppm_colDef"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("ppm_colMax"))
+      {
+        obj["ppm_colMax"] = doc_patch["ppm_colMax"];
+        saveConfig = true;
+      }
+      else if (doc_patch.containsKey("ppm_colMin"))
+      {
+        obj["ppm_colMin"] = doc_patch["ppm_colMin"];
+        saveConfig = true;
+      }
     }
   }
   else  if ((strcmp(data.dataPath().c_str(), "/events") == 0) && (strcmp(data.eventType().c_str(), "patch") == 0))

@@ -40,12 +40,12 @@ void displayInit()
         if (obj["test"].as<bool>() == true)
         {
           display1.setCursor(0);
-          display1.print("oC", Red);
-          display1.print("% ", Green);
-          display1.print("uV", Purple);
-          display1.print("dB ", Blue);
-          display1.print("luxe", White);
-          display1.print("PPN.N", Cian);
+          display1.print("88", White);
+          display1.print("88", White);
+          display1.print("8.8", White);
+          display1.print("888", White);
+          display1.print("8888", White);
+          display1.print("8888", White);
           display1.show();
           Serial.println("{\"test_NeoDisplay\":true}");
           delay(1000);
